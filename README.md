@@ -102,3 +102,9 @@ Tools used during the project development:
     </tr>
 </table>
 <!-- markdownlint-enable MD033 -->
+
+## License
+
+QViz is released under the [MIT License](LICENSE). It uses Qiskit, qiskit-ionq and
+qiskit-qasm3-import (Apache-2.0) and NumPy (BSD-3-Clause) as dependencies, which
+does not change the license of this code.

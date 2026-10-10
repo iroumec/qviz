@@ -41,6 +41,13 @@ def test_it_is_a_js_project_without_main_py(packaged):
     assert "main.py" not in files
 
 
+def test_the_mit_license_is_in_the_repository_and_in_the_project(packaged):
+    _, files = packaged
+    assert "LICENSE" in files
+    text = (_ROOT / "LICENSE").read_text()
+    assert text.startswith("MIT License") and "Permission is hereby granted" in text
+
+
 def test_the_libraries_are_complete(packaged):
     _, files = packaged
     assert "backend/__init__.py" in files

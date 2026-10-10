@@ -12,7 +12,7 @@ Corré:
 make qollab
 ```
 
-Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo** de 63 archivos:
+Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo** de 64 archivos:
 
 ```text
 index.html        el visor real
@@ -21,6 +21,7 @@ main.js           un preludio generado (los servicios de Qollab) que carga js/ma
 js/               los módulos del visor, sin cambios
 qollab_api.py     las funciones que llama la página (devuelven texto)
 requirements.txt
+LICENSE           el texto MIT
 backend/          la biblioteca
 examples/         los circuitos de ejemplo
 ```

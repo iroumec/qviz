@@ -10,9 +10,9 @@ repository: the real viewer, ``frontend/index.html``. Its markup becomes
 copied as they are. ``main.js`` is generated: a short prelude that gives the
 viewer the Qollab services (``window.QVIZ_HOST``) and then imports the entry
 module ``js/main.js``. The project also has ``qollab_api.py``,
-``requirements.txt`` and the libraries ``backend/`` and ``examples/``.
-``main.py`` is left out on purpose: in a JS project it could compile a second
-time and spend a second IonQ job.
+``requirements.txt``, the ``LICENSE`` (MIT) and the libraries ``backend/`` and
+``examples/``. ``main.py`` is left out on purpose: in a JS project it could
+compile a second time and spend a second IonQ job.
 
 Upload the **content** of ``qollab/``. See ``documentation/prompts/qollab_pruebas.md``.
 
@@ -32,7 +32,7 @@ MAX_FILES = 100
 MAX_BYTES = 2_000_000
 
 _LIBRARY = ("backend", "examples")
-_SHARED = ("qollab_api.py", "requirements.txt")
+_SHARED = ("qollab_api.py", "requirements.txt", "LICENSE")
 _VIEWER = Path("frontend") / "index.html"
 _VIEWER_MODULES = Path("frontend") / "js"
 _ENTRY_IMPORT = "./js/main.js"
