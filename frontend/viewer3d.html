@@ -94,7 +94,7 @@
 // `cameraPosition` uniform that three.js provides for a ShaderMaterial.
 
 const BOX = 2.6;        // bounding volume that the raymarcher starts from
-const SPACING = 3.7;    // distance between sphere centres
+const SPACING = 3.0;    // distance between ion centres along the chain
 const VERT_URL = "../shaders/bloch.vert";
 const FRAG_URL = "../shaders/bloch.frag";
 
@@ -109,7 +109,7 @@ let vertShader = null;
 let fragShader = null;
 
 let renderer, scene, camera, world, instMesh, psiAttribute;
-const orbit = { azimuth: 0.7, elevation: 0.32, radius: 16 };
+const orbit = { azimuth: 0.7, elevation: 0.32, zoom: 1, fitRadius: 16 };
 const THREE_READY = typeof THREE !== "undefined";
 
 // ---------------------------------------------------------------- utilities

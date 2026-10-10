@@ -1,0 +1,57 @@
+# Performance circuits {#sec-performance}
+
+Two wide circuits are provided to test the performance. They are found in
+`examples/performance.py`. They are used to check that many Bloch spheres can
+be drawn at the same time, and that a long JSON file is handled without a
+problem.
+
+## `ghz(count)` {.unnumbered}
+
+A GHZ state is prepared on `count` qubits. The circuit is shallow: one Hadamard
+gate, and a chain of CNOT gates. Every qubit is fully entangled with the others,
+so every Bloch vector has length zero. This is a good first test for the number
+of spheres, because the state is easy to verify.
+
+## `layered(count, depth=4, seed=1234)` {.unnumbered}
+
+A random layered circuit is built. Each layer is a rotation on every qubit,
+followed by a brickwork of CZ gates. The rotations give non-trivial Bloch
+vectors, and the depth controls the number of native steps. A seed is used, so
+the circuit is reproducible.
+
+## Generating the files {.unnumbered}
+
+```bash
+make outputs
+```
+
+The script compiles a small set of circuits and writes the JSON files to `out/`.
+It also writes `out/manifest.json`, which lists every file with a readable
+label. The viewer reads that manifest, so a new file appears in the selector as
+soon as it is generated.
+
+| File | Qubits | Native steps |
+| --- | --- | --- |
+| `bell.json` | 2 | 7 |
+| `ghz3.json` | 3 | 12 |
+| `ghz16.json` | 16 | 77 |
+| `layered16.json` | 16 | 676 |
+| `adder_n2_1_1.json` | 4 | 187 |
+
+The numbers are given for the built-in simulator. The 16-qubit circuits are the
+performance tests. The `layered16` circuit is the heaviest one: it has 16
+spheres and 676 steps.
+
+## Opening the files {.unnumbered}
+
+```bash
+make outputs
+python -m http.server 8000
+# then open http://localhost:8000/frontend/index.html
+```
+
+The file `frontend/index.html` is connected to the generated files. It loads
+`out/manifest.json`, fills the selector with the available files, and opens the
+default one. The other files can be chosen in the selector. The number of qubits
+and the number of steps are shown, together with a live frame-rate counter, so
+that the performance can be watched while the view is rotated.

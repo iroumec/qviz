@@ -4,7 +4,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint demo render-puml install-plantuml
+.PHONY: venv install test lint demo outputs render-puml install-plantuml
 
 venv:
 	python3 -m venv $(VENV)
@@ -26,13 +26,16 @@ ifndef M
 endif
 	$(PY) scripts/demo_$(M).py
 
+outputs:
+	$(PY) scripts/generate_outputs.py
+
 install-plantuml:
 	@sudo apt update && sudo apt install -y plantuml graphviz
 
 render-puml:
 	plantuml -tsvg -o svg $(PUML_DIR)/*.puml
 
-test-view:
+server:
 	python3 -m http.server 8000
 
 # Git workflow makefile is included so that its targets become

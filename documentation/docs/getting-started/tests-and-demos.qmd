@@ -53,19 +53,27 @@ The `demo_compile` script writes two files, `out/bell.json` and
 directory is ignored by Git. These files can be opened with the
 [3D viewer](../frontend/viewer.qmd).
 
+## Generating all the example files {.unnumbered}
+
+```bash
+make outputs
+```
+
+The script compiles a small set of circuits, including two 16-qubit performance
+circuits, and writes them to `out/`. It also writes `out/manifest.json`, which
+is read by the viewer. See the
+[Performance circuits](../examples/performance.qmd) page.
+
 ## Viewing the result {.unnumbered}
 
 The JSON that is produced can be inspected by hand, or with the viewer.
 
 ```bash
-make demo M=compile
-# then open frontend/viewer.html and drag out/bell.json onto the page
-```
-
-The viewer can also be served over HTTP, so that the last generated file is
-loaded automatically.
-
-```bash
+make outputs
 python -m http.server 8000
-# then open http://localhost:8000/frontend/viewer3d.html
+# then open http://localhost:8000/frontend/index.html
 ```
+
+The page `frontend/index.html` is connected to the files in `out/`. It reads the
+manifest, fills a selector with the available files, and opens the default one.
+A JSON file can also be dragged onto the page.

@@ -63,3 +63,10 @@ The QFT adder is built and compiled. The Fourier matrix is printed for two
 qubits, and the adder is run for three input pairs. One JSON file is written for
 each pair, for example `out/adder_n2_1_1.json`. The example is described on the
 [QFT adder](../examples/qft-adder.qmd) page.
+
+## `generate_outputs.py` {.unnumbered}
+
+This script is run with `make outputs`, not with `make demo`. It compiles a
+small set of circuits, including two 16-qubit performance circuits, writes the
+JSON files to `out/`, and writes `out/manifest.json` for the viewer. See the
+[Performance circuits](../examples/performance.qmd) page.

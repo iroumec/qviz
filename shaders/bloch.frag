@@ -98,7 +98,11 @@ void main() {
     vec3 rd = normalize(vWorldPos - cameraPosition);
 
     vec3 glow = vec3(0.0);
-    vec3 psi = normalize(vPsi);
+    // ``vPsi`` may have any length, and it is zero for a fully entangled qubit.
+    // The normalised direction is used for the sweeps, and the raw vector is
+    // used for the arrow, so that the length r is shown and no NaN appears.
+    float psiLen = length(vPsi);
+    vec3 psi = psiLen > 1e-6 ? vPsi / psiLen : vec3(0.0, 1.0, 0.0);
 
     float anglePsi = atan(psi.z, psi.x);
     if(anglePsi < 0.0) anglePsi += 2.0 * PI;
@@ -120,8 +124,8 @@ void main() {
         float yAx = sdCapsule(p, vec3(0, -LENGTH_AXIS, 0), vec3(0, LENGTH_AXIS, 0), THICKNESS_AXIS);
         float zAx = sdCapsule(p, vec3(0, 0, -LENGTH_AXIS), vec3(0, 0, LENGTH_AXIS), THICKNESS_AXIS);
         
-        float stateVec = sdCapsule(p, vec3(0), psi * RADIUS_SPHERE, RADIUS_STATE_VEC);
-        float stateTip = length(p - (psi * RADIUS_SPHERE)) - RADIUS_STATE_TIP;
+        float stateVec = sdCapsule(p, vec3(0), vPsi, RADIUS_STATE_VEC);
+        float stateTip = length(p - vPsi) - RADIUS_STATE_TIP;
 
         float d = min(min(xAx, yAx), min(zAx, min(stateVec, stateTip)));
 

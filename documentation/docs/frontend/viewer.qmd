@@ -1,17 +1,25 @@
 # Basic viewers {#sec-viewer}
 
-Two small viewers are included for the JSON file. They are basic tools, and they
-are not the final frontend. Both are written in plain JavaScript.
+Three small viewers are included for the JSON file. They are basic tools, and
+they are not the final frontend. All of them are written in plain JavaScript.
 
-| File | Rendering | Dependency |
-| --- | --- | --- |
-| `frontend/viewer.html` | 2D canvas | none |
-| `frontend/viewer3d.html` | 3D Bloch spheres | three.js, loaded from a CDN |
+| File | Rendering | Connected to `out/` | Dependency |
+| --- | --- | --- | --- |
+| `frontend/index.html` | 3D Bloch spheres, shaders | yes | three.js, loaded from a CDN |
+| `frontend/viewer3d.html` | 3D Bloch spheres, shaders | no (demo) | three.js, loaded from a CDN |
+| `frontend/viewer.html` | 2D canvas | no (demo) | none |
 
-The 3D viewer is the main one. It is found in `frontend/viewer3d.html`. One
-three-dimensional Bloch sphere is drawn for every qubit, and the vector of each
-sphere is animated from one step to the next. The scene can be rotated by
-dragging, and the zoom is changed with the mouse wheel.
+`frontend/index.html` is the main viewer. It is connected to the JSON files that
+the project generates. The files are listed in `out/manifest.json`, which is
+written by `make outputs`. The viewer reads the manifest, fills a selector with
+the available files, and opens the default one. A new file appears in the
+selector as soon as it is generated.
+
+One three-dimensional Bloch sphere is drawn for every qubit, and the vector of
+each sphere is animated from one step to the next. The scene can be rotated by
+dragging, and the zoom is changed with the mouse wheel. The number of qubits and
+the number of steps are shown, together with a live frame-rate counter, so that
+the performance can be watched.
 
 The spheres are drawn with the **shaders in the `shaders/` folder**
 (`bloch.vert` and `bloch.frag`). The fragment shader is a volumetric
@@ -22,9 +30,9 @@ in the `instancePsi` attribute, and the animation is driven by the `iTime`
 uniform. The `cameraPosition` uniform, which three.js provides automatically for
 a `ShaderMaterial`, is used to trace the rays.
 
-Because the shaders are separate files, the 3D viewer must be served over HTTP,
-so that `shaders/bloch.vert` and `shaders/bloch.frag` can be fetched. See the
-commands below.
+Because the shaders are separate files, and because the JSON files are read over
+HTTP, the 3D viewer must be served by a local server. The commands are given
+below.
 
 The 2D viewer (`frontend/viewer.html`) is kept as a fallback. It needs no
 library, so it works when there is no connection to the CDN.
@@ -54,23 +62,26 @@ There are three ways to load a JSON file.
    `../out/bell.json` is loaded automatically. If it is not found, a small
    example that is stored inside the page is used.
 
-A JSON file can be produced with the compile demo.
+A JSON file can be produced with the generator, which also writes the manifest.
 
 ```bash
-make demo M=compile
+make outputs
 ```
 
-This writes `out/bell.json`, which can then be dragged onto the viewer.
+The files are written to `out/`, together with `out/manifest.json`. Any of them
+can then be chosen in the selector of `frontend/index.html`, or dragged onto a
+viewer.
 
-For the 3D viewer, the page is served by a small local server, so that the
-shaders and the JSON file can be read.
+The pages are served by a small local server, so that the shaders and the JSON
+files can be read.
 
 ```bash
-make demo M=compile
+make outputs
 python -m http.server 8000
-# then open http://localhost:8000/frontend/viewer3d.html
+# then open http://localhost:8000/frontend/index.html
 ```
 
+`frontend/viewer3d.html` is a standalone demo that always loads `out/bell.json`.
 The 2D viewer also works when it is opened directly as a file.
 
 ## The controls {.unnumbered}

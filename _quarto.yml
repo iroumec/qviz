@@ -35,6 +35,7 @@ book:
     - part: "Examples"
       chapters:
         - documentation/docs/examples/qft-adder.qmd
+        - documentation/docs/examples/performance.qmd
     - part: "Frontend"
       chapters:
         - documentation/docs/frontend/viewer.qmd
