@@ -13,6 +13,8 @@ from __future__ import annotations
 from qiskit import QuantumCircuit
 
 from backend import compile, export
+from backend.core.errors import QVizError
+from backend.core.model import Entangler
 
 
 def build_circuit() -> QuantumCircuit:
@@ -23,9 +25,25 @@ def build_circuit() -> QuantumCircuit:
     return qc
 
 
-def main(shots: int = 1024, entangler: str = "ms") -> None:
+def parse_entangler(value: str | None) -> Entangler | None:
+    """Turn the text of the form field into the ``entangler`` argument.
+
+    ``"auto"`` (or an empty field) lets the backend choose; ``"ms"`` and ``"zz"``
+    force the entangler. Anything else is an error, never a silent fallback.
+    """
+    text = (value or "").strip().lower()
+    if text in ("", "auto"):
+        return None
+    if text == "ms":
+        return "ms"
+    if text == "zz":
+        return "zz"
+    raise QVizError(f"entangler must be 'auto', 'ms' or 'zz', got {value!r}")
+
+
+def main(shots: int = 1024, entangler: str = "auto") -> None:
     """Compile the example circuit and print the visualization JSON."""
-    forced = entangler if entangler in ("ms", "zz") else None
+    forced = parse_entangler(entangler)
     circuit = build_circuit()
     data = compile(backend, circuit, entangler=forced, shots=shots)  # noqa: F821
     print(export(data))

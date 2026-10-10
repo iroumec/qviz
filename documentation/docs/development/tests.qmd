@@ -58,6 +58,7 @@ No network is used and no credential is needed. Every IonQ backend is mocked.
 | `test_exporter.py` | The JSON text, the file output and the rejection of `NaN` and infinities. |
 | `test_examples.py` | The QFT matrix, its inverse, the sum computed by the adder, and the schema of a compiled adder. |
 | `test_performance.py` | The GHZ and layered circuits: the state, the reproducibility with a seed, the argument errors, and the 16-qubit files compiled against the schema. |
+| `test_main.py` | The text of the `entangler` form field of `main.py`: `auto`, `ms` and `zz` are accepted, and any other text is rejected. |
 | `test_tomography.py` | The estimates (with a fixed seed), the single run call and the hardware guard. |
 
 ## The oracles {.unnumbered}

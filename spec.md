@@ -492,7 +492,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 - `main.py` en la raíz (proyecto Python, porque todavía no hay frontend): arma un circuito de ejemplo, llama a `compile(backend, qc)` y hace `print(export(data))`. **Nunca `import backend`**: pisaría la variable `backend` que inyecta Qollab. Se usa `from backend import compile, export`.
 - `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip ni marcadores de entorno).
-- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5).
+- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
 
 **Validación (manual, la hace el equipo):** correr en Built-in, AWS local, un IBM con ruido, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". Los resultados se anotan en §10.
 
