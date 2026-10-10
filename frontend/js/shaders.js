@@ -1,0 +1,30 @@
+// Load the four shader sources into the state. They come from the host when it
+// provides them, or from the shaders/ folder over HTTP otherwise.
+
+import { HOST, VERT_URL, FRAG_URL, LENS_VERT_URL, LENS_FRAG_URL } from "./config.js";
+import { state } from "./state.js";
+
+async function fetchText(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(url);
+  return response.text();
+}
+
+export async function loadShaders() {
+  if (HOST.shaders) {
+    state.shaders = {
+      vert: HOST.shaders.vert,
+      frag: HOST.shaders.frag,
+      lensVert: HOST.shaders.lensVert,
+      lensFrag: HOST.shaders.lensFrag,
+    };
+    return;
+  }
+  const [vert, frag, lensVert, lensFrag] = await Promise.all([
+    fetchText(VERT_URL),
+    fetchText(FRAG_URL),
+    fetchText(LENS_VERT_URL),
+    fetchText(LENS_FRAG_URL),
+  ]);
+  state.shaders = { vert, frag, lensVert, lensFrag };
+}

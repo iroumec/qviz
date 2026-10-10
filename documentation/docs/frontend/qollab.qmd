@@ -44,7 +44,8 @@ The command runs `scripts/package_qollab.py`, which writes the folder `qollab/`
 | --- | --- |
 | `index.html` | The markup of the `<body>` of `frontend/index.html`, without the script. |
 | `main.css` | The `<style>` block of `frontend/index.html`, unchanged. |
-| `main.js` | A generated prelude, followed by the script of `frontend/index.html`, unchanged. |
+| `main.js` | A generated prelude (the Qollab services), then `import("./js/main.js")`. |
+| `js/` | The modules of `frontend/js`, copied as they are. |
 | `qollab_api.py`, `requirements.txt` | The files of the root. |
 | `backend/`, `examples/` | The libraries. |
 
@@ -56,26 +57,24 @@ Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
 
 ## The prelude of `main.js` {.unnumbered}
 
-The prelude does three things, and then the script of the viewer runs.
+The viewer is modular: the folder `frontend/js` is copied as it is, and the
+generated `main.js` is only a prelude followed by `await import("./js/main.js")`.
+The prelude runs first, so that the host is ready when the modules read it.
 
-1. **three.js.** The viewer is an ES module that imports `three` and three
-   addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) through an
-   import map, which Qollab does not read. The packager removes those `import`
-   lines from the script and the prelude imports the same names (`THREE`,
-   `OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`). The addons are loaded
-   with a dynamic `import()`: if Qollab cannot resolve them, a warning goes to
-   the console and the viewer starts without the laser and without the
-   environment light, instead of not starting. The viewer targets three.js 0.160
-   with its default color management, so the prelude no longer changes it.
-2. **The host.** It defines `window.QVIZ_HOST` with the services below. If
+1. **The host.** It defines `window.QVIZ_HOST` with the services below. If
    Python cannot be reached, the message is shown in the `error` line of the
    viewer, and the viewer falls back to its own behavior.
    When Python raises an error of QViz (for example, a machine that is not
    supported), the prelude keeps only its message and drops the traceback, so
    the `error` line shows a sentence a person can read. Any other error is shown
    as it is.
-3. **The files.** `shaders/` (`bloch` and `lens`) and `models/laser_lens.obj` and
+2. **The files.** `shaders/` (`bloch` and `lens`) and `models/laser_lens.obj` and
    `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
+3. **The entry.** `main.js` ends with `await import("./js/main.js")`, which
+   starts the viewer. The modules import `three` and `three/addons` by name; the
+   addons are loaded in `js/three-addons.js`, with a fallback, so that the viewer
+   starts without the laser and the environment light when an addon is not
+   available.
 
 ## The hooks of the viewer {.unnumbered}
 

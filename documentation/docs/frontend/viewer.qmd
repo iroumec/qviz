@@ -145,8 +145,27 @@ The viewer reads only the fields of the contract. The fields that are used are
 `cumulative_cost`, `states`, `probabilities`, `virtual_z`, `inactivity`,
 `fidelities` and `vibration`.
 
-## A note on the files of the frontend {.unnumbered}
+## The files of the viewer {.unnumbered}
 
-The steps of the viewer are described above. The final frontend is expected to be
-larger, and it may use a 3D library. The viewer is kept as a small independent
-file, so that the JSON can be checked without any setup.
+The viewer is a set of small ES modules, so that each file has one purpose.
+`frontend/index.html` holds only the markup and the style; the script starts at
+`frontend/js/main.js`.
+
+| File | Purpose |
+| --- | --- |
+| `js/main.js` | The entry point: wires the controls, builds the scene and loads the first file. |
+| `js/config.js` | The constants, the URLs and the host hooks (`window.QVIZ_HOST`). |
+| `js/state.js` | The mutable state of the viewer, in one place. |
+| `js/utils.js` | Small helpers (`showStageMessage`, `escapeHtml`, `setError`). |
+| `js/demo.js` | The small example embedded in the page. |
+| `js/shaders.js` | Loads the four shader sources. |
+| `js/three-addons.js` | Loads the three.js addons, with a fallback. |
+| `js/laser.js` | Loads the laser model and its materials. |
+| `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
+| `js/panels.js` | The readouts, the detail of the step, the health bar and the measurement. |
+| `js/data.js` | Loads a visualization and moves through its steps. |
+| `js/controls.js` | The buttons, the slider and the drag and drop. |
+
+No module imports a module that imports it back, so the dependency graph is easy
+to follow. A headless test (a stub DOM and a stub `three`) runs the modules
+without a browser.

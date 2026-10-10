@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (el empaquetador de Qollab se adaptó al visor con láser y three 0.160). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (visor modular en `frontend/js/`). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -59,6 +59,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · Visor modular: `frontend/index.html` queda solo con HTML y CSS, y el JS se divide en módulos ES en `frontend/js/` (config, state, utils, demo, shaders, three-addons, laser, scene, panels, data, controls, main). Los addons de three y el respaldo pasan a `js/three-addons.js`. `package_qollab.py` ahora copia los módulos y genera `main.js` = preludio + `import("./js/main.js")`; tests y docs actualizados. Verificado con un harness headless (DOM y `three` stubeados) y con `make test`/`make lint` en verde.
 - 2026-10-10 · Pull de `development` (CI, `documentation/`, láser con lentes y three 0.160 con import map en el visor). Eso rompía `make qollab`: `package_qollab.py` ahora acepta `<script type="module">`, quita los `import` del visor y los pone en el preludio (addons con `import()` dinámico y respaldo), embebe los shaders de la lente y el OBJ/MTL (`HOST.shaders.lensVert/lensFrag`, `HOST.laser`) y ya no fuerza el color lineal de r128. Hooks mínimos en `loadLaserModel` del visor (aprobados por el usuario). Sin commitear; falta probar en Qollab.
 - 2026-10-10 · Reorganización: los makefiles a `make/` (`Makefile.git`, `Makefile.quarto`) y el proyecto Quarto (`_quarto.yml`, `index.qmd`, `references.bib`) a `documentation/`; sigue `make render/html/pdf-typst/preview/clean` desde la raíz. Docs y `AGENTS.md` actualizados.
 - 2026-10-10 · CI con GitHub Actions (`lint` + `tests` en 3.12/3.13) y badge en el README; diagramas PlantUML con SVG embebidos en Quarto; página "Why QViz" y énfasis pedagógico (según `documentation.md`) en README, preface e índice del libro.

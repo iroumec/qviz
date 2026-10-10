@@ -37,7 +37,7 @@ backend/                    The library.
 tests/                      The pytest suite.
 examples/                   Worked circuits (for example the QFT adder).
 scripts/                    The demo scripts and the generator of the files of out/.
-frontend/                   The viewers (index.html, viewer3d.html, viewer.html).
+frontend/                   The viewers (index.html) and their ES modules (frontend/js).
 shaders/                    The volumetric shaders of the spheres.
 documentation/              The specification, the schema and this book.
   _quarto.yml               The configuration of this book.
