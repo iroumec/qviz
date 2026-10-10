@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (M10: carga de circuitos OpenQASM 2/3 sobre el visor modular, sin JSON). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (cierre de sesión: M10 OpenQASM, servidor local, licencia MIT y arreglo del paquete de Qollab). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -38,6 +38,8 @@ make server            # el visor en local, con compilar y medir en Python (scri
 
 ## Qollab (medido el 2026-10-10)
 
+Qollab **no sirve los demás archivos del proyecto** (un `import("./js/main.js")` falla con `error loading dynamically imported module`): por eso `make qollab` arma un solo `main.js` (preludio + módulos de `frontend/js` empaquetados con `bundle_modules`). Que `qiskit-qasm3-import` se instale en Qollab y que `three/addons/` resuelva ahí **no está verificado**. Detalle y tabla de problemas: `documentation/docs/frontend/qollab.qmd`.
+
 Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Built-in con la página de diagnóstico: un clic llama a Python con `callPromising` después de la primera corrida; `import * as api from "qollab_api"` funciona; `ALL CHECKS PASS`. Límites: 100 archivos por proyecto (el repo tiene más: por eso `make qollab`), solo `main.css`, los `<script>` del HTML no corren, el JS no lee archivos, un job por corrida en IonQ, Python devuelve texto.
 
 ## Pendientes (en orden)
@@ -46,7 +48,6 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 -1. **Plazo: domingo 2026-10-11, 7 PM ET.** Subir `make qollab` y cargar `examples/qasm/bell.qasm` (OpenQASM 3): si dice `OpenQASM 3 needs the package qiskit-qasm3-import`, Qollab no instaló `qiskit-qasm3-import`/`openqasm3`/`antlr4-python3-runtime`; OpenQASM 2 anda igual y habría que decidir qué hacer con el 3.
 0. **IBM se queda cargando en Qollab** (AWS local ya da el error). Subir `make qollab` con IBM Boston y pegar la consola del navegador para ver dónde se cuelga.
 1. **Subir `make qollab` (visor real) y completar la tabla de `documentation/prompts/qollab_pruebas.md` §6**: que `three/addons/` resuelva en Qollab y la escena 3D con el láser en three.js 0.186.1 (el visor usa la 0.160), el tamaño dentro del iframe, Medir en el paso 4 y 7 del Bell, los simuladores de IonQ (solo la primera compilación; medir no gasta job) y los tiempos con 16 qubits.
-2. Commit y push de los cambios locales (hooks del visor, paquete de Qollab, documentación, `memory.md`) cuando el usuario lo pida.
 3. Decisión sobre la transpilación de IBM/AWS/`unknown` (opciones A, E, B en el documento de decisión; hay una pregunta preparada para el profesor). Hasta entonces siguen desactivados. Al decidir: reescribir `spec.md` §M2b, `translator.qmd`, `transpiler.qmd`.
 4. Tomografía: reformular "el statevector queda como referencia para comparar" (`tomography.qmd`, `spec.md` §M8) o implementar la comparación. Con qiskit-ionq < 1.0.3 la tomografía sobre un backend que no es IonQ da un `TranspilationError` (las compuertas nativas no traen definición).
 5. S5 (pausado): cambiar la jerarquía `Translator` por una función `translate(info, transpiled)`; toca `compiler`, demos, tests, spec y `activity.puml` (el SVG se regenera con `make render-puml`).
@@ -57,12 +58,17 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 - Mostrar visualmente que dos qubits están entrelazados en el visor (hoy solo se ve que la esfera se acorta, `r < 1`, y desaparece con `r = 0`). Habría que decidir qué se dibuja (un enlace entre las esferas, color o intensidad) y qué dato lo sostiene: el JSON actual no dice con quién está entrelazado cada qubit, así que haría falta un cálculo nuevo en el backend (por ejemplo la concurrencia o la información mutua entre pares, desde el statevector) y, probablemente, un campo nuevo del contrato JSON, que requiere acuerdo del equipo. Cualquier cambio visual del visor necesita aprobación.
 
+## Comportamiento normal del visor (no es un bug)
+
+Los vectores de Bloch **se acortan o desaparecen cuando un qubit está entrelazado** (`r < 1`; con `r = 0` no se dibuja la flecha). Pasa también **sin entrelazamiento lógico**: las compuertas de dos qubits se construyen con la compuerta nativa MS, que entrelaza a mitad de la compuerta, y los vectores vuelven cuando termina. Ejemplo medido: `x q[0]; swap q[0], q[1];` termina con los dos vectores en longitud 1, pero en 11 de sus 38 pasos hay un vector menor que 0,5 (en el paso 8, un `ms`, los dos valen 0). El usuario lo revisó (2026-10-10) y lo da por funcionamiento correcto. Se comprobó además que no hay NaN en los datos, que three 0.186.1 dibuja igual que 0.160 y que cargar varios circuitos seguidos redibuja bien. Un vector que **mida 1 en `states` y aun así no se vea** sí sería un error de dibujo; hasta ahora no hay ningún caso.
+
 ## Equipo y convenciones
 
 El usuario trabaja el backend y la documentación con este agente; un compañero toca el visor y partes de Quarto y empuja a la misma rama `development`. Código y commits en inglés; `spec.md` y las guías en español; Quarto en inglés. Explicar con opciones, ventajas y una recomendación; esperar el visto bueno ante cambios del contrato o visibles.
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · Cierre de sesión. Se quitaron las menciones de FastAPI y Astro (README, AGENTS, spec, memory) y se actualizó "Fuera de alcance" de `AGENTS.md`. Se revisó la desaparición de vectores: es el comportamiento normal descrito arriba.
 - 2026-10-11 · Arreglo en Qollab: `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`. Qollab no sirve los archivos de `js/`, así que el `import("./js/main.js")` del preludio fallaba. `package_qollab.py` ahora arma un solo `main.js` (preludio + los módulos de `frontend/js` empaquetados con `bundle_modules`, cada uno en su ámbito); el paquete pasó a 51 archivos. Probado el JS con `node --check` y un arnés con stubs; falta probar en Qollab.
 - 2026-10-10 · Licencia MIT: `LICENSE` (titular "Qubit Overflow", 2026; cambiarlo si el equipo prefiere otro), `license` en `pyproject.toml`, sección en el README y copia en el paquete de Qollab (64 archivos). `spec.md` §2 recoge la respuesta de los organizadores.
 - 2026-10-10 · Se retiró la página de diagnóstico: `make qollab-probe`, `scripts/qollab_js_probe/`, `qollab_api.versions()` y el argumento `page` de `package_qollab.py`. Las pruebas en Qollab se hacen con el visor real (`documentation/prompts/qollab_pruebas.md`, reescrita). Sigue en el historial de git.
