@@ -49,7 +49,9 @@ works is used.
 
 Strategy 1 is used only when the gateset of the backend is already `"native"`.
 Strategy 2 is skipped when `allow_remote` is `False`. If strategy 2 fails for
-any reason, a warning is logged, and strategy 3 is used.
+any reason, a warning is logged, and strategy 3 is used. The wait for the job is
+limited to `config.REMOTE_JOB_TIMEOUT_S` seconds, so a job that never finishes
+cannot block the page: when the time is over, strategy 3 is used.
 
 The order of the strategies is important for the platform rule of one job per
 run. The native-local strategy spends no job. The remote strategy spends the one

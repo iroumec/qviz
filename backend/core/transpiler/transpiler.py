@@ -94,7 +94,7 @@ def _remote_native(backend: Any, circuit: QuantumCircuit) -> Any:
     job = backend.run(circuit, dry_run=True, job_settings=_JOB_SETTINGS)
     wait = getattr(job, "wait_for_final_state", None)
     if callable(wait):
-        wait()
+        wait(timeout=config.REMOTE_JOB_TIMEOUT_S)
     return job.compiled_circuit(lang="native")
 
 

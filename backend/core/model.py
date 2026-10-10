@@ -11,6 +11,7 @@ Provider = Literal["ionq", "ibm", "aws", "local", "unknown"]
 Entangler = Literal["ms", "zz"]
 OpName = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
 Source = Literal["ionq-native", "qiskit"]
+Strategy = Literal["statevector", "tomography"]
 
 
 @dataclass(frozen=True)

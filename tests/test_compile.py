@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import jsonschema
 import pytest
 
 from backend import compile, export
+from backend.core.errors import QVizError
 from tests.circuits import ALL_CIRCUITS, bell
 
 _SCHEMA_PATH = (
@@ -93,3 +95,18 @@ def test_ibm_backend_is_compacted(heron_backend):
     data = compile(heron_backend, bell())
     assert data["total_qubits"] == 2
     assert "referencia Aria" in data["backend"]
+
+
+def test_invalid_strategy_raises_before_touching_the_backend():
+    backend = MagicMock()
+    backend.name = "ionq_simulator"
+    with pytest.raises(QVizError, match="unknown strategy"):
+        compile(backend, bell(), strategy="bogus")  # type: ignore[arg-type]
+    backend.run.assert_not_called()
+
+
+@pytest.mark.parametrize("shots", [0, -5])
+@pytest.mark.parametrize("strategy", ["statevector", "tomography"])
+def test_non_positive_shots_raise(basic_backend, strategy, shots):
+    with pytest.raises(QVizError, match="shots"):
+        compile(basic_backend, bell(), strategy=strategy, shots=shots)

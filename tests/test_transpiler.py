@@ -8,6 +8,7 @@ import pytest
 from qiskit import QuantumCircuit
 from qiskit_ionq import GPIGate, MSGate
 
+from backend.core import config
 from backend.core.errors import CircuitTooLargeError
 from backend.core.model import BackendInfo
 from backend.core.provider import profiles
@@ -93,6 +94,28 @@ def test_ionq_remote_returns_native_list():
     assert transpiled.source == "ionq-native"
     assert transpiled.native_ops is not None
     assert len(transpiled.native_ops) == 2
+
+
+def test_ionq_remote_wait_uses_a_timeout():
+    job = MagicMock()
+    job.compiled_circuit.return_value = QuantumCircuit(2)
+    backend = MagicMock()
+    backend.run.return_value = job
+
+    transpiler.transpile(_ionq_info(), backend, bell())
+    job.wait_for_final_state.assert_called_once_with(
+        timeout=config.REMOTE_JOB_TIMEOUT_S
+    )
+
+
+def test_ionq_falls_back_when_remote_times_out():
+    job = MagicMock()
+    job.wait_for_final_state.side_effect = TimeoutError("job did not finish")
+    backend = MagicMock()
+    backend.run.return_value = job
+
+    transpiled = transpiler.transpile(_ionq_info(), backend, bell())
+    assert transpiled.source == "qiskit"
 
 
 def test_ionq_falls_back_when_remote_fails():

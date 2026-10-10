@@ -39,6 +39,7 @@ These values never change. They are not configuration.
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
 | `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
+| `REMOTE_JOB_TIMEOUT_S` | `60.0` | The seconds to wait for the IonQ dry-run job. When the time is over, the local transpile is used. |
 
 ### How the width limit is used {.unnumbered}
 

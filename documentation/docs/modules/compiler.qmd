@@ -17,7 +17,7 @@ convenience: `from backend import compile`.
 | `qc` | `QuantumCircuit` | required | The circuit of the user. It is never changed. |
 | `entangler` | `"ms"`, `"zz"` or `None` | `None` | The target entangler. When it is `None`, it is inferred from the backend. |
 | `strategy` | string | `"statevector"` | `"statevector"` computes the state exactly. `"tomography"` measures the state on the backend. |
-| `shots` | int | `1024` | The number of shots. It is used for the cost, and for the tomography. |
+| `shots` | int | `1024` | The number of shots. It must be positive. It is used for the cost, and for the tomography. |
 | `allow_paid` | bool | `False` | It must be set to `True` before tomography is allowed on a backend that is classified as hardware, because such a backend may spend credits. |
 
 **Returns** a `dict` that follows the JSON contract.
@@ -29,11 +29,12 @@ convenience: `from backend import compile`.
 | `CircuitTooLargeError` | The circuit is wider than the effective limit (see the [configuration page](config-and-errors.qmd)). |
 | `UnsupportedOperationError` | The circuit contains an operation that cannot be shown. |
 | `TranspilationError` | The circuit cannot be transpiled. |
-| `QVizError` | An unknown strategy is requested, or tomography is requested on hardware without `allow_paid`. |
+| `QVizError` | An unknown strategy is requested, `shots` is not positive, or tomography is requested on hardware without `allow_paid`. |
 
 ## The steps that are performed {.unnumbered}
 
-The same order is always used.
+The same order is always used. Before the first step, `strategy` and `shots` are
+validated, so that a wrong argument never spends the single IonQ job.
 
 1. The provider is detected: `provider.detect(backend, entangler)`.
 2. The circuit is transpiled: `transpiler.transpile(...)`.

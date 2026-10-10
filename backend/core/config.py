@@ -23,3 +23,6 @@ VIBRATION_THRESHOLD: float = 0.01
 
 JSON_DECIMALS: int = 6
 """Number of decimals used when serializing floating point values."""
+
+REMOTE_JOB_TIMEOUT_S: float = 60.0
+"""Seconds to wait for the IonQ dry-run job before falling back to a local transpile."""
