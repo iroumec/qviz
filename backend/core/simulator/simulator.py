@@ -93,6 +93,7 @@ def simulate(native: NativeCircuit, strategy: str = "statevector") -> SimulatedC
     state[(0,) * n] = 1.0
 
     virtual_z = [0.0] * n
+    qubits = (QubitAngles(1.0, 0.0, 0.0),) * n  # every qubit starts in |0>
     steps: list[SimulatedStep] = []
 
     for index, op in enumerate(native.ops, start=1):
@@ -102,7 +103,11 @@ def simulate(native: NativeCircuit, strategy: str = "statevector") -> SimulatedC
             qubit = op.targets[0]
             virtual_z[qubit] = (virtual_z[qubit] + op.z_rotation) % constants.TWO_PI
 
-        qubits = tuple(_angles(state, q, n) for q in range(n))
+        # A unitary acting on ``targets`` cannot change the reduced state of
+        # the other qubits, so only the targets are recomputed.
+        qubits = tuple(
+            _angles(state, q, n) if q in op.targets else qubits[q] for q in range(n)
+        )
         steps.append(
             SimulatedStep(
                 index=index,

@@ -7,8 +7,13 @@ the mathematics of the library. The values that must never change are kept in
 
 from __future__ import annotations
 
-MAX_QUBITS: int = 28
+MAX_QUBITS: int = 16
 """Hard cap on the circuit width.
+
+The statevector needs ``2**n`` complex numbers and every step touches all of
+them, so memory and time grow exponentially with ``n`` (a 28-qubit state alone
+takes 4 GiB). Beyond ~16 qubits the Bloch spheres are also too many to read in
+a visualizer, so the cap is a usability limit as much as a resource one.
 
 The limit is also read from the backend when the backend exposes its own number
 of qubits; the effective limit is the smaller of the two. See

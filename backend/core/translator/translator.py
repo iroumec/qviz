@@ -28,8 +28,9 @@ class Translator(ABC):
         """Apply the shared translation rules for this backend's entangler."""
         entangler = self.info.entangler
         if transpiled.native_ops is not None:
-            ops, num_qubits = rules.translate_native_ops(
-                transpiled.native_ops, transpiled.num_qubits, entangler
+            num_qubits = transpiled.num_qubits
+            ops = rules.translate_native_ops(
+                transpiled.native_ops, num_qubits, entangler
             )
         else:
             if transpiled.circuit is None:  # pragma: no cover - model invariant

@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Operator
+from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 
 from backend.core.errors import UnsupportedOperationError
 from backend.core.model import TranspiledCircuit
@@ -143,3 +144,54 @@ def test_reset_raises():
     qc.reset(0)
     with pytest.raises(UnsupportedOperationError):
         _translate(qc, "ms")
+
+
+def _native_payload_translation(payload: list, entangler: str = "ms"):
+    transpiled = TranspiledCircuit(
+        source="ionq-native", num_qubits=2, native_ops=tuple(payload)
+    )
+    info = make_info(entangler)  # type: ignore[arg-type]
+    return translator.create(info).translate(transpiled)
+
+
+@pytest.mark.parametrize("entangler", ENTANGLERS)
+def test_native_ops_input_is_equivalent_to_ionq_gates(entangler):
+    payload = [
+        {"gate": "gpi2", "target": 0, "phase": 0.1},
+        {"gate": "ms", "targets": [0, 1], "phases": [0.05, 0.2], "angle": 0.2},
+        {"gate": "zz", "targets": [0, 1], "angle": 0.4},
+        {"gate": "gpi", "target": 1, "phase": 0.3},
+    ]
+    expected = QuantumCircuit(2)
+    expected.append(GPI2Gate(0.1), [0])
+    expected.append(MSGate(0.05, 0.2, 0.2), [0, 1])
+    expected.append(ZZGate(0.4), [0, 1])
+    expected.append(GPIGate(0.3), [1])
+
+    native = _native_payload_translation(payload, entangler)
+    assert Operator(to_qiskit(native)).equiv(Operator(expected))
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        [{"gate": "gpi", "phase": 0.1}],  # no target
+        [{"gate": "gpi", "target": None, "phase": 0.1}],
+        [{"gate": "gpi", "target": "x", "phase": 0.1}],
+        [{"gate": "gpi", "target": 5, "phase": 0.1}],  # outside the circuit
+        [{"gate": "gpi", "target": -1, "phase": 0.1}],
+        [{"gate": "gpi", "target": 0}],  # no phase
+        [{"gate": "gpi", "target": 0, "phase": None}],
+        [{"gate": "gpi", "targets": [0, 1], "phase": 0.1}],  # wrong arity
+        [{"gate": "ms", "targets": [0, 0], "angle": 0.25}],  # repeated qubit
+        [{"gate": "ms", "targets": [0], "angle": 0.25}],
+        [{"gate": "ms", "targets": [0, 1], "phases": [0.1]}],  # one phase
+        [{"gate": "ms", "targets": [0, 1], "angle": None}],
+        [{"gate": "zz", "targets": [0, 1], "angle": "wide"}],
+        [{"gate": "swap", "targets": [0, 1]}],  # unknown gate
+        [["gpi", 0, 0.1]],  # not a dictionary
+    ],
+)
+def test_malformed_native_ops_raise_unsupported(payload):
+    with pytest.raises(UnsupportedOperationError):
+        _native_payload_translation(payload)
