@@ -52,11 +52,11 @@ def _dumps(value: Any, level: int = 0) -> str:
         if not value:
             return "[]"
         if _is_simple_array(value):
-            return json.dumps(value, ensure_ascii=False)
+            return json.dumps(value, ensure_ascii=False, allow_nan=False)
         parts = [f"{inner_pad}{_dumps(item, level + 1)}" for item in value]
         return "[\n" + ",\n".join(parts) + "\n" + pad + "]"
 
-    return json.dumps(value, ensure_ascii=False)
+    return json.dumps(value, ensure_ascii=False, allow_nan=False)
 
 
 def export(data: dict, path: str | None = None) -> str:
