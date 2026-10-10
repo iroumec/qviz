@@ -44,18 +44,18 @@ def test_basic_simulator_keeps_two_qubits(basic_backend):
     assert transpiled.layout is None
 
 
-def test_ibm_heron_layout_is_compacted(heron_backend):
+def test_chip_layout_is_compacted(chip_backend):
     from backend.core.provider import provider
 
-    info = provider.detect(heron_backend)
-    transpiled = transpiler.transpile(info, heron_backend, bell())
+    info = provider.detect(chip_backend)
+    transpiled = transpiler.transpile(info, chip_backend, bell())
     assert transpiled.layout == (0, 1)
     assert {"cz", "rz", "sx", "x"} & {
         instr.operation.name for instr in transpiled.circuit.data
     }
 
 
-def test_unknown_backend_uses_fallback_basis():
+def test_backend_without_target_uses_fallback_basis():
     from backend.core.provider import provider
 
     info = provider.detect(_NoTarget())
@@ -128,6 +128,17 @@ def test_ionq_falls_back_when_remote_fails():
     assert transpiled.circuit is not None
 
 
+def test_ionq_falls_back_when_remote_payload_is_unexpected():
+    job = MagicMock()
+    job.compiled_circuit.return_value = "not a circuit"
+    backend = MagicMock()
+    backend.run.return_value = job
+
+    transpiled = transpiler.transpile(_ionq_info(), backend, bell())
+    assert transpiled.source == "qiskit"
+    backend.run.assert_called_once()
+
+
 def test_circuit_too_large_raises():
     qc = QuantumCircuit(config.MAX_QUBITS + 1)
     qc.x(0)
@@ -142,11 +153,11 @@ def test_circuit_at_the_cap_is_accepted(basic_backend):
     assert transpiled.num_qubits == config.MAX_QUBITS
 
 
-def test_backend_width_lowers_the_limit(heron_backend):
-    qc = QuantumCircuit(heron_backend.num_qubits + 1)
+def test_backend_width_lowers_the_limit(chip_backend):
+    qc = QuantumCircuit(chip_backend.num_qubits + 1)
     qc.x(0)
     with pytest.raises(CircuitTooLargeError):
-        transpiler.transpile(_info_for(heron_backend), heron_backend, qc)
+        transpiler.transpile(_info_for(chip_backend), chip_backend, qc)
 
 
 def _info_for(backend):

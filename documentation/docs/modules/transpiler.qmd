@@ -68,14 +68,13 @@ The order of the strategies is important for the platform rule of one job per
 run. The native-local strategy spends no job. The remote strategy spends the one
 job that is allowed.
 
-## The other backends {.unnumbered}
+## The local simulator {.unnumbered}
 
-For a backend that is not IonQ, one strategy is used. Note that, by default,
-`compile` only accepts the `ionq` and `local` providers, so this path is reached
-with a local simulator. The IBM, AWS and unknown providers are switched off (see
-`ENABLED_PROVIDERS` on the [configuration page](config-and-errors.qmd)), because
-the coupling map of a chip can permute the qubit labels. The transpiler keeps the
-code for them, for the case that they are enabled in the future.
+For a backend that is not IonQ, one strategy is used. `compile` only accepts the
+IonQ machines and the local simulators (see the
+[configuration page](config-and-errors.qmd)), because the coupling map of a chip
+can permute the qubit labels. This path is therefore reached with a local
+simulator.
 
 1. The circuit is transpiled with `qiskit.transpile(qc, backend=backend,
    optimization_level=1)`.

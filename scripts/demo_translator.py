@@ -20,7 +20,7 @@ def translate(qc: QuantumCircuit, entangler: str):
     transpiled = TranspiledCircuit(
         source="qiskit", num_qubits=qc.num_qubits, circuit=qc
     )
-    return translator.create(info).translate(transpiled)
+    return translator.translate(info, transpiled)
 
 
 def main() -> None:

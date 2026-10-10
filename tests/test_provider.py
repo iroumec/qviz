@@ -31,15 +31,14 @@ def test_basic_simulator_is_local(basic_backend):
     assert info.is_hardware is False
 
 
-def test_generic_backend_is_ibm(heron_backend):
-    info = provider.detect(heron_backend)
-    assert info.provider == "ibm"
-    assert info.display_name.endswith("(referencia Aria)")
+def test_a_chip_backend_is_unsupported(chip_backend):
+    info = provider.detect(chip_backend)
+    assert info.provider == "unsupported"
 
 
 def test_unknown_provider_never_raises():
     info = provider.detect(_UnknownFake())
-    assert info.provider == "unknown"
+    assert info.provider == "unsupported"
 
 
 def test_ionq_aria_uses_ms():
@@ -74,7 +73,7 @@ def test_simulator_attribute_is_preferred_over_name():
     assert info.is_hardware is True
 
 
-class _StructuralIBM:
+class _StructuralOther:
     __module__ = "some_pkg.some_module"
 
     def __init__(self) -> None:
@@ -101,8 +100,8 @@ class _IonQNoise:
         self.options = type("O", (), {"noise_model": noise_model})()
 
 
-def test_structural_detection_of_ibm():
-    assert provider.detect_provider(_StructuralIBM()) == "ibm"
+def test_structural_detection_of_a_non_ionq_machine():
+    assert provider.detect_provider(_StructuralOther()) == "unsupported"
 
 
 def test_structural_detection_of_ionq():
@@ -137,9 +136,9 @@ def test_ionq_profile_falls_back_to_the_entangler():
 
 def test_other_providers_ignore_the_name():
     # The name never selects the profile outside IonQ; the entangler does.
-    assert profiles.profile_for("ibm", "fake_forte_ideal", "ms") is profiles.ARIA
+    other = profiles.profile_for("unsupported", "fake_forte_ideal", "ms")
+    assert other is profiles.ARIA
     assert profiles.profile_for("local", "aria", "zz") is profiles.FORTE
-    assert profiles.profile_for("unknown", "ideal", "ms") is profiles.ARIA
 
 
 @pytest.mark.parametrize(

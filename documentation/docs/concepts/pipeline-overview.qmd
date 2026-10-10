@@ -16,7 +16,7 @@ QuantumCircuit + backend
 [transpiler] transpile(info, backend, qc) ──► TranspiledCircuit
         │
         ▼
-[translator] Translator.translate(...)    ──► NativeCircuit
+[translator] translator.translate(...)    ──► NativeCircuit
         │
         ▼
 [simulator]  simulate(native)             ──► SimulatedCircuit

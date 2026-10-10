@@ -87,8 +87,8 @@ def transpile(
     _check_translatable(circuit)
 
     if info.provider == "ionq":
-        return _transpile_ionq(info, backend, circuit, allow_remote=allow_remote)
-    return _transpile_generic(info, backend, circuit)
+        return _transpile_ionq(backend, circuit, allow_remote=allow_remote)
+    return _transpile_generic(backend, circuit)
 
 
 def _effective_max_qubits(backend: Any) -> int:
@@ -140,7 +140,6 @@ def _remote_native(backend: Any, circuit: QuantumCircuit) -> Any:
 
 
 def _transpile_ionq(
-    info: BackendInfo,
     backend: Any,
     circuit: QuantumCircuit,
     *,
@@ -171,8 +170,10 @@ def _transpile_ionq(
                     num_qubits=circuit.num_qubits,
                     native_ops=ops,
                 )
-            raise TranspilationError(
-                f"unexpected native payload: {type(result).__name__}"
+            logger.warning(
+                "IonQ remote native transpile returned an unexpected payload (%s); "
+                "falling back to local transpile",
+                type(result).__name__,
             )
         except Exception as exc:  # noqa: BLE001 - fall back to local transpile
             logger.warning(
@@ -184,12 +185,10 @@ def _transpile_ionq(
         logger.info("IonQ remote transpile disabled (allow_remote=False)")
 
     # Strategy 3: local standard transpile, treated like any other provider.
-    return _transpile_generic(info, backend, circuit)
+    return _transpile_generic(backend, circuit)
 
 
-def _transpile_generic(
-    info: BackendInfo, backend: Any, circuit: QuantumCircuit
-) -> TranspiledCircuit:
+def _transpile_generic(backend: Any, circuit: QuantumCircuit) -> TranspiledCircuit:
     try:
         result = qiskit_transpile(circuit, backend=backend, optimization_level=1)
     except Exception as exc:  # noqa: BLE001 - retry without coupling map

@@ -15,8 +15,8 @@ class CircuitTooLargeError(QVizError):
     """The circuit has more qubits than ``config.MAX_QUBITS``."""
 
 
-class ProviderDisabledError(QVizError):
-    """The backend belongs to a provider that is not in ``config.ENABLED_PROVIDERS``."""
+class UnsupportedProviderError(QVizError):
+    """The backend is neither an IonQ machine nor the built-in simulator."""
 
 
 class CircuitParseError(QVizError):

@@ -23,7 +23,7 @@ def _translate(qc: QuantumCircuit, entangler: str):
     transpiled = TranspiledCircuit(
         source="qiskit", num_qubits=qc.num_qubits, circuit=qc
     )
-    return translator.create(info).translate(transpiled)
+    return translator.translate(info, transpiled)
 
 
 def _assert_equivalent(qc: QuantumCircuit, entangler: str) -> None:
@@ -34,21 +34,9 @@ def _assert_equivalent(qc: QuantumCircuit, entangler: str) -> None:
 
 @pytest.mark.parametrize("entangler", ENTANGLERS)
 @pytest.mark.parametrize(
-    "gate,params",
-    [
-        ("x", 0),
-        ("y", 0),
-        ("sx", 0),
-        ("sxdg", 0),
-        ("z", 0),
-        ("s", 0),
-        ("sdg", 0),
-        ("t", 0),
-        ("tdg", 0),
-        ("h", 0),
-    ],
+    "gate", ["x", "y", "sx", "sxdg", "z", "s", "sdg", "t", "tdg", "h"]
 )
-def test_one_qubit_named_rules(gate, params, entangler):
+def test_one_qubit_named_rules(gate, entangler):
     qc = QuantumCircuit(1)
     getattr(qc, gate)(0)
     _assert_equivalent(qc, entangler)
@@ -127,7 +115,7 @@ def test_native_ops_input_is_parsed():
             {"gate": "gpi", "target": 0, "phase": 0.25},
         ),
     )
-    native = translator.create(make_info("ms")).translate(transpiled)
+    native = translator.translate(make_info("ms"), transpiled)
     assert {op.name for op in native.ops} == {"ms", "gpi"}
 
 
@@ -151,7 +139,7 @@ def _native_payload_translation(payload: list, entangler: str = "ms"):
         source="ionq-native", num_qubits=2, native_ops=tuple(payload)
     )
     info = make_info(entangler)  # type: ignore[arg-type]
-    return translator.create(info).translate(transpiled)
+    return translator.translate(info, transpiled)
 
 
 @pytest.mark.parametrize("entangler", ENTANGLERS)

@@ -16,7 +16,7 @@ simulator. It is a tool for development, not for Qollab.
 An error is ``{"error": "..."}`` with the status 400 (the request is not valid) or
 500 (something unexpected).
 
-Run with: python scripts/server.py [--port 8000] [--host 127.0.0.1]   (or: make serverr)
+Run with: python scripts/server.py [--port 8000] [--host 127.0.0.1]   (or: make server)
 """
 
 from __future__ import annotations
@@ -108,9 +108,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 def make_server(host: str = "127.0.0.1", port: int = 8000) -> ThreadingHTTPServer:
     """Return the server, not started. ``port=0`` picks a free port."""
-    handler = type(
-        "QVizHandler", (Handler,), {"backend": BasicSimulator(), "directory": None}
-    )
+    handler = type("QVizHandler", (Handler,), {"backend": BasicSimulator()})
 
     def build(*args: Any, **kwargs: Any) -> Handler:
         return handler(*args, directory=str(ROOT), **kwargs)

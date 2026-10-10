@@ -11,7 +11,7 @@ import pytest
 
 from backend import compile, export
 from backend.core import config
-from backend.core.errors import ProviderDisabledError, QVizError
+from backend.core.errors import UnsupportedProviderError, QVizError
 from tests.circuits import ALL_CIRCUITS, bell
 
 _SCHEMA_PATH = (
@@ -106,41 +106,26 @@ def test_entangler_forced_ms(basic_backend):
     assert "zz" not in operations
 
 
-def test_ibm_backend_is_compacted(all_providers, heron_backend):
-    data = compile(heron_backend, bell())
-    assert data["total_qubits"] == 2
-    assert "referencia Aria" in data["backend"]
-
-
-def test_only_ionq_and_local_are_enabled_by_default():
-    assert config.ENABLED_PROVIDERS == {"ionq", "local"}
-
-
-class _UnknownBackend:
+class _MysteryBackend:
     name = "mystery_qpu"
 
 
 @pytest.mark.parametrize("strategy", ["statevector", "tomography"])
-def test_disabled_provider_is_rejected_before_any_work(heron_backend, strategy):
-    heron_backend.run = MagicMock()
-    message = "not currently supported.*IBM"
-    with pytest.raises(ProviderDisabledError, match=message):
-        compile(heron_backend, bell(), strategy=strategy)
-    heron_backend.run.assert_not_called()
+def test_unsupported_backend_is_rejected_before_any_work(chip_backend, strategy):
+    chip_backend.run = MagicMock()
+    message = r"not currently supported \(detected: .*GenericBackendV2"
+    with pytest.raises(UnsupportedProviderError, match=message):
+        compile(chip_backend, bell(), strategy=strategy)
+    chip_backend.run.assert_not_called()
 
 
-def test_unknown_provider_is_disabled_by_default():
-    message = "not currently supported.*unrecognized"
-    with pytest.raises(ProviderDisabledError, match=message):
-        compile(_UnknownBackend(), bell())
+def test_unsupported_backend_message_names_it_and_the_supported_ones():
+    message = r"mystery_qpu \(_MysteryBackend\).*IonQ.*built-in simulator"
+    with pytest.raises(UnsupportedProviderError, match=message):
+        compile(_MysteryBackend(), bell())
 
 
-def test_a_disabled_provider_can_be_switched_on(all_providers):
-    data = compile(_UnknownBackend(), bell())
-    assert data["total_qubits"] == 2
-
-
-def test_local_and_ionq_backends_stay_enabled(basic_backend):
+def test_local_backend_is_supported(basic_backend):
     assert compile(basic_backend, bell())["total_qubits"] == 2
 
 

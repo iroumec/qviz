@@ -29,8 +29,9 @@ The file `scripts/_common.py` holds the helpers that the demos share.
 ## `demo_transpiler.py` {.unnumbered}
 
 The provider information and the transpiled circuit are printed for each local
-backend: the `BasicSimulator`, a Heron-like backend, an Eagle-like backend and a
-fake unknown backend.
+backend: the `BasicSimulator`, a 20-qubit chip with a coupling map and a fake
+backend without a target. `compile` accepts only the first one; the other two show
+how the transpiler alone behaves.
 
 ## `demo_translator.py` {.unnumbered}
 

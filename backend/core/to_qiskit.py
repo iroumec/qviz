@@ -8,6 +8,7 @@ qiskit-ionq native gates take their phases in turns, so phases are divided by
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import assert_never
 
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import RZGate
@@ -48,7 +49,7 @@ def circuit_from_ops(ops: Sequence[NativeOp], num_qubits: int) -> QuantumCircuit
             qc.append(ZZGate(op.angle), targets)
         elif op.name == "virtual_z":
             qc.append(RZGate(op.z_rotation), targets)
-        else:  # pragma: no cover - guarded by the OpName type
-            raise ValueError(f"unknown native operation {op.name!r}")
+        else:
+            assert_never(op.name)
 
     return qc

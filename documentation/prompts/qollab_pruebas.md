@@ -72,7 +72,7 @@ En Forte (ZZ) los pasos intermedios son otros (hay más `virtual_z`); solo el ú
 | Built-in | Los 10 puntos; `layered16` para los tiempos | Todo bien. |
 | IonQ Aria 2 (simulador) | 1, 2, 5, 6, 9 y 10 | Lo mismo. La primera compilación (el ejemplo del arranque) gasta el único job; los `.qasm` no. |
 | IonQ Forte 1 y Forte Enterprise 1 (simuladores) | 1, 2, 5, 6 y 9 | Lo mismo, con pasos `zz`. |
-| AWS Braket local, IBM (Boston…) | Mirar el arranque | El visor muestra `This machine is not currently supported (detected: AWS Braket). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (sin el traceback). |
+| AWS Braket local, IBM (Boston…) | Mirar el arranque | El visor muestra `This machine is not currently supported (detected: default (BraketLocalBackend)). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (sin el traceback). |
 | Hardware de IonQ | **No correr** | Gasta créditos. |
 
 Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
@@ -87,7 +87,7 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 | `No module named 'examples'` o `'backend'` | Falta una carpeta o un `__init__.py` en la subida. |
 | `api.run is undefined`, o el módulo no importa | `import * as api from "qollab_api"` no funciona. Anotá el mensaje exacto. |
 | `Map` o `{}` en vez de una lista | No debería pasar: las funciones devuelven texto. |
-| `This machine is not currently supported …` | Elegiste un backend IBM o AWS (`ProviderDisabledError`). Es lo esperado. |
+| `This machine is not currently supported …` | Elegiste un backend IBM o AWS (`UnsupportedProviderError`). Es lo esperado. |
 
 ## 4. Resultados (completar)
 
