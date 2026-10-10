@@ -75,6 +75,19 @@
   .measure-panel table { width: 100%; border-collapse: collapse; font-size: 11px; }
   .measure-panel td { padding: 1px 0; }
   .measure-panel td:first-child { color: var(--muted); white-space: nowrap; padding-right: 8px; }
+  .health { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .health .health-bar {
+    width: 170px; height: 10px; background: #101728; border: 1px solid var(--border);
+    border-radius: 5px; overflow: hidden;
+  }
+  .health .health-bar > span {
+    display: block; height: 100%; width: 100%; background: var(--y);
+    transition: width .2s ease, background .2s ease;
+  }
+  .health .health-value {
+    color: var(--text); min-width: 54px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -82,6 +95,11 @@
 <header>
   <h1>QViz · iones atrapados</h1>
   <div class="meta" id="backendMeta">cargando…</div>
+  <div class="health" id="health">
+    <span>salud del circuito</span>
+    <div class="health-bar"><span id="healthFill"></span></div>
+    <span class="health-value" id="healthValue">100.00%</span>
+  </div>
   <div class="perf" id="perfMeta"></div>
 </header>
 
@@ -375,6 +393,19 @@ function updatePerf() {
     `${data.total_qubits} qubits · ${data.steps.length} pasos · ${fpsValue.toFixed(0)} fps`;
 }
 
+// The health of the circuit is its accumulated fidelity. Step 0 is the initial
+// state, which starts at the initial fidelity of the backend.
+function updateHealth(step) {
+  if (!data) return;
+  const value = step ? step.cumulative_fidelity : data.initial_fidelity;
+  const clamped = Math.max(0, Math.min(100, value));
+  const fill = document.getElementById("healthFill");
+  fill.style.width = clamped + "%";
+  fill.style.background =
+    clamped >= 99 ? "#51cf66" : clamped >= 95 ? "#ffd166" : "#ff6b6b";
+  document.getElementById("healthValue").textContent = clamped.toFixed(2) + "%";
+}
+
 // --------------------------------------------------------------- data logic
 function initialState(n) {
   return Array.from({ length: n }, () => [0, 0, 1]);
@@ -438,6 +469,7 @@ function updateStep(index, instant) {
   }
   updateReadouts(step);
   renderDetails(step);
+  updateHealth(step);
 }
 
 function updateReadouts(step) {

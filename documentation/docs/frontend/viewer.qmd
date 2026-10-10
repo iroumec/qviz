@@ -40,6 +40,10 @@ below.
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
 - The probability `p(|1⟩)` of each qubit is shown with a small bar.
+- A **health bar** in the header shows the health of the circuit: the
+  accumulated fidelity of the current step, as a percentage. It is green above
+  99%, amber above 95%, and red below. At step 0 it shows the initial fidelity of
+  the backend.
 - The full detail of the step is shown in a side panel: the operation, the
   targets, the phases, the angle, the accumulated fidelity, the accumulated
   cost, the virtual Z rotation, the inactivity, the fidelities and the
