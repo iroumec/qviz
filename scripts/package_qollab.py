@@ -71,6 +71,16 @@ const textOf = (data) => {
   return sources.get(data);
 };
 
+// Python errors reach JS with their whole traceback. The errors of QViz are meant
+// to be read, so only their message is kept; any other error is left untouched.
+const readable = (error) => {
+  const last = String(error && error.message).trim().split("\\n").pop();
+  const prefix = "backend.core.errors.";
+  const colon = last.indexOf(": ");
+  const ours = last.startsWith(prefix) && colon > 0;
+  return ours ? new Error(last.slice(colon + 2)) : error;
+};
+
 try {
   window.QVIZ_HOST = {
     shaders: SHADERS,
@@ -78,14 +88,25 @@ try {
     // Compiles an example circuit on the backend of Qollab. IonQ allows one job
     // per run, so only the first compilation works there.
     load: async (name) => {
-      const text = await api.run.callPromising(backend, name, 1024, "auto");
+      let text;
+      try {
+        text = await api.run.callPromising(backend, name, 1024, "auto");
+      } catch (error) {
+        throw readable(error);
+      }
       const data = JSON.parse(text);
       sources.set(data, text);
       return data;
     },
     // Measures a step with the statevector of the backend; no job is sent.
-    sample: async (data, step, shots) =>
-      JSON.parse(await api.sample_step.callPromising(textOf(data), step, shots)),
+    sample: async (data, step, shots) => {
+      try {
+        const text = await api.sample_step.callPromising(textOf(data), step, shots);
+        return JSON.parse(text);
+      } catch (error) {
+        throw readable(error);
+      }
+    },
   };
 } catch (error) {
   document.getElementById("error").textContent =

@@ -35,6 +35,7 @@ These values never change. They are not configuration.
 | Parameter | Value | Meaning |
 | --- | --- | --- |
 | `ENABLED_PROVIDERS` | `{"ionq", "local"}` | The providers that `compile` accepts. See below. |
+| `PROVIDER_LABELS` | one readable name per provider | The names used in the message of a rejected backend. |
 | `MAX_QUBITS` | `16` | The hard cap on the circuit width. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
@@ -67,8 +68,11 @@ Two points are important.
   backend, and it never fails. Only `compile` applies the list, and it does so
   right after the detection, before the transpiler can spend the single IonQ job.
 - A backend of a disabled provider is rejected with `ProviderDisabledError`. The
-  message names the backend, the provider that was detected and the providers
-  that are enabled.
+  message is meant to be read by the user: `This machine is not currently
+  supported (detected: AWS Braket). Currently supported: IonQ (Aria and Forte),
+  the built-in simulator.` The names come from `config.PROVIDER_LABELS`. In
+  Qollab, the generated prelude removes the Python traceback and shows only this
+  text.
 
 In Qollab, this means that the IBM noisy simulators, the AWS Braket local
 simulator and any unrecognised backend are rejected with this error by default.

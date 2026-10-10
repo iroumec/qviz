@@ -123,13 +123,15 @@ class _UnknownBackend:
 @pytest.mark.parametrize("strategy", ["statevector", "tomography"])
 def test_disabled_provider_is_rejected_before_any_work(heron_backend, strategy):
     heron_backend.run = MagicMock()
-    with pytest.raises(ProviderDisabledError, match="'ibm'.*ENABLED_PROVIDERS"):
+    message = "not currently supported.*IBM"
+    with pytest.raises(ProviderDisabledError, match=message):
         compile(heron_backend, bell(), strategy=strategy)
     heron_backend.run.assert_not_called()
 
 
 def test_unknown_provider_is_disabled_by_default():
-    with pytest.raises(ProviderDisabledError, match="'unknown'"):
+    message = "not currently supported.*unrecognized"
+    with pytest.raises(ProviderDisabledError, match=message):
         compile(_UnknownBackend(), bell())
 
 

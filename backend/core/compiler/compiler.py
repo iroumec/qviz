@@ -44,11 +44,13 @@ def compile(  # noqa: A001 - public API name
 
     info = provider.detect(backend, entangler=entangler)
     if info.provider not in config.ENABLED_PROVIDERS:
-        enabled = ", ".join(sorted(config.ENABLED_PROVIDERS))
+        supported = ", ".join(
+            config.PROVIDER_LABELS[name] for name in sorted(config.ENABLED_PROVIDERS)
+        )
         raise ProviderDisabledError(
-            f"backend {info.name!r} was detected as provider {info.provider!r}, "
-            f"which is not enabled (enabled providers: {enabled}); "
-            "see config.ENABLED_PROVIDERS"
+            "This machine is not currently supported "
+            f"(detected: {config.PROVIDER_LABELS[info.provider]}). "
+            f"Currently supported: {supported}."
         )
     transpiled = transpiler.transpile(
         info, backend, qc, allow_remote=strategy != "tomography"

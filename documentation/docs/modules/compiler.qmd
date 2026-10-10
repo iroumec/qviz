@@ -29,7 +29,7 @@ convenience: `from backend import compile`.
 | `CircuitTooLargeError` | The circuit is wider than the effective limit (see the [configuration page](config-and-errors.qmd)). |
 | `UnsupportedOperationError` | The circuit contains an operation that cannot be shown. |
 | `TranspilationError` | The circuit cannot be transpiled. |
-| `ProviderDisabledError` | The provider of the backend is not in `config.ENABLED_PROVIDERS`. By default only `ionq` and `local` are enabled. |
+| `ProviderDisabledError` | The provider of the backend is not in `config.ENABLED_PROVIDERS`. By default only `ionq` and `local` are enabled. The message says that the machine is not currently supported and lists the supported ones. |
 | `QVizError` | An unknown strategy is requested, `shots` is not positive, or tomography is requested on hardware without `allow_paid`. |
 
 ## The steps that are performed {.unnumbered}

@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10. Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (mensaje de proveedor no soportado). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -39,6 +39,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 ## Pendientes (en orden)
 
+0. **IBM se queda cargando en Qollab** (AWS local ya da el error). Correr `make qollab-probe` con IBM Boston y pegar la consola para ver dónde se cuelga.
 1. **Subir `make qollab` (visor real) y completar la tabla de `documentation/prompts/qollab_pruebas.md` §6**: la escena 3D con three.js 0.186.1 (el visor es de r128), el tamaño dentro del iframe, Medir en el paso 4 y 7 del Bell, los simuladores de IonQ (solo la primera compilación; medir no gasta job) y los tiempos con 16 qubits.
 2. Commit y push de los cambios locales (hooks del visor, paquete de Qollab, documentación, `memory.md`) cuando el usuario lo pida.
 3. Decisión sobre la transpilación de IBM/AWS/`unknown` (opciones A, E, B en el documento de decisión; hay una pregunta preparada para el profesor). Hasta entonces siguen desactivados. Al decidir: reescribir `spec.md` §M2b, `translator.qmd`, `transpiler.qmd`.
@@ -57,6 +58,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · Probado en Qollab por el usuario: Built-in, IonQ Aria y Forte funcionan bien. Mensaje de máquina no soportada ahora formal (`PROVIDER_LABELS`) y sin traceback en el visor (prelude `readable`). Abierto: con IBM el visor queda en "loading" (no se sabe por qué; `detect` tarda ~0,1 ms en local, hace falta correr el diagnóstico con IBM Boston).
 - 2026-10-10 · Se anotó la idea de mostrar el entrelazamiento entre pares de qubits.
 - 2026-10-10 · El botón Medir del visor usa el backend vía `HOST.sample`; `make qollab` arma el visor real (44 archivos) y `make qollab-probe` el diagnóstico; página `documentation/docs/frontend/qollab.qmd`; `memory.md` (importado por `CLAUDE.md`, con la regla de actualizarlo en `AGENTS.md`) y `make resume`. Subido en el commit de esta sesión.
 - 2026-10-10 · Rangos de versiones (`f0f2785`), fix del import de `native_2q_gate` (`334b5fc`), proyecto JS único de Qollab y checks automáticos (`e3e769d`).

@@ -65,6 +65,10 @@ The prelude does three things, and then the script of the viewer runs.
 2. **The host.** It defines `window.QVIZ_HOST` with the services below. If
    Python cannot be reached, the message is shown in the `error` line of the
    viewer, and the viewer falls back to its own behavior.
+   When Python raises an error of QViz (for example, a machine that is not
+   supported), the prelude keeps only its message and drops the traceback, so
+   the `error` line shows a sentence a person can read. Any other error is shown
+   as it is.
 3. **The shaders.** `shaders/bloch.vert` and `shaders/bloch.frag` are embedded as
    strings, because the viewer cannot `fetch` them.
 

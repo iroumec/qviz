@@ -20,6 +20,15 @@ try one of them, add its name here (``"ibm"``, ``"aws"`` or ``"unknown"``). The
 provider detection itself never fails: only ``compile`` applies this list.
 """
 
+PROVIDER_LABELS: dict[Provider, str] = {
+    "ionq": "IonQ (Aria and Forte)",
+    "ibm": "IBM",
+    "aws": "AWS Braket",
+    "local": "the built-in simulator",
+    "unknown": "an unrecognized machine",
+}
+"""Readable names of the providers, used in the message of a rejected backend."""
+
 MAX_QUBITS: int = 16
 """Hard cap on the circuit width.
 
