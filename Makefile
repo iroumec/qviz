@@ -47,6 +47,9 @@ render-puml:
 server:
 	$(PY) scripts/server.py $(if $(PORT),--port $(PORT))
 
+install-requirements:
+	pip install -r requirements.txt
+
 # Git workflow makefile is included so that its targets become
 # available from the this Makefile.
 include make/Makefile.git
