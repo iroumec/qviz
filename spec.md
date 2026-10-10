@@ -84,7 +84,7 @@ Sigue el patrón actual: un paquete por módulo, `backend/core/<modulo>/<modulo>
 ```
 main.py                         # Entrada en Qollab (proyecto Python). M7
 qollab_api.py                   # Funciones que llaman las páginas JS de Qollab (devuelven texto). M7, M9
-requirements.txt                # Dependencias para Qollab. M7
+requirements.txt                # Dependencias para Qollab, iguales a las de pyproject.toml (un test lo comprueba). M7
 pyproject.toml                  # Desarrollo local (y PyPI a futuro). M0
 backend/
   __init__.py                   # API pública: compile, export, sample, __version__
@@ -315,7 +315,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 
 **Objetivo:** dejar un proyecto que se instala y testea, con la estructura de §3.2 vacía y bien cableada.
 
-- `pyproject.toml`: `requires-python = ">=3.12"`, dependencias `qiskit>=2.5.2,<3` (alineado con Qollab), `qiskit-ionq` y `numpy`, y extras `dev` = `pytest`, `jsonschema`, `flake8`, `pydocstyle` (`make lint`).
+- `pyproject.toml`: `requires-python = ">=3.12"`, dependencias `qiskit>=2.5.2,<3.0.0` (la línea que Qollab agrega solo), `qiskit-ionq>=1.0.0,<2.0.0` y `numpy>=2.0,<3.0`, y extras `dev` = `pytest`, `jsonschema`, `flake8`, `pydocstyle` (`make lint`).
 - `__init__.py` en cada paquete. Imports absolutos `backend.core...` (§3.3). Arreglar `backend/__init__.py`: hoy importa `from core.compiler import compile` y `from exporter import export`, que no resuelven, y tiene un `__main__` que no se ejecuta nunca. `show` se saca de `__all__` hasta que exista el frontend.
 - `core/model.py` (todos los dataclasses de §5.2), `core/errors.py` y `core/config.py`.
 - `tests/circuits.py` y `tests/conftest.py`.
@@ -500,7 +500,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 **Objetivo:** que funcione de verdad en la plataforma, con todos los grupos de backends.
 
 - `main.py` en la raíz (proyecto Python, porque todavía no hay frontend): arma un circuito de ejemplo, llama a `compile(backend, qc)` y hace `print(export(data))`. **Nunca `import backend`**: pisaría la variable `backend` que inyecta Qollab. Se usa `from backend import compile, export`.
-- `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip ni marcadores de entorno).
+- `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip, marcadores de entorno ni URLs; con comentarios, que Qollab admite). Qollab siempre instala Qiskit y, si el archivo no lo nombra, agrega `qiskit>=2.5.2,<3.0.0`; si lo nombra, usa la línea tal cual. El `qiskit-ionq` lo trae la plataforma con sus backends IonQ (su versión no está documentada, es anterior a 1.0.3), así que el rango pide una versión que ese paquete ya cumple y no fuerza una instalación distinta. NumPy viene con Pyodide.
 - Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). `main.py` compila un circuito de ejemplo (`circuit`: `bell`, `ghz3`, `ghz16` o `layered16`), imprime el JSON (o solo su tamaño si tiene más de 30 pasos) y mide un paso con `sample` (`step`, 0 = el último); la lógica compartida con las páginas JS está en `qollab_api.py`. El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
 
 **Validación (manual, la hace el equipo):** correr en Built-in, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". En AWS local y en un IBM con ruido tiene que aparecer `ProviderDisabledError` con un mensaje claro (están desactivados, §5.5). Los resultados se anotan en §10.
@@ -584,9 +584,9 @@ Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 
 | Paquete          | Licencia     | Uso                                                 |
 | ---------------- | ------------ | --------------------------------------------------- |
-| qiskit           | Apache-2.0   | Circuitos, transpilación, `Operator`, decomposers   |
-| qiskit-ionq      | Apache-2.0   | Backend IonQ, compuertas nativas (oráculo de tests) |
-| numpy            | BSD-3-Clause | Statevector                                         |
+| qiskit `>=2.5.2,<3.0.0`      | Apache-2.0   | Circuitos, transpilación, `Operator`, decomposers   |
+| qiskit-ionq `>=1.0.0,<2.0.0` | Apache-2.0   | Backend IonQ, compuertas nativas (oráculo de tests) |
+| numpy `>=2.0,<3.0`           | BSD-3-Clause | Statevector                                         |
 | pytest (dev)     | MIT          | Tests                                               |
 | jsonschema (dev) | MIT          | Validación del contrato                             |
 | flake8 (dev)     | MIT          | Estilo PEP 8                                        |
@@ -606,7 +606,7 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 | 2026-10-10 | IBM Berlin (ruido) | — | `fake_berlin` | Igual que Boston. |
 | 2026-10-10 | IonQ Aria 2 (sim) | — | `ionq_simulator` | `options.noise_model = "aria-2"` → entrelazador **MS**. |
 | 2026-10-10 | IonQ Forte 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-1` → entrelazador **ZZ**. |
-| 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2 y 1.1.1. Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ falla (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición. |
+| 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.1.0 y 1.1.1 (y NumPy 2.0.2). Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ no se puede transpilar (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición; `tomography.measure` lo convierte en un `TranspilationError` que lo explica. |
 | 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
 
 > **Hallazgo clave:** todos los IonQ comparten el nombre `ionq_simulator`. El nombre no dice si la máquina es Aria o Forte. La familia se lee de `backend.options.noise_model` (`aria-2`, `forte-1`, …), y `provider.native_2q_gate` la convierte en `ms`/`zz`. `provider._machine_hints` implementa esto.

@@ -102,6 +102,7 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 
 | Mensaje | Qué significa |
 |---|---|
+| `ImportError: cannot import name …` de `qiskit_ionq` u otro paquete | La versión que trae Qollab es distinta de la de desarrollo. Pegá la línea `libraries:` del registro, y probamos esa versión. |
 | `ConnectionError ... XHR is not supported` | Se llamó a Python sin `callPromising`. No debería pasar con este código: avisanos. |
 | `only one job is allowed per code run` | Se apretó Compile dos veces en IonQ, o se volvió a correr sin Stop. |
 | `No module named 'examples'` o `'backend'` | Falta una carpeta o un `__init__.py` en la subida. |

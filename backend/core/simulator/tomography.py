@@ -15,7 +15,7 @@ from qiskit import QuantumCircuit
 from qiskit import transpile as qiskit_transpile
 
 from backend.core import constants
-from backend.core.errors import QVizError
+from backend.core.errors import QVizError, TranspilationError
 from backend.core.model import (
     BackendInfo,
     NativeCircuit,
@@ -107,9 +107,16 @@ def measure(
             keys.append((k, axis))
 
     if info.provider != "ionq":
-        circuits = list(
-            qiskit_transpile(circuits, backend=backend, optimization_level=1)
-        )
+        try:
+            circuits = list(
+                qiskit_transpile(circuits, backend=backend, optimization_level=1)
+            )
+        except Exception as exc:  # noqa: BLE001 - re-raised with a hint
+            raise TranspilationError(
+                f"could not transpile the tomography circuits for this backend: "
+                f"{exc}. For a backend that is not IonQ the native gates need "
+                "qiskit-ionq 1.0.3 or newer, which gives them a definition"
+            ) from exc
 
     logger.warning(
         "tomography runs %d circuits with %d shots each", len(circuits), shots

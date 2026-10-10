@@ -105,6 +105,10 @@ that the output has the same shape.
 - On IonQ, the remote strategy of the transpiler would also spend the single
   job. The transpiler is therefore called with `allow_remote=False` when the
   tomography is used, and the local transpile strategy is taken.
+- On a backend that is not IonQ, the native gates have to be transpiled by Qiskit,
+  which needs `qiskit-ionq` 1.0.3 or newer (the older versions give the gates no
+  definition). With an older version a `TranspilationError` that says so is raised.
+  On IonQ the circuits are sent as they are, and the version does not matter.
 - The tomography is statistical. The error on each component is about
   `1 / sqrt(shots)`. A larger number of shots gives a better estimate.
 - The number of circuits grows quickly. For a circuit with many gates, the run

@@ -8,13 +8,49 @@ the documentation is built.
 | Software | Version | Why it is needed |
 | --- | --- | --- |
 | Python | 3.12 or newer | The backend is written in Python. Qollab uses 3.14. |
-| Qiskit | `>=2.5.2,<3` | Circuits, transpilation and the test oracles. |
-| qiskit-ionq | any recent version | The IonQ native gates and the IonQ backend. |
-| NumPy | 2.x | The statevector and the gate matrices. |
+| Qiskit | `>=2.5.2,<3.0.0` | Circuits, transpilation and the test oracles. This is the line that Qollab adds by itself. |
+| qiskit-ionq | `>=1.0.0,<2.0.0` | The IonQ native gates and the IonQ backend. |
+| NumPy | `>=2.0,<3.0` | The statevector and the gate matrices. |
 | Quarto | 1.4 or newer | Only for building this book. |
 
 The Python packages are declared in `pyproject.toml`. The same packages, without
-the development tools, are declared in `requirements.txt` for Qollab.
+the development tools, are declared in `requirements.txt` for Qollab, and a test
+checks that the two lists are equal.
+
+### The versions that were tested {.unnumbered}
+
+Qollab ships its own `qiskit-ionq`, and the version is not documented. The
+library does not use a function that only the newest versions have, so any
+version from 1.0.0 works. The whole test suite was run with each of the following.
+
+| qiskit-ionq | Result |
+| --- | --- |
+| 1.0.0, 1.0.1, 1.0.2 | Everything works, except the tomography on a backend that is not IonQ. The native gates of these versions have no definition, so Qiskit cannot transpile them. The tomography then raises a `TranspilationError` that says so. |
+| 1.0.3, 1.1.0, 1.1.1 | Everything works. |
+
+Qiskit 2.5.2 and NumPy 2.4.6 (and NumPy 2.0.2 with `qiskit-ionq` 1.0.0) were used.
+On Qollab, the page of the test project prints the versions that are really
+installed (see `documentation/prompts/qollab_pruebas.md`).
+
+### What Qollab installs {.unnumbered}
+
+The rules of the platform for `requirements.txt` are the following (see the
+[runtime environment](https://qollab.xyz/learn/docs/runtime-environment) page of
+Qollab).
+
+- One package per line, as `name==1.2.3` or as a range. Comments and blank lines
+  are allowed.
+- Pip options, environment markers and URL requirements are rejected.
+- Qiskit is always installed. When the file does not name it, Qollab adds
+  `qiskit>=2.5.2,<3.0.0`; when it does, the line is used as written. The line of
+  this project is the same as the default.
+- The packages that Pyodide has built (NumPy, SciPy, Matplotlib) load when they
+  are imported. A pure-Python wheel from PyPI is installed.
+- A package that needs compiled code, and has no Pyodide build, stops the run with
+  `no installable distribution for '<name>'`.
+- Qollab has no `qiskit-ionq` in its documentation, but the IonQ backends are
+  built with it. This is why its range does not ask for a newer version than the
+  platform has: a range that the installed version satisfies leaves it as it is.
 
 ## Installing the library {.unnumbered}
 

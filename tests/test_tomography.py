@@ -6,14 +6,19 @@ from unittest.mock import MagicMock
 
 import pytest
 from qiskit.providers.basic_provider import BasicSimulator
+from qiskit_ionq import GPI2Gate
 
 from backend import compile
-from backend.core.errors import QVizError
+from backend.core.errors import QVizError, TranspilationError
 from backend.core.model import BackendInfo, TranspiledCircuit
 from backend.core.provider import profiles
 from backend.core.simulator import tomography
 from backend.core.translator import translator
 from tests.circuits import bell, make_info
+
+# qiskit-ionq before 1.0.3 gives its native gates no definition, so Qiskit cannot
+# transpile them for a backend that is not IonQ.
+_NATIVE_GATES_TRANSPILE = GPI2Gate(0.1).definition is not None
 
 _SHOTS = 20000
 _TOLERANCE = 5 / (_SHOTS ** 0.5)
@@ -28,6 +33,9 @@ def _native(entangler: str = "ms"):
     return translator.create(info).translate(transpiled), info
 
 
+@pytest.mark.skipif(
+    not _NATIVE_GATES_TRANSPILE, reason="needs qiskit-ionq 1.0.3 or newer"
+)
 def test_tomography_matches_statevector():
     backend = BasicSimulator()
     backend.set_options(seed_simulator=20261010)
@@ -75,3 +83,11 @@ def test_tomography_hardware_guard():
     )
     with pytest.raises(QVizError):
         tomography.measure(native, MagicMock(), hardware_info, shots=10)
+
+
+@pytest.mark.skipif(
+    _NATIVE_GATES_TRANSPILE, reason="only an old qiskit-ionq cannot transpile them"
+)
+def test_old_qiskit_ionq_gives_a_clear_error():
+    with pytest.raises(TranspilationError, match="qiskit-ionq 1.0.3"):
+        compile(BasicSimulator(), bell(), strategy="tomography", shots=10)

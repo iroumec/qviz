@@ -1,3 +1,6 @@
+# Dependencies of QViz on Qollab. Keep them equal to pyproject.toml (a test checks it).
+# Qollab always installs Qiskit and adds the first line by itself when it is missing.
+# NumPy comes with Pyodide, and qiskit-ionq with the IonQ backends of the platform.
 qiskit>=2.5.2,<3.0.0
-qiskit-ionq
-numpy
+qiskit-ionq>=1.0.0,<2.0.0
+numpy>=2.0,<3.0
