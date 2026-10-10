@@ -1,0 +1,303 @@
+
+# ==============================================================================
+# Git Workflow
+# ==============================================================================
+#
+# This file contains the project's Git workflow.
+#
+# Why keep this in a separate file?
+# Build commands belong in the main Makefile, while version-control commands
+# belong here. This makes both files easier to read and maintain.
+#
+# Branches:
+#   main         Stable, production-ready code.
+#   development  Integration branch for the next version.
+#   feature/*    New functionality developed in isolation.
+#   release/*    Stabilisation of a version before publication.
+#   hotfix/*     Urgent fixes for an already published version.
+#
+# Usage examples:
+#   make git-init
+#   make development
+#   make feature NAME=login
+#   make finish-feature NAME=login
+#   make release VERSION=1.0.0
+#   make finish-release VERSION=1.0.0
+#   make hotfix VERSION=1.0.1
+#   make finish-hotfix VERSION=1.0.1
+#
+# Important:
+# These targets execute Git commands directly. Review the current branch and
+# working tree before using a target that merges or deletes a branch.
+# ==============================================================================
+
+.PHONY: git-init development feature finish-feature \
+        release finish-release hotfix finish-hotfix \
+        sync-main sync-development status
+
+# Suppress command echoing for all targets in this file.
+# Git's own output is still displayed.
+.SILENT:
+
+# ------------------------------------------------------------------------------
+# Repository initialisation
+# ------------------------------------------------------------------------------
+
+git-init:
+	# Rename the current branch to main.
+	# This establishes main as the stable branch of the repository.
+	git branch -M main
+
+	# Create the development branch from main.
+	# This gives the project a separate branch for ongoing development.
+	git switch -c development
+
+	# Publish both branches to the remote repository.
+	# The -u option sets the upstream branch for future pulls and pushes.
+	git push -u origin main
+	git push -u origin development
+
+
+# ------------------------------------------------------------------------------
+# Development branch
+# ------------------------------------------------------------------------------
+
+development:
+	# Switch to development.
+	# New features should start from this branch rather than main.
+	git switch development
+
+	# Update the local branch with the latest remote changes.
+	# This reduces the risk of starting work from an outdated commit.
+	git pull origin development
+
+
+# ------------------------------------------------------------------------------
+# Feature branches
+# ------------------------------------------------------------------------------
+
+feature:
+ifndef NAME
+	$(error Usage: make feature NAME=login)
+endif
+
+	# Switch to development before creating the feature branch.
+	# This ensures the feature starts from the latest integrated code.
+	git switch development
+	git pull origin development
+
+	# Create an isolated branch for the new functionality.
+	# Keeping features separate makes it easier to review and integrate changes.
+	git switch -c feature/$(NAME)
+
+	# Publish the branch so that it can be reviewed or worked on remotely.
+	git push -u origin feature/$(NAME)
+
+
+finish-feature:
+ifndef NAME
+	$(error Usage: make finish-feature NAME=login)
+endif
+
+	# Switch to development and update it before merging.
+	# This keeps the integration branch current.
+	git switch development
+	git pull origin development
+
+	# Merge the feature using a merge commit.
+	# --no-ff preserves the feature branch in the project's history.
+	git merge --no-ff feature/$(NAME)
+
+	# Publish the integrated changes.
+	git push origin development
+
+	# Remove the local feature branch after successful integration.
+	# The remote branch can be removed separately if no longer needed.
+	git branch -d feature/$(NAME)
+
+
+# ------------------------------------------------------------------------------
+# Release branches
+# ------------------------------------------------------------------------------
+
+release:
+ifndef VERSION
+	$(error Usage: make release VERSION=1.0.0)
+endif
+
+	# Start the release from development.
+	# The release branch is used to stabilise a specific version.
+	git switch development
+	git pull origin development
+
+	# Create the release branch.
+	# Only release preparation and bug fixes should be made here.
+	git switch -c release/$(VERSION)
+
+	# Publish the release branch for review and testing.
+	git push -u origin release/$(VERSION)
+
+
+finish-release:
+ifndef VERSION
+	$(error Usage: make finish-release VERSION=1.0.0)
+endif
+
+	# Switch to main and update it before publishing the release.
+	git switch main
+	git pull origin main
+
+	# Merge the release into the stable branch.
+	# --no-ff keeps the release integration visible in the history.
+	git merge --no-ff release/$(VERSION)
+
+	# Create a version tag so that the published code can be identified.
+	git tag -a v$(VERSION) -m "Release v$(VERSION)"
+
+	# Publish main and the new version tag.
+	git push origin main --tags
+
+	# Merge the release into development as well.
+	# This keeps release fixes available for future development.
+	git switch development
+	git merge --no-ff release/$(VERSION)
+	git push origin development
+
+	# Remove the local release branch after successful integration.
+	git branch -d release/$(VERSION)
+
+
+# ------------------------------------------------------------------------------
+# Hotfix branches
+# ------------------------------------------------------------------------------
+
+hotfix:
+ifndef VERSION
+	$(error Usage: make hotfix VERSION=1.0.1)
+endif
+
+	# Start the hotfix from main.
+	# A hotfix must fix the published version, not an unreleased feature.
+	git switch main
+	git pull origin main
+
+	# Create a dedicated branch for the urgent correction.
+	git switch -c hotfix/$(VERSION)
+
+	# Publish the branch so that the fix can be reviewed and tested.
+	git push -u origin hotfix/$(VERSION)
+
+
+finish-hotfix:
+ifndef VERSION
+	$(error Usage: make finish-hotfix VERSION=1.0.1)
+endif
+
+	# Switch to main and update it before merging the fix.
+	git switch main
+	git pull origin main
+
+	# Merge the hotfix into the stable branch.
+	git merge --no-ff hotfix/$(VERSION)
+
+	# Tag the new patched version.
+	git tag -a v$(VERSION) -m "Hotfix v$(VERSION)"
+
+	# Publish the hotfix and its version tag.
+	git push origin main --tags
+
+	# Merge the same fix into development.
+	# This prevents the bug from reappearing in the next release.
+	git switch development
+	git merge --no-ff hotfix/$(VERSION)
+	git push origin development
+
+	# Remove the local hotfix branch after successful integration.
+	git branch -d hotfix/$(VERSION)
+
+
+# ------------------------------------------------------------------------------
+# Synchronisation and status
+# ------------------------------------------------------------------------------
+
+sync-main:
+	# Switch to main and update it from the remote repository.
+	git switch main
+	git pull origin main
+
+
+sync-development:
+	# Switch to development and update it from the remote repository.
+	git switch development
+	git pull origin development
+
+
+status:
+	# Show the current working tree and branch information.
+	git status
+
+	# Show recent commits with a graph and branch decorations.
+	git log --oneline --graph --decorate -10
+
+# ------------------------------------------------------------------------------
+# General use
+# ------------------------------------------------------------------------------
+
+uncache:
+	git rm -r --cached .
+
+# Create a commit with a short summary and an optional detailed body.
+commit:
+ifndef MESSAGE
+	$(error Usage: make commit MESSAGE="Short summary" BODY="Detailed explanation")
+endif
+	@git add -A
+	@git commit -m "$(MESSAGE)" $(if $(BODY),-m "$(BODY)")
+
+# Create a commit opening the Git editor.
+commit-editor:
+	@git add -A
+	@git commit
+# git config --global core.editor "vim"
+
+# Show unstaged and staged changes.
+diff:
+	@git diff
+	@git diff --cached
+
+# Stage all changes without committing them.
+stage:
+	@git add -A
+
+# Unstage all staged changes.
+unstage:
+	@git restore --staged .
+
+# Amend the previous commit using the current staged changes.
+amend:
+	@git add -A
+	@git commit --amend
+
+# Show a compact history of recent commits.
+log:
+	@git log --oneline --graph --decorate --all -n 15
+
+# Push the current branch to its corresponding remote branch.
+push:
+	@git push -u origin $$(git branch --show-current)
+
+# Pull the current branch using fast-forward updates only.
+pull:
+	@git pull --ff-only
+
+# Fetch changes from the remote without modifying the working tree.
+fetch:
+	@git fetch --all --prune
+
+# Show files changed in the most recent commit.
+show-last:
+	@git show --stat --oneline HEAD
+
+# Remove untracked files and directories.
+clean-git:
+	@git clean -nd

@@ -1,0 +1,24 @@
+' ===========================================================================
+' Shared rendering style for every diagram in this folder.
+'
+' Monochrome style.
+' ===========================================================================
+
+skinparam monochrome true
+
+skinparam backgroundColor       #FFFFFF
+skinparam shadowing             false
+skinparam roundcorner           0
+skinparam defaultFontName       Helvetica
+skinparam defaultFontSize       12
+skinparam ArrowFontSize         11
+skinparam ParticipantFontSize   12
+skinparam NoteFontSize          11
+skinparam TitleFontSize         15
+skinparam LegendFontSize        11
+skinparam GroupFontSize         11
+
+' Thin, crisp strokes.
+skinparam ArrowThickness        1
+skinparam ParticipantBorderThickness 1
+skinparam LifeLineThickness     1

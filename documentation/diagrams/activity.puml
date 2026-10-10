@@ -1,0 +1,31 @@
+@startuml "Activity Diagram"
+
+!include style.puml
+
+start
+
+:Quantum Circuit; <<object>>
+
+:Transpiler;
+
+:Transpiled Quantum Circuit; <<object>>
+
+:Normalizer/Translator;
+
+:IonQ Transpiled Quantum Circuit; <<object>>
+
+:State Calculator / Simulator;
+
+:Simulated Circuit (angles); <<object>>
+
+:Vectorizer;
+
+:Vectorized Circuit (vectors instead of angles); <<object>>
+
+:Formatter;
+
+:JSON; <<object>>
+
+stop
+
+@enduml
