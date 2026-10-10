@@ -97,10 +97,37 @@ The 2D viewer also works when it is opened directly as a file.
 | Play / Pause | Plays the steps automatically, or pauses. |
 | Right arrow | Moves to the next step. |
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
+| Medir | Measures the current step and shows the distribution of the results. |
+| shots | The number of shots used by Medir (1024 by default). |
 
 Step 0 is the initial state, in which every qubit is in `|0⟩`. It is not part of
 the JSON; it is added by the viewer, in the same way as the frontend is expected
 to do.
+
+## The measurement {.unnumbered}
+
+The `Medir` button draws a number of shots from the probabilities of the current
+step, and shows the distribution of the resulting bitstrings. The measurement is
+done in the browser, from the fields of the JSON, so no job is sent to a
+backend.
+
+The fidelity of each qubit is taken into account. The probability `p` of a qubit
+is pulled towards `0.5` by its fidelity `f`:
+
+$$
+p' = 0.5 + (p - 0.5) \cdot f.
+$$
+
+At `f = 1` the probability is unchanged. At `f = 0` the qubit is fully random.
+This is the same as a readout error of `(1 - f) / 2`. A noisier qubit therefore
+gives a flatter distribution.
+
+One limitation is worth noting. The JSON contains only the **reduced** (marginal)
+probability of each qubit. The shots are therefore drawn **independently** on
+every qubit, and the correlations of an entangled state are not reproduced. For
+example, the two Bell outcomes `00` and `11` are not separated from `01` and
+`10` by this simple model. When an entangled qubit is measured, the panel says
+so.
 
 ## How the animation works {.unnumbered}
 

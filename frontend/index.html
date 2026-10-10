@@ -52,6 +52,29 @@
   .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
   .drop { outline: 2px dashed var(--accent); outline-offset: -8px; }
   .error { color: var(--x); font-size: 13px; padding: 0 20px; }
+  #shots {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 8px; width: 84px; font-size: 13px;
+  }
+  .measure-panel {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    width: 330px; max-height: calc(100% - 24px); overflow: auto;
+    background: rgba(19, 26, 43, 0.97); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 12px; font-size: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  }
+  .measure-panel.hidden { display: none; }
+  .measure-panel h2 { font-size: 13px; margin: 0 0 6px; }
+  .measure-panel .close { float: right; padding: 2px 8px; }
+  .measure-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+  .measure-row .bits { font-family: ui-monospace, monospace; letter-spacing: 1px; }
+  .measure-row .bar { flex: 1; height: 8px; background: #101728; border-radius: 4px; overflow: hidden; }
+  .measure-row .bar > span { display: block; height: 100%; background: var(--accent); }
+  .measure-row .pct { width: 48px; text-align: right; color: var(--muted); }
+  .measure-panel hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+  .measure-panel table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .measure-panel td { padding: 1px 0; }
+  .measure-panel td:first-child { color: var(--muted); white-space: nowrap; padding-right: 8px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -68,6 +91,8 @@
   <button id="prev">&larr;</button>
   <button id="play">Play</button>
   <button id="next">&rarr;</button>
+  <button id="measure">Medir</button>
+  <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
   <input type="range" id="slider" min="0" max="0" value="0" />
   <span class="step-label" id="stepLabel">paso 0 / 0</span>
 </div>
@@ -77,6 +102,7 @@
   <section class="stage-wrap">
     <div class="readouts" id="readouts"></div>
     <div id="stage"></div>
+    <div class="measure-panel hidden" id="measurePanel"></div>
     <legend>
       <span><i style="background:#ff6b6b"></i>x</span>
       <span><i style="background:#4dabf7"></i>z (|0⟩ arriba)</span>
@@ -393,6 +419,7 @@ function buildReadouts(n) {
 
 function updateStep(index, instant) {
   if (!data) return;
+  closeMeasurement();
   stepIndex = Math.max(0, Math.min(data.steps.length, index));
   document.getElementById("slider").value = String(stepIndex);
   document.getElementById("stepLabel").textContent =
@@ -442,6 +469,97 @@ function renderDetails(step) {
   rows.push(["vibración", "[" + step.vibration.map((v) => v.toFixed(3)).join(", ") + "]"]);
   aside.innerHTML = "<h2>Detalle del paso</h2><table>" +
     rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("") + "</table>";
+}
+
+// ------------------------------------------------------------ measurement
+// The JSON only gives the per-qubit (reduced) probabilities and the per-qubit
+// fidelity. A measurement is therefore sampled independently on every qubit.
+// The fidelity is used as a readout error: the probability is pulled towards
+// 0.5 by the factor f, so a noisier qubit gives a flatter distribution.
+function closeMeasurement() {
+  document.getElementById("measurePanel").classList.add("hidden");
+}
+
+function runMeasurement() {
+  if (!data) return;
+  const shots = Math.max(
+    1, Math.min(100000, Math.round(Number(document.getElementById("shots").value) || 1024))
+  );
+  const n = data.total_qubits;
+  const step = stepIndex === 0 ? null : data.steps[stepIndex - 1];
+
+  const p1 = [];
+  const fidelity = [];
+  const radius = [];
+  for (let q = 0; q < n; q++) {
+    const base = step ? step.probabilities[q][1] : 0;
+    const f = step ? step.fidelities[q] / 100 : 1;
+    p1.push(0.5 + (base - 0.5) * f);
+    fidelity.push(f);
+    const state = step ? step.states[q] : [0, 0, 1];
+    radius.push(Math.hypot(state[0], state[1], state[2]));
+  }
+
+  const counts = new Map();
+  const ones = new Array(n).fill(0);
+  for (let shot = 0; shot < shots; shot++) {
+    const bits = new Array(n);
+    for (let q = 0; q < n; q++) {
+      const bit = Math.random() < p1[q] ? 1 : 0;
+      bits[q] = bit;
+      ones[q] += bit;
+    }
+    // Little-endian: qubit 0 is the rightmost character.
+    const key = bits.slice().reverse().join("");
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, stepIndex);
+}
+
+function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step) {
+  const top = sorted.slice(0, 15);
+  const rows = top
+    .map(([bits, count]) => {
+      const pct = (100 * count) / shots;
+      return (
+        `<div class="measure-row"><span class="bits">${bits}</span>` +
+        `<div class="bar"><span style="width:${pct.toFixed(1)}%"></span></div>` +
+        `<span class="pct">${pct.toFixed(1)}%</span></div>`
+      );
+    })
+    .join("");
+
+  const qubitRows = [];
+  for (let q = 0; q < n; q++) {
+    const measured = ones[q] / shots;
+    qubitRows.push(
+      `<tr><td>q${q}</td><td>p(|1⟩) ajustado ${p1[q].toFixed(3)} · ` +
+        `medido ${measured.toFixed(3)} · fid ${(100 * fidelity[q]).toFixed(2)}%</td></tr>`
+    );
+  }
+
+  const entangled = radius.some((r) => r < 0.999);
+  const note = entangled
+    ? '<p class="hint">Hay qubits entrelazados. El JSON solo trae las probabilidades ' +
+      "marginales, así que el muestreo es independiente y no reproduce las " +
+      "correlaciones del entrelazamiento.</p>"
+    : "";
+
+  document.getElementById("measurePanel").innerHTML =
+    `<button class="close" id="measureClose">Cerrar</button>` +
+    `<h2>Medición · paso ${step} · ${shots} shots</h2>` +
+    `<p class="hint">La probabilidad se corrige con la fidelidad: ` +
+    `p → 0.5 + (p − 0.5)·f.</p>` +
+    `<div>${rows}</div>` +
+    (sorted.length > top.length
+      ? `<p class="hint">… y ${sorted.length - top.length} resultados más.</p>`
+      : "") +
+    `<hr /><table>${qubitRows.join("")}</table>` +
+    note;
+
+  document.getElementById("measurePanel").classList.remove("hidden");
+  document.getElementById("measureClose").addEventListener("click", closeMeasurement);
 }
 
 // --------------------------------------------------- generated JSON loading
@@ -506,6 +624,7 @@ document.getElementById("prev").addEventListener("click", () => { stopPlay(); up
 document.getElementById("next").addEventListener("click", () => { stopPlay(); updateStep(stepIndex + 1); });
 document.getElementById("play").addEventListener("click", () => { playing ? stopPlay() : startPlay(); });
 document.getElementById("slider").addEventListener("input", (e) => { stopPlay(); updateStep(Number(e.target.value)); });
+document.getElementById("measure").addEventListener("click", runMeasurement);
 
 document.addEventListener("dragover", (e) => { e.preventDefault(); document.body.classList.add("drop"); });
 document.addEventListener("dragleave", () => document.body.classList.remove("drop"));
