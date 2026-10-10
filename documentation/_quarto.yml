@@ -8,48 +8,48 @@ book:
   search: true
   chapters:
     - index.qmd
-    - documentation/docs/index.qmd
+    - docs/index.qmd
     - part: "Introduction"
       chapters:
-        - documentation/docs/concepts/motivation.qmd
+        - docs/concepts/motivation.qmd
     - part: "Getting started"
       chapters:
-        - documentation/docs/getting-started/installation.qmd
-        - documentation/docs/getting-started/quickstart.qmd
-        - documentation/docs/getting-started/tests-and-demos.qmd
+        - docs/getting-started/installation.qmd
+        - docs/getting-started/quickstart.qmd
+        - docs/getting-started/tests-and-demos.qmd
     - part: "Core concepts"
       chapters:
-        - documentation/docs/concepts/pipeline-overview.qmd
-        - documentation/docs/concepts/units-and-conventions.qmd
-        - documentation/docs/concepts/json-contract.qmd
+        - docs/concepts/pipeline-overview.qmd
+        - docs/concepts/units-and-conventions.qmd
+        - docs/concepts/json-contract.qmd
     - part: "Backend modules"
       chapters:
-        - documentation/docs/modules/config-and-errors.qmd
-        - documentation/docs/modules/model.qmd
-        - documentation/docs/modules/provider.qmd
-        - documentation/docs/modules/transpiler.qmd
-        - documentation/docs/modules/translator.qmd
-        - documentation/docs/modules/to-qiskit.qmd
-        - documentation/docs/modules/sampler.qmd
-        - documentation/docs/modules/simulator.qmd
-        - documentation/docs/modules/vectorizer.qmd
-        - documentation/docs/modules/metrics.qmd
-        - documentation/docs/modules/formatter-and-exporter.qmd
-        - documentation/docs/modules/compiler.qmd
-        - documentation/docs/modules/tomography.qmd
+        - docs/modules/config-and-errors.qmd
+        - docs/modules/model.qmd
+        - docs/modules/provider.qmd
+        - docs/modules/transpiler.qmd
+        - docs/modules/translator.qmd
+        - docs/modules/to-qiskit.qmd
+        - docs/modules/sampler.qmd
+        - docs/modules/simulator.qmd
+        - docs/modules/vectorizer.qmd
+        - docs/modules/metrics.qmd
+        - docs/modules/formatter-and-exporter.qmd
+        - docs/modules/compiler.qmd
+        - docs/modules/tomography.qmd
     - part: "Examples"
       chapters:
-        - documentation/docs/examples/qft-adder.qmd
-        - documentation/docs/examples/performance.qmd
+        - docs/examples/qft-adder.qmd
+        - docs/examples/performance.qmd
     - part: "Frontend"
       chapters:
-        - documentation/docs/frontend/viewer.qmd
-        - documentation/docs/frontend/qollab.qmd
+        - docs/frontend/viewer.qmd
+        - docs/frontend/qollab.qmd
     - part: "Development"
       chapters:
-        - documentation/docs/development/tests.qmd
-        - documentation/docs/development/demos.qmd
-        - documentation/docs/development/style-and-conventions.qmd
+        - docs/development/tests.qmd
+        - docs/development/demos.qmd
+        - docs/development/style-and-conventions.qmd
 
 bibliography: references.bib
 

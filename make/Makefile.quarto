@@ -1,45 +1,47 @@
+# Build the Quarto book that lives in the documentation folder.
+#
+# The project root (this repository) is the working directory, so every recipe
+# enters `$(DOCS)` before calling Quarto. The file `documentation/_quarto.yml`
+# configures the book.
+
 QUARTO ?= quarto
-PYTHON ?= python3
+DOCS ?= documentation
 PREVIEW_PORT ?= 4321
 PREVIEW_ARGS ?= --no-browser --port $(PREVIEW_PORT)
 
-.PHONY: all render html pdf preview check clean help crosswords
+.PHONY: all render html pdf-typst preview check clean help
 
 all: render
 
-## render: render every format configured in _quarto.yml
+## render: render every format configured in documentation/_quarto.yml
 render:
-	$(QUARTO) render
+	cd $(DOCS) && $(QUARTO) render
 
-## html: render the web/PDF-prep output only
+## html: render the HTML book only
 html:
-	$(QUARTO) render --to html
+	cd $(DOCS) && $(QUARTO) render --to html
 
-## pdf-latex: render the LaTeX PDF (not recommended).
-pdf-latex:
-	$(QUARTO) render --to pdf
-
-## pdf-typst: render the Typst PDF (highly recommended).
+## pdf-typst: render the PDF with Typst
 pdf-typst:
-	$(QUARTO) render --to typst
+	cd $(DOCS) && $(QUARTO) render --to typst
 
 ## preview: serve the book and re-render changed chapters on save
 preview:
-	$(QUARTO) preview $(PREVIEW_ARGS)
+	cd $(DOCS) && $(QUARTO) preview $(PREVIEW_ARGS)
 
-## check: verify the Quarto/Python toolchain
+## check: verify the Quarto toolchain
 check:
 	$(QUARTO) check
 
-## clean: remove all build output
+## clean: remove all the build output of the documentation
 clean:
-	rm -rf _book .quarto
-	find . -name '.jupyter_cache' -type d -prune -exec rm -rf {} +
-	find . -name '*_files' -type d -prune -exec rm -rf {} +
+	rm -rf $(DOCS)/_book $(DOCS)/.quarto
+	find $(DOCS) -name '.jupyter_cache' -type d -prune -exec rm -rf {} +
+	find $(DOCS) -name '*_files' -type d -prune -exec rm -rf {} +
 
 ## help: list available targets
 help:
-	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/^## //'
+	@grep -h -E '^## ' $(MAKEFILE_LIST) | sed 's/^## //'
 
-# Specific file:
-# quarto render path/to/file.qmd
+# A single chapter can also be rendered directly, for example:
+# quarto render documentation/docs/index.qmd

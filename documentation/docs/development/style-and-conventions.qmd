@@ -10,6 +10,12 @@ main.py                     Entry point for Qollab.
 qollab_api.py               The functions that Qollab pages call (they return text).
 requirements.txt            Dependencies for Qollab.
 pyproject.toml              Local development and packaging.
+Makefile                    The build and the convenience targets.
+make/                       The makefiles that the Makefile includes.
+  Makefile.git              The branch workflow.
+  Makefile.quarto           The build of this book.
+.flake8                     The style rules of flake8.
+.github/workflows/ci.yml    The continuous integration (lint and tests).
 backend/                    The library.
   __init__.py               The public API: compile, export, __version__.
   core/
@@ -30,9 +36,15 @@ backend/                    The library.
     exporter/               The JSON serialization.
 tests/                      The pytest suite.
 examples/                   Worked circuits (for example the QFT adder).
-scripts/                    The demo scripts.
-frontend/                   The basic 3D viewer.
+scripts/                    The demo scripts and the generator of the files of out/.
+frontend/                   The viewers (index.html, viewer3d.html, viewer.html).
+shaders/                    The volumetric shaders of the spheres.
 documentation/              The specification, the schema and this book.
+  _quarto.yml               The configuration of this book.
+  index.qmd                 The preface.
+  docs/                     The chapters of this book.
+  diagrams/                 The PlantUML diagrams and their SVG renders.
+  schema/                   The JSON schema of the contract.
 ```
 
 ## One module per package {.unnumbered}

@@ -51,7 +51,7 @@ server:
 
 # Git workflow makefile is included so that its targets become
 # available from the this Makefile.
-include Makefile.git
+include make/Makefile.git
 
 # Quarto.
-include Makefile.quarto
+include make/Makefile.quarto

@@ -1,13 +1,15 @@
+# Python
 .venv/
-.commit.md
 __pycache__/
-.pytest_cache
+*.egg-info/
+.pytest_cache/
+
+# Generated output
 out/
 qollab/
-*.egg-info/
 _book/
 .quarto/
-.quarto
-/.quarto/
-**/*.quarto_ipynb
-_book/
+*.quarto_ipynb
+
+# Local notes
+.commit.md

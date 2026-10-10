@@ -118,7 +118,7 @@ Entorno local: Python 3.14 (igual que Qollab) y Qiskit `>=2.5.2,<3`.
 
 ## 6. Git
 
-- Flujo de `Makefile.git`: `main` (estable), `development` (integración) y `feature/<modulo>` por módulo (`make feature NAME=translator`).
+- Flujo de `make/Makefile.git`: `main` (estable), `development` (integración) y `feature/<modulo>` por módulo (`make feature NAME=translator`).
 - **No hagas commit, push ni merge si el equipo no lo pide.** Nunca `--no-verify` ni force-push.
 - Mensajes de commit en inglés: un resumen corto en la primera línea y, si hace falta, un cuerpo con viñetas, como en el historial.
 

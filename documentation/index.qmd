@@ -8,7 +8,7 @@ then draws the ions as Bloch spheres.
 The purpose is **pedagogical**. There is a gap between the logical gates of a
 circuit and the native gates that the machine really runs. By showing every
 native gate and the state of every ion, the gap is closed, and the physics of
-each gate can be explained. See [Why QViz](documentation/docs/concepts/motivation.qmd).
+each gate can be explained. See [Why QViz](docs/concepts/motivation.qmd).
 
 This book is the documentation of the **backend** (Python). The frontend is
 described briefly, because a small viewer is included, but the main subject is
@@ -29,5 +29,5 @@ The pages are grouped as follows.
 - **Development** explains the tests, the demo scripts and the style rules.
 
 The complete rendered book can be built with Quarto. See
-[Installation](documentation/docs/getting-started/installation.qmd) for the
+[Installation](docs/getting-started/installation.qmd) for the
 commands.
