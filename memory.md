@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (M10: carga de circuitos OpenQASM 2/3 sobre el visor modular, sin JSON; sin pushear). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (M10: carga de circuitos OpenQASM 2/3 sobre el visor modular, sin JSON). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -10,6 +10,7 @@
 make resume            # rama, commits, cambios sin subir y los pendientes de este archivo
 make test && make lint # tiene que estar todo verde (algunos tests se saltan según el entorno)
 make qollab            # arma qollab/ (el visor real) para subir a Qollab; make qollab-probe = diagnóstico
+make serve             # el visor en local con compilador de .qasm (scripts/serve.py), sin Qollab
 ```
 
 1. Hacé `git fetch` y `git pull --rebase origin development` y mirá qué trajo el equipo antes de tocar nada.
@@ -62,6 +63,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · `make serve` (`scripts/serve.py`): servidor local del visor con `POST /api/compile` (usa `qollab_api.run_qasm` sobre el simulador integrado); sin `HOST.compileQasm` el visor llama a ese servicio (`COMPILE_URL` en `frontend/js/config.js`). Tests en `tests/test_serve.py`.
 - 2026-10-10 · Visor modular: `frontend/index.html` queda solo con HTML y CSS, y el JS se divide en módulos ES en `frontend/js/` (config, state, utils, demo, shaders, three-addons, laser, scene, panels, data, controls, main). Los addons de three y el respaldo pasan a `js/three-addons.js`. `package_qollab.py` ahora copia los módulos y genera `main.js` = preludio + `import("./js/main.js")`; tests y docs actualizados. Verificado con un harness headless (DOM y `three` stubeados) y con `make test`/`make lint` en verde.
 - 2026-10-10 · M10: `backend/core/importer` (`load_circuit`, `CircuitParseError`, `config.MAX_QASM_CHARS`), `compile(allow_remote=)`, `qollab_api.run_qasm`, `HOST.compileQasm`, botón "Cargar circuito" en los módulos `frontend/js/` (aprobado; se quitó la carga de JSON), compuertas sin definición/`opaque`/subrutinas con error descriptivo (`transpiler._check_translatable`, `importer._explain`), botón 4 de la sonda, `qiskit-qasm3-import>=0.6,<1.0` en `pyproject.toml`/`requirements.txt`, ejemplos `.qasm`, docs (`spec.md` M10, `importer.qmd`). El paquete de Qollab pasó a 62 archivos (sonda: 49). Se rebasó sobre el commit "Frontend refactorized". Falta probar en Qollab.
 - 2026-10-10 · Pull de `development` (CI, `documentation/`, láser con lentes y three 0.160 con import map en el visor). Eso rompía `make qollab`: `package_qollab.py` ahora acepta `<script type="module">`, quita los `import` del visor y los pone en el preludio (addons con `import()` dinámico y respaldo), embebe los shaders de la lente y el OBJ/MTL (`HOST.shaders.lensVert/lensFrag`, `HOST.laser`) y ya no fuerza el color lineal de r128. Hooks mínimos en `loadLaserModel` del visor (aprobados por el usuario). Sin commitear; falta probar en Qollab.

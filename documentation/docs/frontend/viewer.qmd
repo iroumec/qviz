@@ -67,9 +67,11 @@ metrics) before it can be shown. There are three ways to see a circuit.
    (`.qasm`) is chosen, compiled by the backend and added to the selector.
 3. **Drag and drop.** The same file is dropped anywhere on the page.
 
-Loading a circuit needs Python to compile it, so it works in Qollab
-(`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Served alone, the viewer
-says so and only shows the examples.
+Loading a circuit needs Python to compile it. In Qollab, the page calls the
+platform (`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Locally, run the
+server of the project, which compiles with the same code on the built-in
+simulator (see below). With a plain `python -m http.server` the viewer shows the
+examples, and loading a circuit says that the server cannot compile.
 
 A JSON file can be produced with the generator, which also writes the manifest.
 
@@ -86,9 +88,18 @@ files can be read.
 
 ```bash
 make outputs
-python -m http.server 8000
+make serve            # or: make serve PORT=9000
 # then open http://localhost:8000/frontend/index.html
 ```
+
+`make serve` runs `scripts/serve.py`. It serves the repository like
+`python -m http.server`, and it adds `POST /api/compile`: the body is the OpenQASM
+text, the optional query has `shots` and `entangler` (`auto`, `ms` or `zz`), and
+the reply is the JSON of the visualization. It calls `qollab_api.run_qasm`, so the
+result is what Qollab gives, except that the machine is always the built-in
+simulator. A circuit that cannot be compiled answers `400` with
+`{"error": "..."}`, which the viewer shows in its error line. The server listens
+on `127.0.0.1` only, and it asks the browser not to cache.
 
 ## The controls {.unnumbered}
 

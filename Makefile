@@ -4,7 +4,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint demo outputs qollab qollab-probe resume render-puml install-plantuml
+.PHONY: venv install test lint demo outputs qollab qollab-probe serve server resume render-puml install-plantuml
 
 venv:
 	python3 -m venv $(VENV)
@@ -46,8 +46,11 @@ install-plantuml:
 render-puml:
 	plantuml -tsvg -o svg $(PUML_DIR)/*.puml
 
-server:
-	python3 -m http.server 8000
+# The viewer with a compiler for OpenQASM circuits (scripts/serve.py); PORT=9000 to change the port.
+serve:
+	$(PY) scripts/serve.py $(if $(PORT),--port $(PORT))
+
+server: serve
 
 # Git workflow makefile is included so that its targets become
 # available from the this Makefile.

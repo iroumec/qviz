@@ -108,6 +108,7 @@ make demo M=translator   # corre scripts/demo_translator.py
 make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
 make qollab-probe  # lo mismo con la página de diagnóstico
 make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
+make serve         # el visor en http://localhost:8000 con un compilador de circuitos OpenQASM (PORT=9000 cambia el puerto)
 ```
 
 (Se crean en M0. Hasta entonces, `python -m pytest`.)

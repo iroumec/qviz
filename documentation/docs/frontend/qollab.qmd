@@ -88,7 +88,7 @@ a field is missing, the viewer does what it always did.
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |
 | `sample` | `async (data, step, shots) -> [[bitstring, count], …]` | Measures with the backend. |
-| `compileQasm` | `async (text) -> object` | Compiles a circuit written in OpenQASM 2 or 3 (`qollab_api.run_qasm`, without the IonQ job). It is how the user loads a circuit: the button *Cargar circuito* and dropping a `.qasm` file both call it, and the circuit becomes a new entry of the selector. The viewer no longer loads JSON files; without this hook it says that compiling needs Python. |
+| `compileQasm` | `async (text) -> object` | Compiles a circuit written in OpenQASM 2 or 3 (`qollab_api.run_qasm`, without the IonQ job). It is how the user loads a circuit: the button *Cargar circuito* and dropping a `.qasm` file both call it, and the circuit becomes a new entry of the selector. The viewer no longer loads JSON files; without this hook it asks the local server (`make serve`). |
 
 The test `test_every_service_of_the_prelude_is_used_by_the_viewer` fails if the
 prelude defines a service that the viewer does not read. **To add a service:**

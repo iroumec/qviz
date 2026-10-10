@@ -9,8 +9,8 @@
 //   load     async (file) -> object            the JSON of a selector entry
 //   sample   async (data, step, shots) -> [[bitstring, count], ...]
 //   compileQasm async (text) -> object        compiles a circuit written in OpenQASM;
-//            it is how the user loads a circuit, so without it the viewer can only
-//            show the entries of the selector
+//            it is how the user loads a circuit. Without it, the viewer asks the
+//            server of scripts/serve.py (COMPILE_URL)
 
 export const HOST = window.QVIZ_HOST || {};
 
@@ -24,6 +24,8 @@ export const LENS_FRAG_URL = "../shaders/lens.frag";
 
 export const MANIFEST_URL = "../out/manifest.json";
 export const OUT_URL = "../out/";
+
+export const COMPILE_URL = "../api/compile";
 
 export const OBJ_URL = "../models/laser_lens.obj";
 export const MTL_URL = "../models/laser_lens.mtl";

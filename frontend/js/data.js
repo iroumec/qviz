@@ -1,7 +1,7 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { COMPILE_URL, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
 import { escapeHtml, setError } from "./utils.js";
@@ -42,18 +42,33 @@ export function loadData(obj) {
 /** The circuits that the user loaded, by selector key, to show them again. */
 const userCircuits = new Map();
 
-/** Compile a circuit file (OpenQASM 2 or 3) with the host and show it. */
-export async function loadCircuitFile(file) {
-  if (!HOST.compileQasm) {
-    setError(
-      "Cargar un circuito necesita Python para compilarlo (Qollab). " +
-      "Sin Qollab solo se pueden ver los ejemplos de la lista."
-    );
-    return;
+/**
+ * Compile an OpenQASM text on the server of scripts/serve.py. The viewer uses it
+ * when the host (Qollab) gives no compiler, so it needs Python on the server.
+ */
+async function compileOverHttp(text) {
+  let response;
+  try {
+    response = await fetch(COMPILE_URL, { method: "POST", body: text });
+  } catch (error) {
+    throw new Error("no hay conexión con el servidor. Usá `make serve`.");
   }
+  if ([404, 405, 501].includes(response.status)) {
+    throw new Error(
+      "este servidor no compila circuitos (sin Python). Usá `make serve` o Qollab."
+    );
+  }
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error || "error " + response.status);
+  return body;
+}
+
+/** Compile a circuit file (OpenQASM 2 or 3) and show it. */
+export async function loadCircuitFile(file) {
   setError("Compilando " + file.name + "…");
   try {
-    const compiled = await HOST.compileQasm(await file.text());
+    const compile = HOST.compileQasm || compileOverHttp;
+    const compiled = await compile(await file.text());
     const key = "file:" + file.name;
     userCircuits.set(key, compiled);
     const select = document.getElementById("fileSelect");
