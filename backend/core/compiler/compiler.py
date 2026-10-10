@@ -30,12 +30,16 @@ def compile(  # noqa: A001 - public API name
     strategy: Strategy = "statevector",
     shots: int = 1024,
     allow_paid: bool = False,
+    allow_remote: bool = True,
 ) -> dict:
     """Run the whole pipeline and return the JSON-ready visualization dict.
 
     The arguments are validated before anything else, so that a typo never
     spends the single IonQ job allowed per run. A backend of a provider that is
     not in ``config.ENABLED_PROVIDERS`` is rejected before any transpilation.
+
+    ``allow_remote=False`` never sends the IonQ dry-run job (the circuit is
+    transpiled locally), so any number of circuits can be compiled in one run.
     """
     if strategy not in ("statevector", "tomography"):
         raise QVizError(f"unknown strategy {strategy!r}")
@@ -53,7 +57,7 @@ def compile(  # noqa: A001 - public API name
             f"Currently supported: {supported}."
         )
     transpiled = transpiler.transpile(
-        info, backend, qc, allow_remote=strategy != "tomography"
+        info, backend, qc, allow_remote=allow_remote and strategy != "tomography"
     )
     native = translator.create(info).translate(transpiled)
 

@@ -18,7 +18,7 @@ from typing import Any
 
 from qiskit import QuantumCircuit
 
-from backend import compile, export, sample
+from backend import compile, export, load_circuit, sample
 from backend.core.errors import QVizError
 from backend.core.model import Entangler
 from examples import ghz, layered
@@ -87,7 +87,14 @@ def versions() -> str:
     development; the test page prints this at the start.
     """
     found = {}
-    for name in ("qiskit", "qiskit-ionq", "numpy"):
+    for name in (
+        "qiskit",
+        "qiskit-ionq",
+        "numpy",
+        "qiskit-qasm3-import",
+        "openqasm3",
+        "antlr4-python3-runtime",
+    ):
         try:
             found[name] = metadata.version(name)
         except metadata.PackageNotFoundError:
@@ -104,6 +111,24 @@ def run(
         build_circuit(circuit),
         entangler=parse_entangler(entangler),
         shots=int(shots),
+    )
+    return export(data)
+
+
+def run_qasm(
+    backend: Any, qasm: str, shots: int = 1024, entangler: str = "auto"
+) -> str:
+    """Compile a circuit written in OpenQASM 2 or 3 and return the JSON text.
+
+    The circuit is transpiled locally (``allow_remote=False``): it never sends
+    the IonQ job, so any number of files can be loaded in one run.
+    """
+    data = compile(
+        backend,
+        load_circuit(qasm),
+        entangler=parse_entangler(entangler),
+        shots=int(shots),
+        allow_remote=False,
     )
     return export(data)
 

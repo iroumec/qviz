@@ -38,7 +38,7 @@ backend/          la biblioteca
 examples/         los circuitos de ejemplo
 ```
 
-`make qollab` arma el visor (44 archivos) y `make qollab-probe` la página de diagnóstico (43), que es la de las secciones 3 a 5.
+`make qollab` arma el visor (50 archivos) y `make qollab-probe` la página de diagnóstico (49), que es la de las secciones 3 a 5.
 
 Subí el **contenido** de `qollab/` (no la carpeta misma), de modo que `index.html` y `main.js` queden en la raíz del proyecto. Se puede subir una y otra vez sobre el mismo proyecto de Qollab: después de cambiar algo en el repositorio, `make qollab` y volver a subir.
 
@@ -142,10 +142,12 @@ Subí el contenido de `qollab/` sobre el mismo proyecto, elegí Built-in y apret
 | 6 | **Medir** con el Bell en el paso 4 | `01` y `10` cerca de 50 % cada uno (el muestreo anterior daba 25 % para los cuatro). |
 | 7 | Cambiar `shots` (por ejemplo 100 y 20000) y medir de nuevo | El histograma cambia con cada clic; la suma de los porcentajes es 100. |
 | 8 | Elegir otro circuito (`ghz16`, `layered16`) | Carga. Anotá cuánto tarda y si la página se congela. En IonQ, la segunda compilación falla con "only one job is allowed": el visor lo muestra en la línea de errores. |
+| 9 | **Cargar circuito** con `examples/qasm/bell.qasm` (OpenQASM 3) y con `bell_qasm2.qasm` (OpenQASM 2); también arrastrar el archivo a la página | Aparece como entrada nueva del selector y se ve el Bell. Funciona también en IonQ y todas las veces que se quiera (no gasta el job). Medir anda igual. |
+| 10 | Cargar un `.qasm` con un `if`, un `reset` o 17 qubits | La línea roja de errores dice por qué no se puede (`control flow … is not supported`, `reset … not supported`, `maximum is 16`). |
 
 **Nota sobre la escena 3D.** El visor usa three.js 0.160 (import map) y Qollab trae la 0.186.1. El paquete importa `three` y los addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) en el preludio y embebe los shaders y el modelo del láser. Si Qollab no resuelve `three/addons/`, la consola muestra `QViz: a three.js addon could not be loaded` y el visor arranca sin láser ni luz de entorno. Se confirma a ojo: compará las esferas, el láser con su lente, las luces, las etiquetas `q0`, `q1` y los ejes con `python -m http.server` en local, y pegá la consola. Si algo se ve distinto, decime qué, y lo aprobamos antes de tocar nada.
 
-Si algo falla, corré `make qollab-probe`, subilo y apretá **3. Run checks**: dice si el problema es la conexión con Python o el visor.
+Si algo falla, corré `make qollab-probe`, subilo y apretá **3. Run checks**: dice si el problema es la conexión con Python o el visor. El botón **4. Load OpenQASM 2 and 3** prueba la lectura de ambos formatos (`QASM CHECKS PASS`); si falla el 3, mirá en la línea `libraries:` si `qiskit-qasm3-import`, `openqasm3` y `antlr4-python3-runtime` figuran con versión o con `not found`.
 
 ### Resultados del visor (completar)
 

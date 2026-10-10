@@ -19,5 +19,9 @@ class ProviderDisabledError(QVizError):
     """The backend belongs to a provider that is not in ``config.ENABLED_PROVIDERS``."""
 
 
+class CircuitParseError(QVizError):
+    """The text of a circuit (OpenQASM) could not be read."""
+
+
 class TranspilationError(QVizError):
     """The circuit could not be transpiled for the requested backend."""

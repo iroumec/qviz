@@ -67,6 +67,26 @@ $("measure").addEventListener("click", async () => {
   }
 });
 
+// OpenQASM goes through run_qasm, which sends no IonQ job, so this button can be
+// pressed at any time, even after the compilation of step 1.
+const QASM3 = 'OPENQASM 3.0;\ninclude "stdgates.inc";\nqubit[2] q;\nh q[0];\ncx q[0], q[1];\n';
+const QASM2 = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[2];\nh q[0];\ncx q[0], q[1];\n';
+$("qasm").addEventListener("click", async () => {
+  let failures = 0;
+  for (const [name, source] of [["OpenQASM 3", QASM3], ["OpenQASM 2", QASM2]]) {
+    try {
+      const start = performance.now();
+      const loaded = JSON.parse(await api.run_qasm.callPromising(backend, source, 256, "auto"));
+      log(`QASM   ${name} ok in ${ms(start)}: ${loaded.total_qubits} qubits, ${loaded.steps.length} steps  PASS`);
+    } catch (error) {
+      failures += 1;
+      log(`QASM   ${name} FAIL`);
+      report(error);
+    }
+  }
+  log(failures === 0 ? "QASM CHECKS PASS" : `${failures} QASM CHECK(S) FAILED`);
+});
+
 // Chance that a qubit is read wrongly at `step`: the same model as the backend
 // (the fidelity is a read-out error of (1 - f) / 2, plus the SPAM error).
 function flipChance(step, qubit) {

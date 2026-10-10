@@ -30,6 +30,7 @@ book:
         - docs/modules/transpiler.qmd
         - docs/modules/translator.qmd
         - docs/modules/to-qiskit.qmd
+        - docs/modules/importer.qmd
         - docs/modules/sampler.qmd
         - docs/modules/simulator.qmd
         - docs/modules/vectorizer.qmd

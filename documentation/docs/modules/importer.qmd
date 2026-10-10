@@ -1,0 +1,57 @@
+# Importer {#sec-importer}
+
+The importer is found in `backend/core/importer/importer.py`. It reads a circuit
+written in **OpenQASM 2 or 3** and returns a Qiskit `QuantumCircuit`. It is **not**
+a stage of the pipeline: `compile` receives the circuit it returns, like any
+other circuit. It is exported from `backend` for convenience:
+`from backend import load_circuit`.
+
+## Why it is needed {.unnumbered}
+
+The viewer used to list a few example circuits. A circuit that a person writes
+must go through the whole platform (transpilation, translation to native gates,
+simulation and metrics) before it reaches the JSON contract, so the viewer does
+not load JSON files in Qollab any more: it loads circuits. OpenQASM is the
+standard text format for them, and the organizers of the hackathon recommended it.
+
+## `load_circuit(text)` {.unnumbered}
+
+| Name | Type | Meaning |
+| --- | --- | --- |
+| `text` | string | The circuit. The first statement must be `OPENQASM 2.0;` or `OPENQASM 3.0;` (comments before it are allowed). |
+
+**Returns** a `QuantumCircuit`.
+
+- OpenQASM 2 is read with `qiskit.qasm2.loads`, which comes with Qiskit.
+- OpenQASM 3 is read with `qiskit.qasm3.loads`, which needs the package
+  `qiskit-qasm3-import` (MIT-compatible: Apache-2.0, with `openqasm3` and
+  `antlr4-python3-runtime`, which are pure Python). It is imported only when a
+  circuit in OpenQASM 3 is loaded, so OpenQASM 2 keeps working if it is missing.
+
+**Raises**
+
+| Exception | When |
+| --- | --- |
+| `CircuitParseError` | The text is empty, longer than `config.MAX_QASM_CHARS` (200 000 characters), has no valid header, uses a version other than 2 or 3, or has a syntax or semantic error. The message keeps the line and column of the parser. |
+| `UnsupportedOperationError` | The circuit has control flow (`if`, `for`, `while`, `switch`). A step-by-step view cannot show it, so the gates must be written one after another. |
+
+The limits that depend on the machine are not checked here. `compile` rejects
+more qubits than the limit (`CircuitTooLargeError`), mid-circuit measurements and
+`reset`, and parameters without a value (`input float theta;`), with
+`UnsupportedOperationError`. Final measurements (`c = measure q;`) are accepted
+and removed, as for any circuit.
+
+## Loading without spending the IonQ job {.unnumbered}
+
+On IonQ the transpilation asks the machine for its own compilation, and that
+spends the single job allowed per run. A person who loads several files cannot
+afford it, so `qollab_api.run_qasm` calls `compile(..., allow_remote=False)`:
+the circuit is transpiled locally and the job is never sent. The error model
+(`metrics`) does not use a job: it works from the fixed profile of the machine.
+
+## In Qollab {.unnumbered}
+
+`qollab_api.run_qasm(backend, qasm, shots, entangler)` reads the text and returns
+the JSON text of the visualization. The viewer calls it through `HOST.compileQasm`
+(see [the Qollab page](../frontend/qollab.qmd)). The example circuits are in
+`examples/qasm/` (`bell.qasm`, `ghz4.qasm`, `qft3.qasm` and `bell_qasm2.qasm`).

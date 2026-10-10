@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -14,6 +15,7 @@ from qollab_api import (
     build_circuit,
     parse_entangler,
     run,
+    run_qasm,
     sample_step,
 )
 
@@ -56,7 +58,14 @@ def test_circuits_lists_every_example_with_a_label():
 
 def test_versions_lists_the_main_libraries():
     found = json.loads(qollab_api.versions())
-    assert set(found) == {"qiskit", "qiskit-ionq", "numpy"}
+    assert set(found) == {
+        "qiskit",
+        "qiskit-ionq",
+        "numpy",
+        "qiskit-qasm3-import",
+        "openqasm3",
+        "antlr4-python3-runtime",
+    }
     assert all(isinstance(value, str) and value for value in found.values())
 
 
@@ -111,3 +120,34 @@ def test_main_does_not_print_a_huge_json(basic_backend, monkeypatch, capsys):
 def test_the_api_module_never_imports_the_injected_backend():
     source = open(qollab_api.__file__, encoding="utf-8").read()
     assert "\nimport backend" not in source
+
+
+_BELL_QASM = (
+    "OPENQASM 3.0;\ninclude \"stdgates.inc\";\n"
+    "qubit[2] q; h q[0]; cx q[0], q[1];"
+)
+
+
+def test_run_qasm_returns_json_text(basic_backend):
+    text = run_qasm(basic_backend, _BELL_QASM, 256)
+    assert isinstance(text, str)
+    assert json.loads(text)["total_qubits"] == 2
+
+
+def test_run_qasm_never_sends_an_ionq_job():
+    backend = MagicMock()
+    backend.name = "ionq_simulator"
+    backend.run.side_effect = AssertionError("a job was sent")
+    run_qasm(backend, _BELL_QASM)
+    backend.run.assert_not_called()
+
+
+def test_run_qasm_reports_a_bad_circuit_as_a_qviz_error(basic_backend):
+    with pytest.raises(QVizError):
+        run_qasm(basic_backend, "not a circuit")
+
+
+def test_run_qasm_output_can_be_measured(basic_backend):
+    text = run_qasm(basic_backend, _BELL_QASM, 256)
+    counts = dict(json.loads(sample_step(text, 0, 300)))
+    assert sum(counts.values()) == 300

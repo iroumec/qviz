@@ -105,6 +105,7 @@ backend/
     formatter/  formatter.py
     exporter/   exporter.py
     sampler/    sampler.py                  # Medición simulada de un paso (M9); no es una etapa del pipeline
+    importer/   importer.py                 # Lectura de circuitos OpenQASM 2/3 (M10); no es una etapa del pipeline
 tests/
   conftest.py
   circuits.py                   # Circuitos de prueba compartidos (Bell, GHZ, rotaciones, ...)
@@ -131,8 +132,9 @@ documentation/
 ## 4. API pública
 
 ```python
-from backend import compile, export, sample
+from backend import compile, export, load_circuit, sample
 
+qc = load_circuit(qasm_text)   # OpenQASM 2 o 3 → QuantumCircuit (M10)
 data: dict = compile(
     backend,                 # el backend inyectado por Qollab (o uno local en tests)
     qc,                      # qiskit.QuantumCircuit
@@ -141,6 +143,7 @@ data: dict = compile(
     strategy="statevector",  # "statevector" (M3) | "tomography" (M8)
     shots=1024,              # se usa en costo (M5) y tomografía (M8); debe ser > 0
     allow_paid=False,        # guarda de costo de la tomografía en hardware (M8)
+    allow_remote=True,       # False: nunca manda el job de IonQ; transpila en local (M10)
 )
 text: str = export(data, path=None)   # JSON string; si hay path, además lo escribe
 counts: dict[str, int] = sample(data, step, shots=1024, seed=None)  # medición simulada (M9)
@@ -151,7 +154,7 @@ counts: dict[str, int] = sample(data, step, shots=1024, seed=None)  # medición 
 
 ### 4.1 Errores
 
-`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError`, `ProviderDisabledError` y `TranspilationError`. **`provider.detect` nunca falla**: un proveedor desconocido se clasifica como `unknown` (§7, M1). Quien decide si se acepta es `compile`, con `config.ENABLED_PROVIDERS` (§5.5): por defecto solo `ionq` y `local`, y cualquier otro lanza `ProviderDisabledError` antes de transpilar. Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, parámetros sin ligar (`UnsupportedOperationError`) o más qubits que el límite efectivo (`CircuitTooLargeError`). También se lanza `QVizError` directamente ante un argumento inválido (`strategy` desconocida, `shots <= 0`) o una tomografía en hardware sin `allow_paid`; `compile` valida `strategy` y `shots` antes de tocar el backend, para no gastar el único job de IonQ por un error de tipeo.
+`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError`, `CircuitParseError` (texto OpenQASM ilegible, M10), `ProviderDisabledError` y `TranspilationError`. **`provider.detect` nunca falla**: un proveedor desconocido se clasifica como `unknown` (§7, M1). Quien decide si se acepta es `compile`, con `config.ENABLED_PROVIDERS` (§5.5): por defecto solo `ionq` y `local`, y cualquier otro lanza `ProviderDisabledError` antes de transpilar. Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, parámetros sin ligar (`UnsupportedOperationError`) o más qubits que el límite efectivo (`CircuitTooLargeError`). También se lanza `QVizError` directamente ante un argumento inválido (`strategy` desconocida, `shots <= 0`) o una tomografía en hardware sin `allow_paid`; `compile` valida `strategy` y `shots` antes de tocar el backend, para no gastar el único job de IonQ por un error de tipeo.
 
 ---
 
@@ -548,6 +551,23 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 ---
 
+### M10 — Importer (circuitos en OpenQASM)
+
+**Objetivo:** que el visor cargue circuitos propios (archivos `.qasm`), que pasan por la plataforma entera hasta llegar al contrato JSON. Por eso el botón "Cargar JSON" deja de tener sentido en Qollab. Los organizadores confirmaron (2026-10-10) que OpenQASM es el estándar para cargar circuitos, que OpenQASM 2 funciona con `qiskit.qasm2.loads`, que OpenQASM 3 necesita `qiskit.qasm3.loads` más `qiskit-qasm3-import` en `requirements.txt`, y que usar Qiskit y OpenQASM como dependencias no cambia la licencia del proyecto.
+
+- `importer.load_circuit(text) -> QuantumCircuit` (`backend.load_circuit`). Lee la versión del encabezado `OPENQASM 2.0;` / `OPENQASM 3.0;` (los comentarios antes del encabezado se ignoran) y usa `qasm2` o `qasm3`. `qasm3` se importa recién al leer un circuito en OpenQASM 3: si el paquete falta, OpenQASM 2 sigue andando y el error dice qué instalar.
+- `CircuitParseError` (nueva, hereda de `QVizError`): texto vacío, más largo que `config.MAX_QASM_CHARS` (200 000), sin encabezado, versión distinta de 2 y 3, o error del parser (el mensaje conserva línea y columna). **[decisión]** Todo error del parser se convierte en `CircuitParseError`; ninguna excepción cruda llega al visor.
+- **Control de flujo (`if`, `for`, `while`, `switch`)** → `UnsupportedOperationError` desde el importer (un `for` del importador de Qiskit falla con un `TypeError` ilegible si se lo deja llegar al pipeline).
+- Los límites que dependen de la máquina siguen en `compile`: más de 16 qubits, `reset`, medición a mitad de circuito y parámetros sin valor (`input`). Las mediciones finales se aceptan y se quitan.
+- **[decisión] Sin job de IonQ para los circuitos cargados.** `compile` recibe `allow_remote=True` (por omisión, sin cambios); `qollab_api.run_qasm` pasa `False`, así que se transpila en local y se pueden cargar todos los archivos que se quiera en una corrida. El modelo de error (`metrics`) no usa ningún job: sale del perfil fijo de la máquina; el único job de la transpilación es el que pide a IonQ su propia compilación. Costo: el circuito no pasa por el compilador de IonQ, así que su cantidad de pasos puede diferir de la del ejemplo compilado en remoto.
+- **Puente para Qollab:** `qollab_api.run_qasm(backend, qasm, shots, entangler) -> str`; el preludio del paquete lo expone como `HOST.compileQasm`. El visor, con ese hook, muestra "Cargar circuito" (acepta `.qasm`, `.qasm3` y `.txt`, también arrastrando) y agrega el circuito al selector; sin el hook (servido con `http.server`) todo sigue como antes: "Cargar JSON". **[decisión del usuario, 2026-10-10]** Solo archivos y arrastrar; pegar texto queda fuera.
+- Ejemplos en `examples/qasm/` (`bell`, `ghz4`, `qft3` y `bell_qasm2`); los tests los compilan todos. La página de diagnóstico tiene el botón "4. Load OpenQASM 2 and 3".
+- **Licencia:** las dependencias nuevas son Apache-2.0/BSD-3 (§9). Falta agregar el `LICENSE` MIT al repositorio y al paquete de Qollab (pendiente, lo decide el equipo).
+
+**Tests:** `tests/test_importer.py` (versiones 2 y 3, encabezado, comentarios, errores con posición, control de flujo, tope de texto, ejemplos que compilan, límites de `compile`) y las pruebas de `run_qasm` en `tests/test_qollab_api.py` (JSON de salida, sin job de IonQ, error como `QVizError`).
+
+---
+
 ### Extras (solo la parte de backend, después del MVP)
 
 | Extra                                    | Qué falta en el backend                                                                 |
@@ -576,6 +596,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 | M7 Integración Qollab         | Listo para validar | development |              |
 | M8 Tomografía                 | Listo para validar | development |              |
 | M9 Sampler (medición)         | Listo para validar | development |              |
+| M10 Importer (OpenQASM)       | Listo para validar | development |              |
 
 Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 
@@ -588,6 +609,7 @@ Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 | qiskit `>=2.5.2,<3.0.0`      | Apache-2.0   | Circuitos, transpilación, `Operator`, decomposers   |
 | qiskit-ionq `>=1.0.0,<2.0.0` | Apache-2.0   | Backend IonQ, compuertas nativas (oráculo de tests) |
 | numpy `>=2.0,<3.0`           | BSD-3-Clause | Statevector                                         |
+| qiskit-qasm3-import `>=0.6,<1.0` | Apache-2.0 | Lee OpenQASM 3 (`qiskit.qasm3.loads`); trae `openqasm3` (Apache-2.0) y `antlr4-python3-runtime` (BSD-3-Clause), Python puro |
 | pytest (dev)     | MIT          | Tests                                               |
 | jsonschema (dev) | MIT          | Validación del contrato                             |
 | flake8 (dev)     | MIT          | Estilo PEP 8                                        |

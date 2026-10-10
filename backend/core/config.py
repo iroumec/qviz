@@ -29,6 +29,13 @@ PROVIDER_LABELS: dict[Provider, str] = {
 }
 """Readable names of the providers, used in the message of a rejected backend."""
 
+MAX_QASM_CHARS: int = 200_000
+"""Longest OpenQASM text that ``importer.load_circuit`` reads.
+
+A 16-qubit circuit of thousands of gates fits; anything longer is more likely a
+wrong file than a circuit a person can follow step by step.
+"""
+
 MAX_QUBITS: int = 16
 """Hard cap on the circuit width.
 

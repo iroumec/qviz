@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (visor modular en `frontend/js/`). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (M10: carga de circuitos OpenQASM 2/3 sobre el visor modular, sin commitear). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -20,6 +20,7 @@ make qollab            # arma qollab/ (el visor real) para subir a Qollab; make 
 
 - Pipeline `provider → transpiler → translator → simulator → vectorizer → metrics → formatter → exporter`, orquestado por `compiler.compile`. Tomografía (`strategy="tomography"`) y `sampler.sample` (medición simulada) aparte.
 - Contrato JSON en `spec.md` §6 y `documentation/schema/` (`total_qubits` ≤ 16).
+- M10 `importer.load_circuit` (OpenQASM 2/3) + `qollab_api.run_qasm` + hook `HOST.compileQasm`: el visor carga `.qasm` (botón y arrastrar) sin gastar el job de IonQ (`compile(..., allow_remote=False)`); sin Qollab sigue cargando JSON. Ejemplos en `examples/qasm/`.
 - Qollab: `main.py` (proyecto Python), `qollab_api.py` (lo que llaman las páginas JS), `scripts/package_qollab.py` (`make qollab`).
 - Documentación: `spec.md` (español), Quarto en `documentation/docs/` (inglés), guías en `documentation/prompts/`.
 - CI en GitHub Actions (`.github/workflows/ci.yml`): job de lint (flake8 + pydocstyle, igual que `make lint`) y tests en Python 3.12 y 3.13 (igual que `make test`).
@@ -40,6 +41,8 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 ## Pendientes (en orden)
 
+-1. **Plazo: domingo 2026-10-11, 7 PM ET.** Subir `make qollab-probe`, apretar **4. Load OpenQASM 2 and 3** y mirar si `qiskit-qasm3-import`, `openqasm3` y `antlr4-python3-runtime` se instalan en Qollab (línea `libraries:`). Si no, OpenQASM 2 anda igual y habría que decidir qué hacer con el 3.
+-1b. **Licencia:** agregar `LICENSE` (MIT) al repo y al paquete de Qollab (`_SHARED` de `package_qollab.py`) y `license` en `pyproject.toml`; actualizar `spec.md` §2 "Licencias" con la respuesta de los organizadores. Titular y año: lo decide el equipo.
 0. **IBM se queda cargando en Qollab** (AWS local ya da el error). Correr `make qollab-probe` con IBM Boston y pegar la consola para ver dónde se cuelga.
 1. **Subir `make qollab` (visor real) y completar la tabla de `documentation/prompts/qollab_pruebas.md` §6**: que `three/addons/` resuelva en Qollab y la escena 3D con el láser en three.js 0.186.1 (el visor usa la 0.160), el tamaño dentro del iframe, Medir en el paso 4 y 7 del Bell, los simuladores de IonQ (solo la primera compilación; medir no gasta job) y los tiempos con 16 qubits.
 2. Commit y push de los cambios locales (hooks del visor, paquete de Qollab, documentación, `memory.md`) cuando el usuario lo pida.
@@ -60,11 +63,12 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 ## Historial (lo último arriba; borrá lo viejo)
 
 - 2026-10-10 · Visor modular: `frontend/index.html` queda solo con HTML y CSS, y el JS se divide en módulos ES en `frontend/js/` (config, state, utils, demo, shaders, three-addons, laser, scene, panels, data, controls, main). Los addons de three y el respaldo pasan a `js/three-addons.js`. `package_qollab.py` ahora copia los módulos y genera `main.js` = preludio + `import("./js/main.js")`; tests y docs actualizados. Verificado con un harness headless (DOM y `three` stubeados) y con `make test`/`make lint` en verde.
+- 2026-10-10 · M10: `backend/core/importer` (`load_circuit`, `CircuitParseError`, `config.MAX_QASM_CHARS`), `compile(allow_remote=)`, `qollab_api.run_qasm`, `HOST.compileQasm`, botón "Cargar circuito" del visor (aprobado por el usuario), botón 4 de la sonda, `qiskit-qasm3-import>=0.6,<1.0` en `pyproject.toml`/`requirements.txt`, ejemplos `.qasm`, docs (`spec.md` M10, `importer.qmd`). El paquete de Qollab pasó a 50 archivos (sonda: 49). Sin commitear; falta probar en Qollab.
 - 2026-10-10 · Pull de `development` (CI, `documentation/`, láser con lentes y three 0.160 con import map en el visor). Eso rompía `make qollab`: `package_qollab.py` ahora acepta `<script type="module">`, quita los `import` del visor y los pone en el preludio (addons con `import()` dinámico y respaldo), embebe los shaders de la lente y el OBJ/MTL (`HOST.shaders.lensVert/lensFrag`, `HOST.laser`) y ya no fuerza el color lineal de r128. Hooks mínimos en `loadLaserModel` del visor (aprobados por el usuario). Sin commitear; falta probar en Qollab.
 - 2026-10-10 · Reorganización: los makefiles a `make/` (`Makefile.git`, `Makefile.quarto`) y el proyecto Quarto (`_quarto.yml`, `index.qmd`, `references.bib`) a `documentation/`; sigue `make render/html/pdf-typst/preview/clean` desde la raíz. Docs y `AGENTS.md` actualizados.
 - 2026-10-10 · CI con GitHub Actions (`lint` + `tests` en 3.12/3.13) y badge en el README; diagramas PlantUML con SVG embebidos en Quarto; página "Why QViz" y énfasis pedagógico (según `documentation.md`) en README, preface e índice del libro.
 - 2026-10-10 · Probado en Qollab por el usuario: Built-in, IonQ Aria y Forte funcionan bien. Mensaje de máquina no soportada ahora formal (`PROVIDER_LABELS`) y sin traceback en el visor (prelude `readable`). Abierto: con IBM el visor queda en "loading" (no se sabe por qué; `detect` tarda ~0,1 ms en local, hace falta correr el diagnóstico con IBM Boston).
 - 2026-10-10 · Se anotó la idea de mostrar el entrelazamiento entre pares de qubits.
-- 2026-10-10 · El botón Medir del visor usa el backend vía `HOST.sample`; `make qollab` arma el visor real (44 archivos) y `make qollab-probe` el diagnóstico; página `documentation/docs/frontend/qollab.qmd`; `memory.md` (importado por `CLAUDE.md`, con la regla de actualizarlo en `AGENTS.md`) y `make resume`. Subido en el commit de esta sesión.
+- 2026-10-10 · El botón Medir del visor usa el backend vía `HOST.sample`; `make qollab` arma el visor real (50 archivos) y `make qollab-probe` el diagnóstico; página `documentation/docs/frontend/qollab.qmd`; `memory.md` (importado por `CLAUDE.md`, con la regla de actualizarlo en `AGENTS.md`) y `make resume`. Subido en el commit de esta sesión.
 - 2026-10-10 · Rangos de versiones (`f0f2785`), fix del import de `native_2q_gate` (`334b5fc`), proyecto JS único de Qollab y checks automáticos (`e3e769d`).
 - 2026-10-10 · `sampler` y `qollab_api` (`5587c32`); `ENABLED_PROVIDERS` (`702e1db`).

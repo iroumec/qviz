@@ -11,6 +11,7 @@ dependencies = [
     "qiskit>=2.5.2,<3.0.0",
     "qiskit-ionq>=1.0.0,<2.0.0",
     "numpy>=2.0,<3.0",
+    "qiskit-qasm3-import>=0.6,<1.0",
 ]
 
 [project.optional-dependencies]

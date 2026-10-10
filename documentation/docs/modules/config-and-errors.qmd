@@ -37,6 +37,7 @@ These values never change. They are not configuration.
 | `ENABLED_PROVIDERS` | `{"ionq", "local"}` | The providers that `compile` accepts. See below. |
 | `PROVIDER_LABELS` | one readable name per provider | The names used in the message of a rejected backend. |
 | `MAX_QUBITS` | `16` | The hard cap on the circuit width. |
+| `MAX_QASM_CHARS` | `200000` | The longest OpenQASM text that the importer reads. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
 | `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
@@ -113,6 +114,7 @@ expected failures with one `except` clause.
 QVizError
 ├── UnsupportedOperationError
 ├── CircuitTooLargeError
+├── CircuitParseError
 ├── ProviderDisabledError
 └── TranspilationError
 ```
@@ -122,6 +124,7 @@ QVizError
 | `QVizError` | The base class, which is used to catch any QViz error. It is also raised directly for a wrong argument or a refused action: an unknown `strategy`, `shots` that is not positive, or tomography on hardware without `allow_paid`. |
 | `UnsupportedOperationError` | The circuit contains something that cannot be shown, for example a mid-circuit measurement, a `reset`, classical control flow, an unbound parameter, or a malformed entry in a native gate list. |
 | `CircuitTooLargeError` | The circuit is wider than the effective limit that is described above. |
+| `CircuitParseError` | The text of a circuit (OpenQASM) could not be read: it is empty, too long, has no valid header or has a syntax error. See the [importer](importer.qmd). |
 | `ProviderDisabledError` | The backend belongs to a provider that is not in `ENABLED_PROVIDERS`. It is raised by `compile` before anything is transpiled. |
 | `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
 

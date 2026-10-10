@@ -4,7 +4,7 @@ The compiler is found in `backend/core/compiler/compiler.py`. It is the only
 module that knows all the other modules. It connects the stages of the pipeline,
 and it returns the final dictionary.
 
-## `compile(backend, qc, *, entangler=None, strategy="statevector", shots=1024, allow_paid=False)` {.unnumbered}
+## `compile(backend, qc, *, entangler=None, strategy="statevector", shots=1024, allow_paid=False, allow_remote=True)` {.unnumbered}
 
 This is the main entry point of the library. It is exported from `backend` for
 convenience: `from backend import compile`.
@@ -19,6 +19,7 @@ convenience: `from backend import compile`.
 | `strategy` | string | `"statevector"` | `"statevector"` computes the state exactly. `"tomography"` measures the state on the backend. |
 | `shots` | int | `1024` | The number of shots. It must be positive. It is used for the cost, and for the tomography. |
 | `allow_paid` | bool | `False` | It must be set to `True` before tomography is allowed on a backend that is classified as hardware, because such a backend may spend credits. |
+| `allow_remote` | bool | `True` | When it is `False`, the IonQ dry-run job is never sent and the circuit is transpiled locally. Circuits loaded from OpenQASM use it, so any number of files can be loaded in one run. |
 
 **Returns** a `dict` that follows the JSON contract.
 
@@ -50,8 +51,8 @@ validated, so that a wrong argument never spends the single IonQ job.
 7. The dictionary is formatted: `formatter.format(...)`.
 
 The remote transpile is disabled when the tomography strategy is used, because
-the tomography stage needs the single allowed job for itself. This is done with
-`allow_remote=False`.
+the tomography stage needs the single allowed job for itself, and when the caller
+passes `allow_remote=False`. Both are done with the same switch.
 
 ## A complete example {.unnumbered}
 
