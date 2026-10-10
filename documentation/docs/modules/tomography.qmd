@@ -7,6 +7,13 @@ the real noise is therefore seen.
 
 The tomography is selected with `strategy="tomography"` in `compile`.
 
+## Why the state is measured, and not computed {.unnumbered}
+
+The exact simulator gives the ideal state. It cannot show the error of the real
+device. The tomography is used when the effect of the noise is of interest. The
+measured result can be compared with the ideal result, and the difference is the
+error of the device. The exact statevector is therefore kept as the reference.
+
 ## `measure(native, backend, info, *, shots=1024, allow_paid=False)` {.unnumbered}
 
 **Parameters**
@@ -17,18 +24,38 @@ The tomography is selected with `strategy="tomography"` in `compile`.
 | `backend` | any object | required | The backend that is used for the measurement. |
 | `info` | `BackendInfo` | required | The backend information. The hardware flag is checked. |
 | `shots` | int | `1024` | The number of shots for each circuit. |
-| `allow_paid` | bool | `False` | It must be `True` before hardware is used. |
+| `allow_paid` | bool | `False` | It must be `True` before a paid backend is used. |
 
 **Returns** a `SimulatedCircuit`, so that the rest of the pipeline is unchanged.
 
-**Raises** `QVizError` when the backend is real hardware and `allow_paid` is
-`False`. This guard exists because many circuits are sent, and credits are
-spent.
+**Raises** `QVizError` when the backend is classified as hardware and
+`allow_paid` is `False`. The guard is deliberately conservative: it is not
+possible to know from the code whether the chosen backend spends credits, so the
+safe default is to ask for confirmation. When the backend is free, the simple
+fix is to pass `allow_paid=True`.
 
-## How the circuits are built {.unnumbered}
+## Why the circuit is cut into prefixes {.unnumbered}
 
-For each prefix of the circuit, three circuits are built. A prefix is the first
-`k` operations, where `k` goes from 1 to `N`, the total number of operations.
+The state after every gate must be shown, not only the final state. A backend
+can only be measured, so it cannot be asked for the state after gate `k` of a
+long circuit.
+
+The solution is to build a **prefix circuit** for every `k`. A prefix contains
+the first `k` operations, and it is measured. In this way, the state after each
+operation is obtained, one measurement at a time.
+
+A prefix is built with `to_qiskit(native, upto=k)`. The first operations are the
+same as in the full circuit, so the measured state is the state that the full
+circuit would have at that point.
+
+## Why three bases are needed {.unnumbered}
+
+A single measurement in the Z basis gives only one number, the expectation
+`⟨Z⟩`. The other two components of the Bloch vector are not visible in that
+basis.
+
+A rotation before the measurement is used to bring another axis into the Z
+basis. Three cases are needed.
 
 | Basis | Preparation before the measurement | What is measured |
 | --- | --- | --- |
@@ -36,32 +63,50 @@ For each prefix of the circuit, three circuits are built. A prefix is the first
 | X | a Hadamard gate on every qubit | `⟨X⟩` |
 | Y | an `Sdg` gate, then a Hadamard, on every qubit | `⟨Y⟩` |
 
-The total number of circuits is therefore `3 * N`. All the circuits are sent in a
-**single** call to `backend.run(list_of_circuits, shots=shots)`. This respects
-the rule of one job per run on IonQ.
+The reason for the rotations is the following. A Hadamard gate maps the `x` axis
+onto the `z` axis, because `H Z H = X`. An `Sdg` followed by a Hadamard maps the
+`y` axis onto the `z` axis. The three expectations `(x, y, z)` fully describe the
+reduced state of one qubit.
+
+## Why all the circuits are placed in one call {.unnumbered}
+
+The number of circuits is `3 * N`, where `N` is the number of native operations.
+On IonQ, only **one** job is allowed per run. All the circuits are therefore
+placed in a single call to `backend.run(list_of_circuits, shots=shots)`. A
+second call would stop the run with the message "only one job is allowed".
 
 For a backend that is not IonQ, the circuits are transpiled for that backend
-before they are sent.
+before they are sent. No job limit applies to the local simulators, but the same
+single call is used everywhere, so that the code is the same for every backend.
+
+A warning is logged, because the run time grows with `shots * 3 * N` on a noisy
+simulator.
 
 ## How an expectation is found {.unnumbered}
 
 The counts of a measurement are used. For one qubit `q`, the bit of the qubit is
-read from each bitstring. The rightmost character is qubit 0.
+read from each bitstring. The rightmost character is qubit 0, as everywhere in
+the project.
 
 $$
 \langle \sigma \rangle_q = \frac{n_0 - n_1}{\text{shots}}
 $$
 
 where `n_0` and `n_1` are the numbers of shots in which the bit of qubit `q` is
-0 or 1. The three expectations give `x`, `y` and `z`. The vector is clipped to
-the unit ball, and the angles are computed in the same way as in the exact
-simulator.
+0 or 1. The counts are marginalised, so the other qubits do not matter.
 
-## Known conflicts {.unnumbered}
+The three expectations give `x`, `y` and `z`. The vector is clipped to the unit
+ball, and the angles are computed in the same way as in the exact simulator, so
+that the output has the same shape.
 
-- On IonQ, the remote strategy of the transpiler also spends the single job. The
-  transpiler is therefore called with `allow_remote=False` when the tomography is
-  used.
-- The number of circuits grows quickly. With a noisy simulator, the run time
-  grows with `shots * 3 * N`. A warning is logged.
-- On real hardware, `allow_paid=True` is required. This is a deliberate guard.
+## Known limitations and conflicts {.unnumbered}
+
+- On IonQ, the remote strategy of the transpiler would also spend the single
+  job. The transpiler is therefore called with `allow_remote=False` when the
+  tomography is used, and the local transpile strategy is taken.
+- The tomography is statistical. The error on each component is about
+  `1 / sqrt(shots)`. A larger number of shots gives a better estimate.
+- The number of circuits grows quickly. For a circuit with many gates, the run
+  time and the cost grow with `3 * N`.
+- On a backend that spends credits, `allow_paid=True` is required. This is a
+  deliberate guard, and it may be relaxed when the backend is known to be free.

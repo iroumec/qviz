@@ -90,9 +90,33 @@ class _StructuralIonQ:
         self.target = type("T", (), {"operation_names": ("gpi", "gpi2", "ms")})()
 
 
+class _IonQNoise:
+    __module__ = "qiskit_ionq.ionq_backend"
+
+    def __init__(self, noise_model: str) -> None:
+        self.name = "ionq_simulator"
+        self._simulator = True
+        self.options = type("O", (), {"noise_model": noise_model})()
+
+
 def test_structural_detection_of_ibm():
     assert provider.detect_provider(_StructuralIBM()) == "ibm"
 
 
 def test_structural_detection_of_ionq():
     assert provider.detect_provider(_StructuralIonQ()) == "ionq"
+
+
+def test_ionq_noise_model_selects_ms():
+    # Every IonQ entry is named "ionq_simulator"; the family comes from the
+    # noise model ("aria-2" -> MS).
+    info = provider.detect(_IonQNoise("aria-2"))
+    assert info.provider == "ionq"
+    assert info.entangler == "ms"
+    assert info.display_name == "IonQ Aria 2"
+
+
+def test_ionq_noise_model_selects_zz():
+    info = provider.detect(_IonQNoise("forte-1"))
+    assert info.entangler == "zz"
+    assert info.display_name == "IonQ Forte 1"

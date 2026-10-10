@@ -36,6 +36,20 @@ The following order is used. The first step that gives an answer is kept.
 A name that contains `ideal` is treated as a `zz` machine, because the ideal
 reference is paired with the fixed `zz` entangler.
 
+### The IonQ machine family {.unnumbered}
+
+Every IonQ entry in Qollab is named `ionq_simulator`, so the name does **not**
+say whether the machine is an Aria (MS) or a Forte (ZZ). The family is read from
+`backend.options.noise_model` instead, which is `aria-2`, `forte-1`,
+`forte-enterprise-1` and so on. The helper `native_2q_gate` from `qiskit-ionq`
+converts that value into `ms` or `zz`.
+
+The machine hints are therefore collected from two places, in this order:
+`options.noise_model`, then the name. Each hint is tested with `native_2q_gate`,
+and the first hit is used. When `options.noise_model` raises an exception (as it
+does for AWS and the built-in simulator) or holds a `NoiseModel` object (as it
+does for IBM), it is ignored, and the name is used.
+
 ## How the hardware flag is set {.unnumbered}
 
 `is_hardware` is `True` only for an IonQ backend that is not a simulator. A
@@ -80,11 +94,15 @@ advertises are inspected. They are read from `target.operation_names`, from
 
 | Operation names that are found | Provider |
 | --- | --- |
-| any of `gpi`, `gpi2`, `ms`, `zz` | `ionq` |
+| any of `gpi`, `gpi2`, `ms` | `ionq` |
 | `ecr` | `ibm` |
-| `cz`, `sx` and `rz` together | `ibm` |
-| any of `rxx`, `ryy` | `ionq` |
+| `cz`, `rz` and `sx` together | `ibm` |
 | anything else | `unknown` |
+
+Only `gpi`, `gpi2` and `ms` are treated as IonQ-native here, because `zz` and
+`rxx` also exist as ordinary Qiskit gates and would produce false positives. The
+Qollab IBM simulators advertise `cz`, `rz` and `sx` together, which is the
+signal that is used for `ibm`.
 
 This fallback exists so that a backend with an unusual name, but with a clear
 gate set, is still classified correctly. An unknown provider is never an error,

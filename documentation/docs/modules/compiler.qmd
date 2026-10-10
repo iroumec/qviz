@@ -18,7 +18,7 @@ convenience: `from backend import compile`.
 | `entangler` | `"ms"`, `"zz"` or `None` | `None` | The target entangler. When it is `None`, it is inferred from the backend. |
 | `strategy` | string | `"statevector"` | `"statevector"` computes the state exactly. `"tomography"` measures the state on the backend. |
 | `shots` | int | `1024` | The number of shots. It is used for the cost, and for the tomography. |
-| `allow_paid` | bool | `False` | It must be set to `True` before tomography is allowed on real IonQ hardware, because credits are spent. |
+| `allow_paid` | bool | `False` | It must be set to `True` before tomography is allowed on a backend that is classified as hardware, because such a backend may spend credits. |
 
 **Returns** a `dict` that follows the JSON contract.
 

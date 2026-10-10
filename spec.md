@@ -505,7 +505,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
   - Con IonQ, la estrategia `remote` del transpiler ya consume el único job. En modo tomografía, el transpiler tiene que usar la estrategia `local`.
   - **[a verificar]** que qiskit-ionq acepte una lista de circuitos en un solo job.
   - **[a verificar]** si se pueden mandar compuertas nativas desde el `backend` precreado (qollab_context §8.4). Es lo ideal: con `gateset="native"` IonQ no recompila ni mitiga, así que lo medido corresponde exactamente a los ops visualizados (`ionq_native_gates.md` §5). Si no se puede, los prefijos se mandan en gateset estándar y IonQ los recompila (el estado ideal es el mismo, pero el ruido corresponde al circuito recompilado).
-- **Guarda de costo:** si `info.is_hardware`, se lanza error salvo que se pase `allow_paid=True`, porque 3N circuitos × shots gasta créditos.
+- **Guarda de costo:** si `info.is_hardware`, se lanza error salvo que se pase `allow_paid=True`. La guarda es conservadora: no siempre se puede saber desde el código si el backend es pago, así que se pide confirmación explícita antes de mandar 3N circuitos × shots.
 - Advertencia en el log: con los simuladores con ruido, el tiempo escala con circuitos × shots.
 
 **Tests:** con `BasicSimulator` y 20 000 shots, cada componente difiere del statevector en menos de 5/√shots; se cuenta exactamente una llamada a `run` (backend mockeado); y la guarda de hardware funciona.
@@ -564,14 +564,23 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 
 | Fecha | Backend | `type(backend)` | `backend.name` | Observaciones |
 | ----- | ------- | --------------- | -------------- | ------------- |
+| 2026-10-10 | Built-in | — | `basic_simulator` | `options.noise_model` lanza excepción. Detectado como `local`. |
+| 2026-10-10 | AWS Braket local | — | `default` | `options.noise_model` lanza excepción. Detectado como `aws` por el módulo. |
+| 2026-10-10 | IBM Boston (ruido) | — | `fake_boston` | Basis gates `cz,id,rx,rz,rzz,sx,x`; `options.noise_model` es un `NoiseModel` (no string). Detectado como `ibm`. |
+| 2026-10-10 | IBM Berlin (ruido) | — | `fake_berlin` | Igual que Boston. |
+| 2026-10-10 | IonQ Aria 2 (sim) | — | `ionq_simulator` | `options.noise_model = "aria-2"` → entrelazador **MS**. |
+| 2026-10-10 | IonQ Forte 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-1` → entrelazador **ZZ**. |
+| 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
+
+> **Hallazgo clave:** todos los IonQ comparten el nombre `ionq_simulator`. El nombre no dice si la máquina es Aria o Forte. La familia se lee de `backend.options.noise_model` (`aria-2`, `forte-1`, …), y `native_2q_gate` de `qiskit-ionq` la convierte en `ms`/`zz`. `provider._machine_hints` implementa esto.
 
 Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 
-1. **M1a:** `type(backend)`, `backend.name`, `backend.options` y `backend.target.operation_names` de cada grupo. La detección de `provider.py` es heurística y hay que confirmarla.
 2. **M1c:** si con el `backend` inyectado se puede transpilar a nativas en local (`gateset="native"`). Si no, ¿funciona el dry-run remoto y cuenta como el único job? El código intenta `native-local → remote → local`.
 3. **M5:** si `backend.calibration()` de qiskit-ionq está disponible; de tener prioridad sobre `profiles.py`. Los valores actuales de `spam_error`, `fidelity_*` y precios son estimaciones ilustrativas.
 4. **M8:** si qiskit-ionq acepta una lista de circuitos en un solo `backend.run` y si el backend precreado acepta compuertas nativas.
-5. **M1b:** `is_hardware` se infiere con `_is_simulator` o el nombre; confirmar cómo distingue Qollab los QPUs de IonQ de sus simuladores.
+5. **M1b:** el nombre del QPU de IonQ de hardware (no simulado) no apareció en la sonda. `is_hardware` usa los atributos `_simulator`/`_is_simulator` y, como último recurso, la palabra `simulator` en el nombre; falta confirmar el nombre del hardware real.
+6. **`allow_paid`:** no todo backend clasificado como hardware es necesariamente pago. La guarda de M8 es conservadora; se puede relajar cuando se confirme qué máquinas gastan créditos.
 
 
 ---

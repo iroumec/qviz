@@ -94,7 +94,8 @@ def measure(
 
     if info.is_hardware and not allow_paid:
         raise QVizError(
-            "tomography on hardware spends credits; pass allow_paid=True to proceed"
+            "tomography sends many circuits, so a paid backend may spend "
+            "credits; pass allow_paid=True to proceed"
         )
 
     n = native.num_qubits
