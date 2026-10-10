@@ -5,45 +5,49 @@ Qollab injects the selected backend as the global ``backend`` and calls
 would shadow the injected global. Local execution is not supported.
 
 Parameters with strict annotations make Qollab render a form in the QPU
-dialog (``documentation/prompts/qollab_context.md`` §5).
+dialog (``documentation/prompts/qollab_context.md`` §5). The functions are in
+``qollab_api.py``, which a JS project can call too.
 """
 
 from __future__ import annotations
 
-from qiskit import QuantumCircuit
+import time
 
-from backend import compile, export
-from backend.core.errors import QVizError
-from backend.core.model import Entangler
+from backend import compile, export, sample
+from qollab_api import build_circuit, parse_entangler
 
-
-def build_circuit() -> QuantumCircuit:
-    """Build the example two-qubit Bell-state circuit."""
-    qc = QuantumCircuit(2)
-    qc.h(0)
-    qc.cx(0, 1)
-    return qc
+_MAX_STEPS_PRINTED = 30
+_TOP_OUTCOMES = 8
 
 
-def parse_entangler(value: str | None) -> Entangler | None:
-    """Turn the text of the form field into the ``entangler`` argument.
+# Qollab needs the whole signature on one line (E501 is ignored for this file).
+def main(circuit: str = "bell", shots: int = 1024, entangler: str = "auto", step: int = 0) -> None:
+    """Compile an example circuit, then measure one step of it.
 
-    ``"auto"`` (or an empty field) lets the backend choose; ``"ms"`` and ``"zz"``
-    force the entangler. Anything else is an error, never a silent fallback.
+    ``circuit`` is bell, ghz3, ghz16 or layered16. ``entangler`` is auto, ms or
+    zz. ``step`` is the step to measure; 0 means the last one.
     """
-    text = (value or "").strip().lower()
-    if text in ("", "auto"):
-        return None
-    if text == "ms":
-        return "ms"
-    if text == "zz":
-        return "zz"
-    raise QVizError(f"entangler must be 'auto', 'ms' or 'zz', got {value!r}")
+    started = time.perf_counter()
+    data = compile(
+        backend,  # noqa: F821 - injected by Qollab
+        build_circuit(circuit),
+        entangler=parse_entangler(entangler),
+        shots=shots,
+    )
+    compiled = time.perf_counter()
 
+    steps = len(data["steps"])
+    print(f"backend : {data['backend']}")
+    print(f"circuit : {circuit} ({data['total_qubits']} qubits, {steps} steps)")
+    print(f"compile : {compiled - started:.2f} s")
+    if steps <= _MAX_STEPS_PRINTED:
+        print(export(data))
+    else:
+        print(f"json    : {len(export(data)) / 1000:.0f} kB (not printed)")
 
-def main(shots: int = 1024, entangler: str = "auto") -> None:
-    """Compile the example circuit and print the visualization JSON."""
-    forced = parse_entangler(entangler)
-    circuit = build_circuit()
-    data = compile(backend, circuit, entangler=forced, shots=shots)  # noqa: F821
-    print(export(data))
+    chosen = step if step else steps
+    counts = sample(data, chosen, shots)
+    measured = time.perf_counter()
+    print(f"sample  : step {chosen}, {shots} shots, {measured - compiled:.2f} s")
+    for bits, count in list(counts.items())[:_TOP_OUTCOMES]:
+        print(f"  {bits}  {count:6d}  {100 * count / shots:5.1f} %")

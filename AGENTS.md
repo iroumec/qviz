@@ -64,6 +64,7 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 - **No hay servidor.** Ni Flask, ni FastAPI, ni sockets, ni POST. El "backend" es un módulo Python que corre en el navegador (Pyodide).
 - **`backend` lo inyecta Qollab** como global de `main.py`. Nunca lo crees ni lo fijes en el código de la librería: se recibe como argumento.
 - **Nunca `import backend` en `main.py`**, porque pisa la variable inyectada. Usá `from backend import compile, export`.
+- **Lo que llama una página JS devuelve texto** (`qollab_api.py`): un `dict` llega a JS como `Map` y `JSON.stringify` da `{}`. Las listas de pares conservan el orden; un objeto JS reordena las claves enteras (`"10"`, `"11"`).
 - **Un solo `backend.run` por corrida en IonQ.** Cada llamada a `compile()` hace como máximo una. Si necesitás varios circuitos, van en **una** sola llamada con una lista.
 - **Sin secretos:** ni API keys ni tokens. El código publicado es público.
 - **Dependencias:** Python puro o compiladas para Pyodide. Licencia permisiva (MIT, BSD, Apache-2.0, ISC). Nada copyleft. Antes de agregar una, verificá la licencia, anotala en `spec.md` §9 y sumala a `pyproject.toml` (y a `requirements.txt` desde M7).

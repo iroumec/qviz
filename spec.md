@@ -83,10 +83,11 @@ Sigue el patrón actual: un paquete por módulo, `backend/core/<modulo>/<modulo>
 
 ```
 main.py                         # Entrada en Qollab (proyecto Python). M7
+qollab_api.py                   # Funciones que llaman las páginas JS de Qollab (devuelven texto). M7, M9
 requirements.txt                # Dependencias para Qollab. M7
 pyproject.toml                  # Desarrollo local (y PyPI a futuro). M0
 backend/
-  __init__.py                   # API pública: compile, export, __version__
+  __init__.py                   # API pública: compile, export, sample, __version__
   core/
     __init__.py
     model.py                    # Dataclasses inmutables de la representación intermedia (§5)
@@ -97,12 +98,13 @@ backend/
     compiler/   compiler.py
     transpiler/ transpiler.py
     translator/ translator.py, rules.py, normalize.py
-    to_qiskit.py                # Puente NativeCircuit -> QuantumCircuit (lo usan la tomografía y los tests)
+    to_qiskit.py                # Puente NativeCircuit -> QuantumCircuit (lo usan la tomografía, el sampler y los tests)
     simulator/  simulator.py, gpi.py, gpi2.py, ms.py, zz.py, virtualz.py, tomography.py (M8)
     vectorizer/ vectorizer.py
     metrics/    metrics.py
     formatter/  formatter.py
     exporter/   exporter.py
+    sampler/    sampler.py                  # Medición simulada de un paso (M9); no es una etapa del pipeline
 tests/
   conftest.py
   circuits.py                   # Circuitos de prueba compartidos (Bell, GHZ, rotaciones, ...)
@@ -111,13 +113,14 @@ examples/                       # Circuitos de ejemplo (por ejemplo el sumador Q
   qft.py
 scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
+  qollab_js_probe/              # index.html + main.js de prueba para un proyecto JS de Qollab (M9)
 documentation/
   schema/visualization.schema.json   # JSON Schema del contrato. M6
 ```
 
 ### 3.3 Reglas de dependencias entre módulos
 
-- Cada módulo importa solo `core.model`, `core.errors`, `core.config` y, si lo necesita, `core.provider` y `core.to_qiskit` (2f). **Ningún módulo del pipeline importa a otro del pipeline.** Solo `compiler` los conoce a todos.
+- Cada módulo importa solo `core.model`, `core.errors`, `core.config` y, si lo necesita, `core.provider` y `core.to_qiskit` (2f). El `sampler` (M9) no es una etapa del pipeline y usa solo `core.model`, `core.errors`, `core.config` y `core.to_qiskit`. **Ningún módulo del pipeline importa a otro del pipeline.** Solo `compiler` los conoce a todos.
 - Imports absolutos desde la raíz del paquete: `from backend.core.transpiler import transpiler`. El estilo actual (`from core...`) no funciona en Qollab, donde la raíz del proyecto es la que está en `sys.path`.
 - Las funciones públicas son puras: reciben objetos de `model.py` y devuelven objetos nuevos. Sin estado global y sin `print` (se usa `logging`).
 - **Excepción a la pureza:** `transpiler` (y `tomography` en M8) pueden llamar a `backend.run`, siempre respetando la regla de un job (§2.3).
@@ -127,7 +130,7 @@ documentation/
 ## 4. API pública
 
 ```python
-from backend import compile, export
+from backend import compile, export, sample
 
 data: dict = compile(
     backend,                 # el backend inyectado por Qollab (o uno local en tests)
@@ -139,6 +142,7 @@ data: dict = compile(
     allow_paid=False,        # guarda de costo de la tomografía en hardware (M8)
 )
 text: str = export(data, path=None)   # JSON string; si hay path, además lo escribe
+counts: dict[str, int] = sample(data, step, shots=1024, seed=None)  # medición simulada (M9)
 ```
 
 - `compile` devuelve el `dict` del contrato (§6), no un string. Así es más fácil de testear, y `export` lo serializa.
@@ -496,7 +500,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 - `main.py` en la raíz (proyecto Python, porque todavía no hay frontend): arma un circuito de ejemplo, llama a `compile(backend, qc)` y hace `print(export(data))`. **Nunca `import backend`**: pisaría la variable `backend` que inyecta Qollab. Se usa `from backend import compile, export`.
 - `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip ni marcadores de entorno).
-- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
+- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). `main.py` compila un circuito de ejemplo (`circuit`: `bell`, `ghz3`, `ghz16` o `layered16`), imprime el JSON (o solo su tamaño si tiene más de 30 pasos) y mide un paso con `sample` (`step`, 0 = el último); la lógica compartida con las páginas JS está en `qollab_api.py`. El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
 
 **Validación (manual, la hace el equipo):** correr en Built-in, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". En AWS local y en un IBM con ruido tiene que aparecer `ProviderDisabledError` con un mensaje claro (están desactivados, §5.5). Los resultados se anotan en §10.
 
@@ -518,6 +522,27 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - Advertencia en el log: con los simuladores con ruido, el tiempo escala con circuitos × shots.
 
 **Tests:** con `BasicSimulator` y 20 000 shots, cada componente difiere del statevector en menos de 5/√shots; se cuenta exactamente una llamada a `run` (backend mockeado); y la guarda de hardware funciona.
+
+---
+
+### M9 — Sampler (medición simulada de un paso)
+
+**Objetivo:** el botón "Medir" del visor: dado un paso del JSON, devolver los conteos de cada bitstring como si se midieran todos los qubits. Tiene que reproducir las correlaciones del entrelazamiento (un Bell solo da `00` y `11`).
+
+**Problema que resuelve.** `states` y `probabilities` son marginales por qubit. De las marginales no se puede recuperar la distribución conjunta: en un Bell ambas valen 0.5, y muestrear cada qubit por separado da 25 % para `00`, `01`, `10` y `11`. La distribución conjunta es la diagonal del statevector, `|⟨z|ψ⟩|²`.
+
+**[decisión] No se agrega ningún campo al contrato JSON.** Los pasos exportados ya traen cada operación nativa con sus parámetros, así que el circuito se puede reconstruir y simular a partir del propio JSON. Se comprobó en seis circuitos (Bell, GHZ de 16 qubits, un sumador y circuitos aleatorios de hasta 16 qubits) con una diferencia máxima de 1e-6 (el redondeo del JSON). Un campo con la distribución conjunta por paso se descartó por tamaño: guardar solo las probabilidades ≥ 1e-6 daría ~16 MB para un circuito aleatorio de 12 qubits y ~115 MB para uno de 16, y el tamaño depende de la estructura del estado, no de la cantidad de qubits.
+
+- `sampler.sample(data, step, shots=1024, *, seed=None) -> dict[str, int]` (`backend.sample`). `data` es el dict de `compile` o el resultado de `json.loads(export(...))`. `step=0` es el estado inicial. El bitstring es little-endian (qubit 0 a la derecha) y el resultado va de más a menos frecuente.
+- Reconstruye las operaciones desde los pasos (la rotación de un `virtual_z` es la diferencia con su acumulado anterior), arma el circuito con `to_qiskit.circuit_from_ops` y calcula `|ψ|²` con `Statevector`. Los resultados ideales se muestrean de esa distribución y después se les aplica ruido.
+- **Ruido [decisión]:** la fidelidad `f` de cada qubit en ese paso (`fidelities`, en %) es un error de lectura de `(1 − f)/2`, que equivale a acercar la probabilidad a 0.5 con el factor `f`. Además se suma, como un segundo cambio de bit independiente, el error de preparación y medición `1 − initial_fidelity` (SPAM); por eso un Bell recién preparado tampoco se mide sin errores. Dos cambios independientes con probabilidades `a` y `b` dan `a + b − 2ab`.
+- `config.MAX_SAMPLE_SHOTS = 100_000`. Datos mal formados, `step` o `shots` inválidos lanzan `QVizError`.
+- `sampler.probabilities(data, step)` devuelve la distribución ideal (`2**n` entradas, índice = valor del bitstring).
+- No envía ningún job: respeta la regla de un job por corrida en IonQ.
+- **Puente para Qollab:** `qollab_api.py` expone `run(backend, circuit, shots, entangler) -> str` y `sample_step(visualization, step, shots) -> str`. Devuelven texto (el `dict` → `Map` de Pyodide no se puede imprimir) y `sample_step` responde una **lista de pares** `[bitstring, cuenta]`, no un objeto, porque JavaScript reordena las claves enteras de un objeto (`"10"`, `"11"`) y se perdería el orden.
+- **Limitación:** requiere poder llamar a Python desde un clic en la página. Es el pendiente 2 de `qollab_context.md` §8; la prueba está en `documentation/prompts/qollab_pruebas.md`. Si no se puede, la alternativa es reconstruir y simular el circuito en JavaScript, con el riesgo de duplicar la física en dos lenguajes.
+
+**Tests:** la distribución conjunta coincide con las marginales de cada paso del JSON y con `Statevector` del circuito original; un Bell sin ruido solo da `00` y `11`; con fidelidad 0 la distribución es uniforme; el orden de bits; la semilla; el rechazo de pasos, shots y datos inválidos; y las funciones de `qollab_api.py` (incluido el orden de la lista de pares).
 
 ---
 
@@ -548,6 +573,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 | M6 Formatter + Exporter + API | Listo para validar | development |              |
 | M7 Integración Qollab         | Listo para validar | development |              |
 | M8 Tomografía                 | Listo para validar | development |              |
+| M9 Sampler (medición)         | Listo para validar | development |              |
 
 Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 
@@ -590,6 +616,7 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 4. **M8:** si qiskit-ionq acepta una lista de circuitos en un solo `backend.run` y si el backend precreado acepta compuertas nativas.
 5. **M1b:** el nombre del QPU de IonQ de hardware (no simulado) no apareció en la sonda. `is_hardware` usa los atributos `_simulator`/`_is_simulator` y, como último recurso, la palabra `simulator` en el nombre; falta confirmar el nombre del hardware real.
 6. **`allow_paid`:** no todo backend clasificado como hardware es necesariamente pago. La guarda de M8 es conservadora; se puede relajar cuando se confirme qué máquinas gastan créditos.
+7. **M9:** si una página JS de Qollab puede llamar a Python con `callPromising` desde un clic, **después** de la primera corrida y sin gastar un job; qué tiempo tarda `compile` y `sample` en Pyodide con 16 qubits (`layered16`, 676 pasos); si `import * as api from "qollab_api"` funciona para un archivo Python de la raíz; y si `backend` (el global) y el paquete `backend` conviven bien. Prueba en `documentation/prompts/qollab_pruebas.md`.
 
 
 ---

@@ -6,8 +6,8 @@ native gates, and it is not a pipeline stage.
 
 ## Why it is not inside the translator {.unnumbered}
 
-Two parts of the project need this function: the tomography strategy and the
-tests. The pipeline modules must not import each other, so the tomography could
+Three parts of the project need this function: the tomography strategy, the
+sampler and the tests. The pipeline modules must not import each other, so the tomography could
 not import it from the `translator` package. The function is therefore placed
 directly in `core/`, next to `model.py`, `errors.py` and `config.py`. It only
 depends on the model, the constants and `qiskit-ionq`, so any module may use it.
@@ -27,3 +27,15 @@ tomography strategy, to build the prefix circuits.
 | `upto` | int or `None` | `None` | When it is given, only the first `upto` operations are used. `upto=0` gives an empty circuit. |
 
 **Returns** a `QuantumCircuit`.
+
+## `circuit_from_ops(ops, num_qubits)` {.unnumbered}
+
+The same construction, but from a plain sequence of `NativeOp` and a number of
+qubits, without a `NativeCircuit`. `to_qiskit` calls it. The sampler uses it
+directly, because it rebuilds the operations from the exported JSON and has no
+`NativeCircuit` (and no backend information).
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `ops` | sequence of `NativeOp` | The operations, in temporal order. |
+| `num_qubits` | int | The width of the circuit. |

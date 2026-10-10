@@ -1,17 +1,20 @@
 """Rebuild a Qiskit circuit from a :class:`NativeCircuit`.
 
-Used as the oracle in tests and by the tomography strategy. qiskit-ionq native
-gates take their phases in turns, so phases are divided by ``2*pi`` here.
+Used as the oracle in tests, by the tomography strategy and by the sampler.
+qiskit-ionq native gates take their phases in turns, so phases are divided by
+``2*pi`` here.
 """
 
 from __future__ import annotations
+
+from collections.abc import Sequence
 
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import RZGate
 from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 
 from backend.core.constants import TWO_PI
-from backend.core.model import NativeCircuit
+from backend.core.model import NativeCircuit, NativeOp
 
 
 def to_qiskit(native: NativeCircuit, upto: int | None = None) -> QuantumCircuit:
@@ -19,9 +22,13 @@ def to_qiskit(native: NativeCircuit, upto: int | None = None) -> QuantumCircuit:
 
     ``upto=None`` uses the whole circuit. ``upto=0`` gives the empty circuit.
     """
-    qc = QuantumCircuit(native.num_qubits)
     ops = native.ops if upto is None else native.ops[:upto]
+    return circuit_from_ops(ops, native.num_qubits)
 
+
+def circuit_from_ops(ops: Sequence[NativeOp], num_qubits: int) -> QuantumCircuit:
+    """Build the Qiskit circuit that applies ``ops`` in order on ``num_qubits``."""
+    qc = QuantumCircuit(num_qubits)
     for op in ops:
         targets = list(op.targets)
         if op.name == "gpi":

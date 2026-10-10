@@ -1,0 +1,105 @@
+# Sampler {#sec-sampler}
+
+The sampler is found in `backend/core/sampler/sampler.py`. It simulates a
+measurement of all the qubits at any step of a visualization, and it returns the
+counts of each bitstring. It is **not** a stage of the pipeline: it works on the
+dictionary that `compile` returns, and it is exported from `backend` for
+convenience: `from backend import sample`.
+
+## Why it is needed {.unnumbered}
+
+The `states` and `probabilities` fields of the JSON are **marginal**: they
+describe each qubit alone. The marginals do not determine the joint
+distribution. For a Bell pair, both qubits have `p(|1⟩) = 0.5`, but only the
+outcomes `00` and `11` can be measured. Drawing every qubit independently from
+its marginal gives `00`, `01`, `10` and `11` with 25 % each, which is wrong.
+
+The joint distribution is the diagonal of the statevector, `|⟨z|ψ⟩|²`. It does
+not need a new field in the JSON, because the exported steps already contain
+every native operation with its parameters. The sampler rebuilds the circuit from
+them, and simulates it. A check on six circuits (Bell, GHZ of 16 qubits, an adder
+and random circuits of up to 16 qubits) gave a difference of at most `1e-6`, which
+is the rounding of the JSON.
+
+## `sample(data, step, shots=1024, *, seed=None)` {.unnumbered}
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `data` | `dict` | required | The dictionary returned by `compile`, or `json.loads` of the exported text. It is never changed. |
+| `step` | int | required | The number of operations that are applied before the measurement. `0` is the initial state, and `len(data["steps"])` is the final state. |
+| `shots` | int | `1024` | The number of measurements, from 1 to `config.MAX_SAMPLE_SHOTS` (100 000). |
+| `seed` | int or `None` | `None` | A seed for the random numbers. The same seed gives the same counts. |
+
+**Returns** a `dict[str, int]` with the counts of each bitstring, from the most to
+the least frequent. The bitstring is little-endian: qubit 0 is the rightmost
+character, as in Qiskit.
+
+**Raises** `QVizError` when `step` or `shots` is not valid, and when the data is
+malformed (an unknown operation, a target out of range, a missing field, a number
+that is not finite, or more qubits than `MAX_QUBITS`). The message of a malformed
+step gives its index.
+
+## How the counts are computed {.unnumbered}
+
+1. **The circuit is rebuilt.** Each step gives a native operation: `gpi` and
+   `gpi2` with their phase, `ms` with two phases and the angle, and `zz` with the
+   angle. The rotation of a `virtual_z` is the difference between its accumulated
+   `virtual_z` value and the previous one (a full turn only changes the global
+   phase).
+2. **The statevector is computed** with Qiskit, through the `to_qiskit` bridge.
+   The ideal probabilities are `|ψ|²`. The index of the vector is the value of the
+   bitstring.
+3. **The ideal outcomes are drawn** from those probabilities. The correlations of
+   the entanglement are therefore kept.
+4. **The noise is added.** Each qubit is flipped independently with the
+   probability of its read-out error.
+
+### The noise model {.unnumbered}
+
+The model is didactic, like the metrics. The fidelity `f` of a qubit at the chosen
+step (the `fidelities` field, in percent) is a read-out error of `(1 - f) / 2`.
+This is the same as pulling the probability of the qubit towards 0.5 by the
+factor `f`: `p' = 0.5 + (p - 0.5) · f`. A noisier qubit gives a flatter
+distribution.
+
+The state-preparation-and-measurement error, `1 - initial_fidelity`, is added as a
+second, independent flip. This is why a freshly prepared Bell pair is not measured
+without errors. For two independent flips with probabilities `a` and `b`, the
+probability that the bit is flipped is `a + b - 2ab`.
+
+At step 0, only the SPAM error applies, because the fidelities start at 100 %.
+
+## `probabilities(data, step)` {.unnumbered}
+
+The ideal joint distribution, before the noise. It returns a NumPy array of
+`2**n` entries, indexed by the value of the bitstring, with qubit 0 as the least
+significant bit. It is used by the tests, and it can be used to draw the exact
+distribution.
+
+## The Qollab functions {.unnumbered}
+
+The file `qollab_api.py`, in the project root, has the two functions that a JS
+page calls with `callPromising`. They return **text**, because Pyodide turns a
+`dict` into a JS `Map` that `JSON.stringify` cannot print.
+
+| Function | Meaning |
+| --- | --- |
+| `run(backend, circuit="bell", shots=1024, entangler="auto")` | Compiles an example circuit (`bell`, `ghz3`, `ghz16` or `layered16`) and returns the JSON text. |
+| `sample_step(visualization, step, shots=1024)` | Measures a step of that text. The reply is a JSON list of `[bitstring, count]` pairs, from the most to the least frequent. |
+
+The reply is a list of pairs and not an object on purpose. JavaScript sorts the
+integer-like keys of an object (`"10"` and `"11"` come before `"00"`), so the
+order of the counts would be lost.
+
+No job is sent when a step is measured, so the rule of one job per run is not
+affected on the IonQ backends.
+
+## The measurement of the viewer {.unnumbered}
+
+The `Medir` button of the basic viewer still draws every qubit independently from
+the marginals (see the [viewer page](../frontend/viewer.qmd)), which is an
+approximation. The exact measurement is `sample`. To use it, the page has to call
+Python from a click, which is one of the points to verify on Qollab (see
+`documentation/prompts/qollab_pruebas.md`).

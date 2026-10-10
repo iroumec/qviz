@@ -1,0 +1,19 @@
+<h3>QViz: Qollab probe</h3>
+<p id="status">Loading…</p>
+<p>
+  <label>Circuit
+    <select id="circuit">
+      <option value="bell">bell</option>
+      <option value="ghz3">ghz3</option>
+      <option value="ghz16">ghz16</option>
+      <option value="layered16">layered16</option>
+    </select>
+  </label>
+  <label>Shots <input id="shots" type="number" value="1024" min="1" max="100000"></label>
+  <label>Step <input id="step" type="number" value="0" min="0"> (0 = last)</label>
+</p>
+<p>
+  <button id="compile">1. Compile</button>
+  <button id="measure" disabled>2. Measure (a click, after the run)</button>
+</p>
+<pre id="log"></pre>

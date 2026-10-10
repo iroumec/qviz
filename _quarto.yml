@@ -27,6 +27,7 @@ book:
         - documentation/docs/modules/transpiler.qmd
         - documentation/docs/modules/translator.qmd
         - documentation/docs/modules/to-qiskit.qmd
+        - documentation/docs/modules/sampler.qmd
         - documentation/docs/modules/simulator.qmd
         - documentation/docs/modules/vectorizer.qmd
         - documentation/docs/modules/metrics.qmd

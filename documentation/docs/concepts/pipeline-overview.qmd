@@ -65,6 +65,14 @@ There is one documented exception. The `transpiler` and `tomography` modules are
 allowed to call `backend.run`, because a real measurement is needed. The rule of
 "one job per run" is respected.
 
+## The sampler is outside the pipeline {.unnumbered}
+
+The `sampler` is not a stage. It works on the dictionary that the pipeline
+returns, to simulate a measurement of any step, and it is exported as
+`backend.sample`. Like the stages, it imports only `core.model`, `core.errors`,
+`core.config` and `core.to_qiskit`. See the [Sampler](../modules/sampler.qmd)
+page.
+
 ## Where the data types are defined {.unnumbered}
 
 Every object that travels between the stages is defined as a frozen dataclass in

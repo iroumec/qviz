@@ -7,6 +7,7 @@ checked by two tools, `flake8` and `pydocstyle`, which are run with `make lint`.
 
 ```
 main.py                     Entry point for Qollab.
+qollab_api.py               The functions that Qollab pages call (they return text).
 requirements.txt            Dependencies for Qollab.
 pyproject.toml              Local development and packaging.
 backend/                    The library.
@@ -23,6 +24,7 @@ backend/                    The library.
     translator/             Translation into the native gate set.
     simulator/              The statevector, the gate matrices and the tomography.
     vectorizer/             The Bloch vectors.
+    sampler/                The simulated measurement of a step.
     metrics/                The didactic metrics.
     formatter/              The JSON contract.
     exporter/               The JSON serialization.
@@ -48,6 +50,7 @@ module, and it is a verb.
 | `metrics` | `measure` |
 | `formatter` | `format` |
 | `exporter` | `export` |
+| `sampler` | `sample` |
 | `provider` | `detect` |
 | `compiler` | `compile` |
 
@@ -104,7 +107,9 @@ on older interpreters.
 - The maximum line length is 88 characters.
 - The rules `E203` and `W503` are ignored, because they conflict with common
   formatting tools.
-- The settings are stored in `.flake8`.
+- The settings are stored in `.flake8`. The rule `E501` is ignored for `main.py`
+  only, because Qollab needs the whole signature of `main` on one line to build
+  its form.
 
 ## Git {.unnumbered}
 

@@ -17,7 +17,7 @@ test:
 	$(PY) -m pytest tests/ -v
 
 lint:
-	$(PY) -m flake8 backend examples main.py scripts tests
+	$(PY) -m flake8 backend examples main.py qollab_api.py scripts tests
 	$(PY) -m pydocstyle backend examples
 
 demo:

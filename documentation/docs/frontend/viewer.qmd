@@ -129,6 +129,11 @@ example, the two Bell outcomes `00` and `11` are not separated from `01` and
 `10` by this simple model. When an entangled qubit is measured, the panel says
 so.
 
+The exact measurement is done by the backend: `sample` draws the outcomes from the
+statevector and keeps the correlations, so a Bell pair gives only `00` and `11`.
+See the [sampler page](../modules/sampler.qmd). The button is expected to use it
+when Python can be called from the page.
+
 ## How the animation works {.unnumbered}
 
 The vector of each sphere is moved smoothly towards the value of the new step. A
