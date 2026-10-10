@@ -26,8 +26,9 @@ backend/                    The library.
     formatter/              The JSON contract.
     exporter/               The JSON serialization.
 tests/                      The pytest suite.
+examples/                   Worked circuits (for example the QFT adder).
 scripts/                    The demo scripts.
-frontend/                   The basic viewer.
+frontend/                   The basic viewers (2D and 3D).
 documentation/              The specification, the schema and this book.
 ```
 

@@ -32,6 +32,9 @@ book:
         - documentation/docs/modules/formatter-and-exporter.qmd
         - documentation/docs/modules/compiler.qmd
         - documentation/docs/modules/tomography.qmd
+    - part: "Examples"
+      chapters:
+        - documentation/docs/examples/qft-adder.qmd
     - part: "Frontend"
       chapters:
         - documentation/docs/frontend/viewer.qmd

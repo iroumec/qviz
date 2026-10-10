@@ -1,0 +1,101 @@
+# The QFT adder {#sec-qft-adder}
+
+The worked examples are found in the `examples/` directory. They are plain
+Qiskit circuits that can be compiled by the backend and shown in the viewer. The
+most interesting one is the **QFT adder**: two numbers are added with the
+quantum Fourier transform.
+
+## The quantum Fourier transform {.unnumbered}
+
+The quantum Fourier transform (QFT) changes the computational basis into the
+Fourier basis. On a basis state `|a⟩` of `n` qubits, it is defined as follows.
+
+$$
+\text{QFT}|a\rangle = \frac{1}{\sqrt{2^n}}
+\sum_{b=0}^{2^n-1} e^{\,2\pi i\, a b / 2^n}\, |b\rangle
+$$
+
+The circuit is built from three simple pieces.
+
+1. A Hadamard gate on each qubit.
+2. A controlled phase rotation for each pair of qubits.
+3. A set of swaps that reverses the order of the qubits at the end.
+
+The controlled phase between the qubit `high` and the qubit `low` has the angle
+`pi / 2**(high - low)`. The inverse transform is the same circuit in reverse,
+with the sign of every phase changed.
+
+The functions are `apply_qft`, `apply_inverse_qft`, `qft` and `inverse_qft` in
+`examples/qft.py`. The `qft(count)` and `inverse_qft(count)` functions return a
+standalone circuit for a given number of qubits.
+
+## The Draper adder {.unnumbered}
+
+Addition can be hidden inside the Fourier transform. The reason is the following
+property of the transform: a shift of the input multiplies the output by a
+phase.
+
+$$
+\text{QFT}|a + b\rangle = \text{QFT}|a\rangle \cdot e^{\,2\pi i\, b\,(\cdot)/2^n}
+$$
+
+In the Fourier basis, the addition of `b` is therefore only a **phase**. The
+phases are added with controlled phase rotations, and the inverse transform is
+applied at the end. No carry logic is needed.
+
+The circuit of `qft_adder(count)` acts on `2 * count` qubits.
+
+| Register | Qubits | Role |
+| --- | --- | --- |
+| `a` | the first `count` qubits | The number that is added to. It becomes `(a + b) mod 2**count`. |
+| `b` | the last `count` qubits | The number that is added. It is left unchanged. |
+
+The phase for the pair `(a_j, b_k)` is `2 * pi / 2**(count - k - j)`. This angle
+is exactly the phase that the bit `b_k` gives to the Fourier component of `a_j`.
+The exponent `count - k - j` combines the weight `2**k` of `b_k` with the weight
+`2**j` of `a_j` inside the transform of `2**count` states.
+
+The circuit has three parts, in this order.
+
+```text
+1. QFT on the a register
+2. controlled phase b_k -> a_j  for every pair
+3. inverse QFT on the a register
+```
+
+## The smallest adder {.unnumbered}
+
+With `count = 1`, the circuit uses exactly **two qubits**, one number each, and
+the sum is taken modulo 2. This is the literal "adder of two qubits". The
+controlled phase in this case is a full `CZ`-like rotation, and the circuit is
+equivalent to a single `CNOT`, which is the expected result for one-bit addition
+modulo 2.
+
+With `count = 2`, two two-bit numbers are added, and the circuit uses four
+qubits. The result is `(a + b) mod 4`.
+
+## Running the example {.unnumbered}
+
+```bash
+make demo M=adder
+```
+
+The script prints the Fourier matrix for two qubits, then compiles the adder for
+three input pairs. A JSON file is written for each pair, for example
+`out/adder_n2_1_1.json`. The file can be opened with the viewer.
+
+The result is also checked by the test suite.
+
+```bash
+.venv/bin/python -m pytest tests/test_examples.py
+```
+
+The test prepares every input pair, runs the adder, and confirms that the first
+register holds `(a + b) mod 2**count` in every case.
+
+## A note on the number of steps {.unnumbered}
+
+The adder is not optimised. The `count = 2` case becomes about 190 native
+operations after the translation, because every controlled phase is expanded
+into the native gate set. The `count = 1` case is much smaller. This is expected
+and it is useful for the visualiser: each step can be watched one at a time.

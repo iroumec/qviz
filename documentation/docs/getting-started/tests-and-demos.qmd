@@ -42,14 +42,16 @@ make demo M=simulator
 make demo M=vectorizer
 make demo M=metrics
 make demo M=compile
+make demo M=adder
 ```
 
 The `M` variable is required. The command runs
 `scripts/demo_<module>.py` with the virtual environment.
 
 The `demo_compile` script writes two files, `out/bell.json` and
-`out/ghz3.json`. The `out` directory is ignored by Git. These files can be
-opened with the [basic viewer](../frontend/viewer.qmd).
+`out/ghz3.json`. The `demo_adder` script writes the adder files. The `out`
+directory is ignored by Git. These files can be opened with the
+[3D viewer](../frontend/viewer.qmd).
 
 ## Viewing the result {.unnumbered}
 
@@ -65,5 +67,5 @@ loaded automatically.
 
 ```bash
 python -m http.server 8000
-# then open http://localhost:8000/frontend/viewer.html
+# then open http://localhost:8000/frontend/viewer3d.html
 ```

@@ -106,6 +106,8 @@ tests/
   conftest.py
   circuits.py                   # Circuitos de prueba compartidos (Bell, GHZ, rotaciones, ...)
   test_<modulo>.py
+examples/                       # Circuitos de ejemplo (por ejemplo el sumador QFT)
+  qft.py
 scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
 documentation/

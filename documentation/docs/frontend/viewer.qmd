@@ -1,16 +1,41 @@
-# Basic viewer {#sec-viewer}
+# Basic viewers {#sec-viewer}
 
-A small viewer is included for the JSON file. It is found in
-`frontend/viewer.html`. It is a basic tool, and it is not the final frontend. It
-is written with plain JavaScript and a canvas, so no build step and no extra
-dependency are needed.
+Two small viewers are included for the JSON file. They are basic tools, and they
+are not the final frontend. Both are written in plain JavaScript.
+
+| File | Rendering | Dependency |
+| --- | --- | --- |
+| `frontend/viewer.html` | 2D canvas | none |
+| `frontend/viewer3d.html` | 3D Bloch spheres | three.js, loaded from a CDN |
+
+The 3D viewer is the main one. It is found in `frontend/viewer3d.html`. One
+three-dimensional Bloch sphere is drawn for every qubit, and the vector of each
+sphere is animated from one step to the next. The scene can be rotated by
+dragging, and the zoom is changed with the mouse wheel.
+
+The spheres are drawn with the **shaders in the `shaders/` folder**
+(`bloch.vert` and `bloch.frag`). The fragment shader is a volumetric
+raymarcher: the axes, the state vector, the angle sweeps, the sphere shell and
+the dotted grid are all computed from the ray. The vertex shader is instanced,
+so one draw call covers every qubit. Each instance carries its own state vector
+in the `instancePsi` attribute, and the animation is driven by the `iTime`
+uniform. The `cameraPosition` uniform, which three.js provides automatically for
+a `ShaderMaterial`, is used to trace the rays.
+
+Because the shaders are separate files, the 3D viewer must be served over HTTP,
+so that `shaders/bloch.vert` and `shaders/bloch.frag` can be fetched. See the
+commands below.
+
+The 2D viewer (`frontend/viewer.html`) is kept as a fallback. It needs no
+library, so it works when there is no connection to the CDN.
 
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
   of that qubit at the current step.
-- The target qubits of the step are highlighted.
-- The two probabilities of each qubit are shown as two bars.
+- The target qubits of the step are highlighted in yellow, and the corresponding
+  sphere is brighter.
+- The probability `p(|1⟩)` of each qubit is shown with a small bar.
 - The full detail of the step is shown in a side panel: the operation, the
   targets, the phases, the angle, the accumulated fidelity, the accumulated
   cost, the virtual Z rotation, the inactivity, the fidelities and the
@@ -36,6 +61,17 @@ make demo M=compile
 ```
 
 This writes `out/bell.json`, which can then be dragged onto the viewer.
+
+For the 3D viewer, the page is served by a small local server, so that the
+shaders and the JSON file can be read.
+
+```bash
+make demo M=compile
+python -m http.server 8000
+# then open http://localhost:8000/frontend/viewer3d.html
+```
+
+The 2D viewer also works when it is opened directly as a file.
 
 ## The controls {.unnumbered}
 

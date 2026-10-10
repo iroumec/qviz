@@ -56,3 +56,10 @@ fidelities, the inactivity, the vibration and the accumulated cost.
 The full pipeline is run for the Bell and GHZ circuits. Two files are written:
 `out/bell.json` and `out/ghz3.json`. The `out` directory is ignored by Git. The
 files can be opened with the [basic viewer](../frontend/viewer.qmd).
+
+## `demo_adder.py` {.unnumbered}
+
+The QFT adder is built and compiled. The Fourier matrix is printed for two
+qubits, and the adder is run for three input pairs. One JSON file is written for
+each pair, for example `out/adder_n2_1_1.json`. The example is described on the
+[QFT adder](../examples/qft-adder.qmd) page.

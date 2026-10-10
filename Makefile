@@ -17,8 +17,8 @@ test:
 	$(PY) -m pytest tests/ -v
 
 lint:
-	$(PY) -m flake8 backend main.py scripts tests
-	$(PY) -m pydocstyle backend
+	$(PY) -m flake8 backend examples main.py scripts tests
+	$(PY) -m pydocstyle backend examples
 
 demo:
 ifndef M
