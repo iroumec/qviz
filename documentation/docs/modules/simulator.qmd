@@ -33,8 +33,11 @@ document, where the first target is the most significant qubit.
 
 ## How a qubit is described {.unnumbered}
 
-After each operation, the reduced density matrix of every qubit is found by
-tracing out the other qubits. The Bloch components are then read from it.
+After each operation, the reduced density matrix of the qubits that the
+operation acted on is found by tracing out the other qubits. The other qubits
+keep their previous description, because a unitary on some qubits cannot change
+the reduced state of the rest. This makes each step cost the work of one or two
+qubits instead of all of them. The Bloch components are then read from it.
 
 $$
 x = 2 \operatorname{Re}(\rho_{01}), \qquad

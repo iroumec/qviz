@@ -200,7 +200,7 @@ El estado inicial (todos en |0⟩, `virtual_z` en 0, fidelidad `initial_fidelity
 
 ### 5.4 Límites
 
-- `MAX_QUBITS = 28` en `config.py`. Es el tope duro del ancho del circuito. Además, si el backend expone su propio número de qubits (`backend.num_qubits`), el límite efectivo es `min(MAX_QUBITS, backend.num_qubits)`, para no mandar un circuito a un backend demasiado chico. Por encima del límite efectivo se lanza `CircuitTooLargeError`.
+- `MAX_QUBITS = 16` en `config.py`. Es el tope duro del ancho del circuito. Se eligió 16 por dos motivos: (1) el simulador guarda el statevector completo (`2^n` complejos, 16 bytes cada uno, y cada paso lo recorre y copia varias veces), de modo que memoria y tiempo crecen exponencialmente (con 28 qubits solo el estado ocupa 4 GiB, y en Pyodide la memoria es limitada); (2) al ser un visualizador, con más de ~16 esferas de Bloch el resultado pierde sentido a la vista. Además, si el backend expone su propio número de qubits (`backend.num_qubits`), el límite efectivo es `min(MAX_QUBITS, backend.num_qubits)`, para no mandar un circuito a un backend demasiado chico. Por encima del límite efectivo se lanza `CircuitTooLargeError`.
 - Sin límite duro de pasos. Si hay más de 500, se loguea un warning.
 
 ---

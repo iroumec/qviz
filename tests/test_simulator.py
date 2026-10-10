@@ -10,6 +10,7 @@ from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 from backend.core.model import NativeCircuit, NativeOp
 from backend.core.simulator import gpi, gpi2, ms, simulator, virtualz, zz
 from backend.core.translator import rules
+from backend.core.translator.to_qiskit import to_qiskit
 from tests.circuits import make_info
 
 _PERM = np.array(
@@ -88,6 +89,33 @@ def test_matches_qiskit_statevector(circuit_name, entangler):
         assert _bloch_from_angles(step.qubits[qubit]) == pytest.approx(
             (x, y, z), abs=1e-9
         )
+
+
+@pytest.mark.parametrize("entangler", ["ms", "zz"])
+@pytest.mark.parametrize("circuit_name", ["bell", "ghz3", "swap_test"])
+def test_every_step_matches_qiskit_statevector(circuit_name, entangler):
+    """Untouched qubits are reused between steps, so check all of them."""
+    from tests import circuits
+
+    qc = circuits.ALL_CIRCUITS[circuit_name]()
+    ops, n = rules.translate_circuit(qc, None, entangler)  # type: ignore[arg-type]
+    info = make_info(entangler)  # type: ignore[arg-type]
+    native = NativeCircuit(backend=info, num_qubits=n, ops=tuple(ops))
+    simulated = simulator.simulate(native)
+
+    for step in simulated.steps:
+        statevector = Statevector(to_qiskit(native, upto=step.index))
+        for qubit in range(n):
+            others = [q for q in range(n) if q != qubit]
+            reduced = partial_trace(statevector, others).data
+            expected = (
+                2 * reduced[0, 1].real,
+                -2 * reduced[0, 1].imag,
+                reduced[0, 0].real - reduced[1, 1].real,
+            )
+            assert _bloch_from_angles(step.qubits[qubit]) == pytest.approx(
+                expected, abs=1e-9
+            )
 
 
 def test_gpi_matrix_matches_qiskit_ionq():

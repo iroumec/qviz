@@ -128,10 +128,24 @@ def test_ionq_falls_back_when_remote_fails():
 
 
 def test_circuit_too_large_raises():
-    qc = QuantumCircuit(29)
+    qc = QuantumCircuit(config.MAX_QUBITS + 1)
     qc.x(0)
     with pytest.raises(CircuitTooLargeError):
         transpiler.transpile(_ionq_info(), MagicMock(), qc)
+
+
+def test_circuit_at_the_cap_is_accepted(basic_backend):
+    qc = QuantumCircuit(config.MAX_QUBITS)
+    qc.x(0)
+    transpiled = transpiler.transpile(_info_for(basic_backend), basic_backend, qc)
+    assert transpiled.num_qubits == config.MAX_QUBITS
+
+
+def test_backend_width_lowers_the_limit(heron_backend):
+    qc = QuantumCircuit(heron_backend.num_qubits + 1)
+    qc.x(0)
+    with pytest.raises(CircuitTooLargeError):
+        transpiler.transpile(_info_for(heron_backend), heron_backend, qc)
 
 
 def _info_for(backend):

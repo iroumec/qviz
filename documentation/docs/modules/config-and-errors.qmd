@@ -35,7 +35,7 @@ These values never change. They are not configuration.
 
 | Parameter | Value | Meaning |
 | --- | --- | --- |
-| `MAX_QUBITS` | `28` | The hard cap on the circuit width. |
+| `MAX_QUBITS` | `16` | The hard cap on the circuit width. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
 | `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
@@ -46,16 +46,22 @@ These values never change. They are not configuration.
 The limit is not taken from `MAX_QUBITS` alone. The backend is also asked for
 its own number of qubits. The effective limit is the smaller of the two.
 
-- The cap is `MAX_QUBITS`, which is 28.
+- The cap is `MAX_QUBITS`, which is 16.
 - When the backend exposes a `num_qubits` attribute with a positive integer, the
   effective limit is `min(MAX_QUBITS, backend.num_qubits)`.
-- When the backend does not expose it, the cap of 28 is used.
+- When the backend does not expose it, the cap of 16 is used.
 
 In this way, a circuit is never sent to a backend that is too small for it. For
-example, a 26-qubit circuit is rejected by an Aria backend, which has 25 qubits.
+example, a 6-qubit circuit is rejected by a backend that has 5 qubits.
 
 The check is made in `transpiler._effective_max_qubits`, at the start of the
 pipeline.
+
+The cap is 16 for two reasons. First, the simulator keeps the whole statevector,
+which has `2^n` complex numbers (a 28-qubit state alone takes 4 GiB), and every
+step goes through all of them; memory and time grow exponentially. Second, this
+is a visualizer: with more than about 16 Bloch spheres the picture is no longer
+readable.
 
 ## The error module {.unnumbered}
 
