@@ -42,6 +42,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 ## Pendientes (en orden)
 
+-2. **README y project card** (los pide el usuario): el material ya está en `documentation/docs/frontend/qollab.qmd`, secciones "At a glance" (resumen reutilizable) y "Problems found on Qollab and how they were solved" (qué falló y por qué existe cada pieza del empaquetado). El `README.md` hoy no describe el proyecto y lista FastAPI.
 -1. **Plazo: domingo 2026-10-11, 7 PM ET.** Subir `make qollab` y cargar `examples/qasm/bell.qasm` (OpenQASM 3): si dice `OpenQASM 3 needs the package qiskit-qasm3-import`, Qollab no instaló `qiskit-qasm3-import`/`openqasm3`/`antlr4-python3-runtime`; OpenQASM 2 anda igual y habría que decidir qué hacer con el 3.
 0. **IBM se queda cargando en Qollab** (AWS local ya da el error). Subir `make qollab` con IBM Boston y pegar la consola del navegador para ver dónde se cuelga.
 1. **Subir `make qollab` (visor real) y completar la tabla de `documentation/prompts/qollab_pruebas.md` §6**: que `three/addons/` resuelva en Qollab y la escena 3D con el láser en three.js 0.186.1 (el visor usa la 0.160), el tamaño dentro del iframe, Medir en el paso 4 y 7 del Bell, los simuladores de IonQ (solo la primera compilación; medir no gasta job) y los tiempos con 16 qubits.

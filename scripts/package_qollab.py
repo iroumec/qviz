@@ -138,6 +138,12 @@ def split_viewer(html: str) -> tuple[str, str]:
     return style.strip(), markup.strip()
 
 
+# The bundler below is deliberately small. It does not parse JavaScript: it only
+# understands the style of frontend/js (``export`` in front of a declaration, and
+# ``import {a, b as c}`` or ``import * as x`` from a relative path) and refuses
+# anything else, so a change of style fails when the project is built, not on
+# Qollab. Why bundle at all: Qollab serves no file of the project besides the
+# ones it loads itself, so a relative ``import("./js/main.js")`` fails there.
 _IMPORT = re.compile(
     r"^import\s+([^\"';]*?)\s+from\s+[\"']([^\"']+)[\"'];?[ \t]*\n", re.M
 )

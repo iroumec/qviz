@@ -4,6 +4,36 @@ This page explains how the viewer of `frontend/index.html` runs on Qollab, and h
 to change it without breaking that. Read it before changing the viewer, the
 measurement, `qollab_api.py` or `scripts/package_qollab.py`.
 
+## At a glance {.unnumbered}
+
+This section is the short version, to be reused in the README and in the project
+card.
+
+- **What it is.** QViz shows, step by step, what a trapped-ion computer does with
+  a quantum circuit: each qubit is a Bloch sphere, and every native gate (GPI,
+  GPI2, MS or ZZ, virtual Z) moves it. The fidelity of the circuit drops as the
+  machine accumulates error, and the *Medir* button shows what a measurement
+  would give.
+- **How a circuit gets in.** A person loads a circuit written in **OpenQASM 2 or
+  3** (`.qasm`). The platform reads it, transpiles it, translates it to the native
+  gates of IonQ, simulates it exactly and adds the error model. Only then does it
+  become the JSON that the viewer draws. A gate that cannot be translated to
+  IonQ's native gates (`opaque`, an undefined gate, `reset`, control flow, …) is
+  rejected with an error that says why.
+- **Where it runs.** On **Qollab**, the whole thing runs in the browser: Python
+  (Pyodide) for the backend and a JS project for the viewer, with the backend that
+  the user selects (the built-in simulator or an IonQ simulator). Locally,
+  `make server` serves the viewer and runs the same Python code, so both give the
+  same result. The viewer has no calculation of its own: compiling and measuring
+  always go through Python, because the marginal probabilities in the JSON cannot
+  give the correlations of an entangled state.
+- **Cost.** Circuits that a person loads never send the IonQ job (they are
+  transpiled locally), so any number of files can be tried on Qollab, where each
+  run allows one job.
+- **License and dependencies.** MIT for our code. Qiskit, qiskit-ionq and
+  qiskit-qasm3-import (Apache-2.0) and NumPy (BSD-3-Clause) are dependencies and
+  do not change that, as the organizers confirmed.
+
 ## The rule {.unnumbered}
 
 **The look and the functions of the viewer are not changed without approval of
@@ -26,6 +56,7 @@ qollab_context.md`), and they decide the design.
 | JS cannot read the files of the project. | The shaders and the laser model are embedded in `main.js`, and the circuits come from Python, not from `out/`. |
 | Python is called from JS with `callPromising`, and a `dict` arrives as a `Map`. | `qollab_api.py` returns text (JSON strings). |
 | `three` (0.186.1) is imported by name, and the import map of the viewer is not read. | The prelude imports `three` and the addons, and the `import` lines of the viewer are removed. |
+| The other files of the project are **not served**: JS cannot `fetch` them, and a relative `import("./js/main.js")` fails with `error loading dynamically imported module`. | The modules of the viewer are bundled into `main.js`. |
 | At most 100 files per project, 2 MB each. | The repository (more than 100 files) is not uploaded as it is. |
 | IonQ backends accept one job per run. | Only the first compilation works on IonQ. Measuring sends no job. |
 | A JS project runs in a sandboxed iframe. | The viewer has its own `body`, so its CSS is copied as it is. |
@@ -134,6 +165,22 @@ values or text.
 | `run(backend, circuit, shots, entangler)` | Compiles an example circuit and returns the JSON text. |
 | `run_qasm(backend, qasm, shots, entangler)` | Compiles a circuit written in OpenQASM 2 or 3, locally (no IonQ job), and returns the JSON text. |
 | `sample_step(visualization, step, shots)` | Measures a step and returns the counts as a JSON list of pairs. |
+
+## Problems found on Qollab and how they were solved {.unnumbered}
+
+Each of these is a limit of the platform that broke something. Some were found by
+running on Qollab, and some are in its documentation. Each one is why a piece of
+the packaging exists, so keep them in mind before simplifying
+`scripts/package_qollab.py`.
+
+| What failed | Cause | Solution |
+| --- | --- | --- |
+| `import backend` failed with `ImportError` on `native_2q_gate`. | Qollab ships qiskit-ionq 1.0.2, which does not have that helper (it exists from 1.0.3). | The function is written in `provider.py`; the code is tested from 1.0.0 to 1.1.1. |
+| The buttons of the page did nothing, or the JSON was `{}`. | A `dict` returned by Python reaches JS as a `Map`; scripts of the HTML do not run. | `qollab_api.py` returns text (JSON strings); the script lives in `main.js`. |
+| The upload would be rejected. | The repository has more than 100 files, and Qollab refuses a project over that limit. | `make qollab` builds a folder with the files that are needed. |
+| "only one job is allowed per code run" on IonQ. | The compilation sent a second job. | Loaded circuits are transpiled locally (`allow_remote=False`); `main.py` is left out of the JS project. |
+| `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`. | The prelude loaded the modules of the viewer with a relative `import()`, and Qollab does not serve those files. | `main.js` is one script: the prelude and the bundled modules. |
+| A Python error showed a long traceback in the viewer. | The error crosses to JS with its traceback. | The prelude keeps only the message of the errors of QViz. |
 
 ## How it was verified {.unnumbered}
 
