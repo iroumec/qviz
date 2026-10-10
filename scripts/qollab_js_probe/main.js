@@ -27,6 +27,7 @@ async function measureStep(step, shots) {
 
 try {
   log(`module "qollab_api" imported; exports: ${Object.keys(api).join(", ")}`);
+  log(`libraries: ${await api.versions.callPromising()}`);
   log(`typeof backend: ${typeof backend}; name: ${backend.name}`);
   $("status").textContent = "Ready. Press 1. Compile.";
 } catch (error) {

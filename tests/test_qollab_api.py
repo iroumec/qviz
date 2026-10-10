@@ -47,6 +47,12 @@ def test_unknown_circuit_is_rejected():
         build_circuit("nope")
 
 
+def test_versions_lists_the_main_libraries():
+    found = json.loads(qollab_api.versions())
+    assert set(found) == {"qiskit", "qiskit-ionq", "numpy"}
+    assert all(isinstance(value, str) and value for value in found.values())
+
+
 def test_run_returns_json_text(basic_backend):
     text = run(basic_backend, "bell", 256)
     assert isinstance(text, str)

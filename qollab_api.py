@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from importlib import metadata
 from typing import Any
 
 from qiskit import QuantumCircuit
@@ -60,6 +61,21 @@ def parse_entangler(value: str | None) -> Entangler | None:
     if text == "zz":
         return "zz"
     raise QVizError(f"entangler must be 'auto', 'ms' or 'zz', got {value!r}")
+
+
+def versions() -> str:
+    """Return the versions of the main libraries, as JSON text.
+
+    Qollab ships its own versions, which may differ from the ones used for
+    development; the test page prints this at the start.
+    """
+    found = {}
+    for name in ("qiskit", "qiskit-ionq", "numpy"):
+        try:
+            found[name] = metadata.version(name)
+        except metadata.PackageNotFoundError:
+            found[name] = "not found"
+    return json.dumps(found)
 
 
 def run(

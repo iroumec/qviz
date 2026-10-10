@@ -345,7 +345,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 
 El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms` → `ionq` (`zz` y `rxx` no cuentan: también existen como compuertas comunes de Qiskit y darían falsos positivos); `ecr`, o `cz`+`sx`+`rz` juntos → `ibm`; si no, `unknown`. Así un backend con nombre raro pero gates claros queda bien clasificado.
 
-- Entrelazador automático **[actualizado]**: primero se mira la compuerta nativa de 2 qubits que anuncia el backend (si anuncia solo `zz`, o solo `ms`); si no, se usa `native_2q_gate` de `qiskit-ionq`; si no, el nombre: `forte` o `ideal` → `zz`, `aria` → `ms`; por defecto `ms`. El parámetro `entangler` de `compile` lo puede forzar.
+- Entrelazador automático **[actualizado]**: primero se mira la compuerta nativa de 2 qubits que anuncia el backend (si anuncia solo `zz`, o solo `ms`); si no, se usa `provider.native_2q_gate` (propio, `aria` → `ms` y `forte` → `zz`; copia de la función de `qiskit-ionq` ≥ 1.0.3, que el qiskit-ionq de Qollab no tiene); si no, el nombre: `forte` o `ideal` → `zz`, `aria` → `ms`; por defecto `ms`. El parámetro `entangler` de `compile` lo puede forzar.
 - `is_hardware`: true solo para QPUs de IonQ (las que gastan créditos). Se prefieren los atributos booleanos `_simulator`/`_is_simulator`/`is_simulator`/`simulator` que pone el SDK; buscar la palabra `simulator` en el nombre queda como último recurso, porque un nombre es una señal débil.
 - `profiles.py`: tabla de `NoiseProfile` por máquina de referencia (`aria`, `forte`, `ideal`). Con IonQ se usa el perfil de esa máquina. Con cualquier otro proveedor se usa el perfil de referencia del entrelazador (MS → Aria, ZZ → Forte) **[decisión]**, porque el visualizador muestra el circuito _como si_ corriera en iones. Los valores numéricos se completan en M5, con fuente y fecha.
 
@@ -606,9 +606,10 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 | 2026-10-10 | IBM Berlin (ruido) | — | `fake_berlin` | Igual que Boston. |
 | 2026-10-10 | IonQ Aria 2 (sim) | — | `ionq_simulator` | `options.noise_model = "aria-2"` → entrelazador **MS**. |
 | 2026-10-10 | IonQ Forte 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-1` → entrelazador **ZZ**. |
+| 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2 y 1.1.1. Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ falla (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición. |
 | 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
 
-> **Hallazgo clave:** todos los IonQ comparten el nombre `ionq_simulator`. El nombre no dice si la máquina es Aria o Forte. La familia se lee de `backend.options.noise_model` (`aria-2`, `forte-1`, …), y `native_2q_gate` de `qiskit-ionq` la convierte en `ms`/`zz`. `provider._machine_hints` implementa esto.
+> **Hallazgo clave:** todos los IonQ comparten el nombre `ionq_simulator`. El nombre no dice si la máquina es Aria o Forte. La familia se lee de `backend.options.noise_model` (`aria-2`, `forte-1`, …), y `provider.native_2q_gate` la convierte en `ms`/`zz`. `provider._machine_hints` implementa esto.
 
 Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 

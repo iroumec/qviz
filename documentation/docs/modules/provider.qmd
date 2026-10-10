@@ -30,7 +30,7 @@ The following order is used. The first step that gives an answer is kept.
    names contain `zz` but not `ms` gives `"zz"`.
 3. **The machine family.** The family is read from the machine hints:
    `options.noise_model` first, and then the name (see below). The helper
-   `native_2q_gate` of `qiskit-ionq` turns a hint such as `aria-2` into `"ms"`.
+   `native_2q_gate` turns a hint such as `aria-2` into `"ms"`.
    A hint that contains `forte` or `ideal` also gives `"zz"`.
 4. **The default.** When nothing is found, `"ms"` is used.
 
@@ -42,8 +42,11 @@ reference is paired with the fixed `zz` entangler.
 Every IonQ entry in Qollab is named `ionq_simulator`, so the name does **not**
 say whether the machine is an Aria (MS) or a Forte (ZZ). The family is read from
 `backend.options.noise_model` instead, which is `aria-2`, `forte-1`,
-`forte-enterprise-1` and so on. The helper `native_2q_gate` from `qiskit-ionq`
-converts that value into `ms` or `zz`.
+`forte-enterprise-1` and so on. The helper `native_2q_gate` of the
+provider module converts that value into `ms` or `zz`: a name with `aria` gives
+`ms`, and a name with `forte` gives `zz`. It is our own copy of the function of
+`qiskit-ionq` 1.0.3 and later, because the version of `qiskit-ionq` that Qollab
+ships does not have it.
 
 The machine hints are therefore collected from two places, in this order:
 `options.noise_model`, then the name. Each hint is tested with `native_2q_gate`,

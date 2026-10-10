@@ -20,10 +20,32 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from qiskit_ionq.helpers import native_2q_gate
-
 from backend.core.model import BackendInfo, Entangler, Provider
 from backend.core.provider import profiles
+
+
+# Native two-qubit gate by IonQ machine family. It mirrors ``native_2q_gate`` of
+# qiskit-ionq, which older versions (the one Qollab ships) do not have.
+_NATIVE_2Q_BY_FAMILY: dict[str, Entangler] = {"aria": "ms", "forte": "zz"}
+
+
+def native_2q_gate(value: str | None) -> Entangler | None:
+    """Return the entangler implied by a machine name or noise model, if any.
+
+    ``aria-2`` and ``aria`` give ``"ms"``; ``forte-1``, ``forte-enterprise-1`` and
+    ``forte`` give ``"zz"``.
+    """
+    if not isinstance(value, str):
+        return None
+    lowered = value.lower()
+    for family, gate in _NATIVE_2Q_BY_FAMILY.items():
+        if (
+            lowered == family
+            or f"{family}-" in lowered
+            or lowered.endswith((f".{family}", f"_{family}"))
+        ):
+            return gate
+    return None
 
 
 def _module_of(backend: Any) -> str:

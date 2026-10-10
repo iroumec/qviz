@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from backend.core.provider import profiles, provider
 
 
@@ -138,3 +140,31 @@ def test_other_providers_ignore_the_name():
     assert profiles.profile_for("ibm", "fake_forte_ideal", "ms") is profiles.ARIA
     assert profiles.profile_for("local", "aria", "zz") is profiles.FORTE
     assert profiles.profile_for("unknown", "ideal", "ms") is profiles.ARIA
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("aria-2", "ms"),
+        ("Aria", "ms"),
+        ("aria-1", "ms"),
+        ("forte-1", "zz"),
+        ("forte-enterprise-1", "zz"),
+        ("FORTE", "zz"),
+        ("ionq_simulator", None),
+        ("fake_boston", None),
+        ("", None),
+        (None, None),
+        (42, None),
+    ],
+)
+def test_native_2q_gate_reads_the_machine_family(value, expected):
+    assert provider.native_2q_gate(value) == expected
+
+
+def test_native_2q_gate_agrees_with_qiskit_ionq_when_it_has_one():
+    helpers = pytest.importorskip("qiskit_ionq.helpers")
+    if not hasattr(helpers, "native_2q_gate"):
+        pytest.skip("this qiskit-ionq is older than 1.0.3")
+    for value in ("aria-2", "forte-1", "forte-enterprise-1", "ionq_simulator", None):
+        assert provider.native_2q_gate(value) == helpers.native_2q_gate(value)
