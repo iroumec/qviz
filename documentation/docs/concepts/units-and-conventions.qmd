@@ -1,0 +1,89 @@
+# Units and conventions {#sec-units}
+
+The same units are used everywhere in the backend. They are collected on this
+page, because a wrong unit is the most common source of error.
+
+## Angles {.unnumbered}
+
+| Quantity | Unit | Notes |
+| --- | --- | --- |
+| Phase of `gpi`, `gpi2` and `ms` | radians | In `qiskit-ionq` a phase is given in turns. The conversion is `radians = 2 * pi * turns`. |
+| `angle` of `ms` and `zz` | turns, in the range [0, 0.25] | `0.25` is the maximum entanglement. |
+| Rotation of `virtualz` | radians | It is kept only in the intermediate representation. It is not written in the JSON for each step; the accumulated value is written instead. |
+
+The conversion from turns to radians is always made at the border of the
+library. Inside the backend, radians are used for the phases. A turn is equal to
+`2 * pi` radians. The constant `TWO_PI` is defined in `config.py`.
+
+## The order of the qubits {.unnumbered}
+
+The Qiskit convention is used. It is called **little-endian**.
+
+- Qubit 0 is the least significant bit.
+- In a bitstring, the rightmost character is qubit 0.
+
+For example, the bitstring `"01"` means that qubit 0 is `1` and qubit 1 is `0`.
+
+In the simulator, the state is stored as a tensor of shape `(2,) * n`. Qubit `q`
+lives on the axis `n - 1 - q`. With this choice, the natural order of the tensor
+is also little-endian.
+
+## The Bloch vector {.unnumbered}
+
+The state of a single qubit is described by a vector on the Bloch sphere.
+
+| State | Vector `(x, y, z)` |
+| --- | --- |
+| `|0⟩` | `(0, 0, 1)` |
+| `|1⟩` | `(0, 0, -1)` |
+| state on the equator | `z = 0` |
+
+The vector is defined by the expectation values of the Pauli operators.
+
+$$
+x = \langle X \rangle, \qquad y = \langle Y \rangle, \qquad z = \langle Z \rangle
+$$
+
+The length of the vector is called `r`. If the qubit is entangled with another
+qubit, then `r` is smaller than 1. The length is never larger than 1.
+
+The vector is also described by two angles.
+
+| Angle | Range | Meaning |
+| --- | --- | --- |
+| `theta` | [0, π] | The angle from the `+z` axis. |
+| `phi` | [0, 2π) | The angle from the `+x` axis, in the `xy` plane. |
+
+Two special cases are used. If `r` is close to zero, then `theta` and `phi` are
+both set to zero. If `theta` is close to 0 or to π, then `phi` is set to zero.
+
+The standard physics convention is always used by the backend. If the frontend
+wants to draw the south pole upwards, that is the responsibility of the
+frontend.
+
+## Probabilities {.unnumbered}
+
+For each qubit, two probabilities are given.
+
+$$
+p(|0\rangle) = \frac{1 + z}{2}, \qquad p(|1\rangle) = \frac{1 - z}{2}
+$$
+
+The two values always add up to one.
+
+## Fidelities {.unnumbered}
+
+Fidelities are given as a **percentage**, in the range [0, 100]. A percentage is
+used because the initial fidelity is defined as `100 - SPAM`, and SPAM is a
+percentage-like error.
+
+## Rounding {.unnumbered}
+
+All floating-point numbers are rounded to `JSON_DECIMALS` decimals, which is 6 by
+default. The negative zero `-0.0` is written as `0.0`.
+
+## Omitted fields {.unnumbered}
+
+A field that does not apply to an operation is **left out** of the JSON. It is
+not written as `null`. For example, a `virtualz` step has no `phases` field, and
+a `zz` step has no `phases` field either.

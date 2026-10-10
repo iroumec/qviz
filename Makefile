@@ -32,6 +32,9 @@ install-plantuml:
 render-puml:
 	plantuml -tsvg -o svg $(PUML_DIR)/*.puml
 
+test-view:
+	python3 -m http.server 8000
+
 # Git workflow makefile is included so that its targets become
 # available from the this Makefile.
 include Makefile.git

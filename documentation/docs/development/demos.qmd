@@ -1,0 +1,58 @@
+# Demos {#sec-demos}
+
+The demo scripts are found in the `scripts/` directory. They are meant to be
+read and run by a person, so they use `print`. They are not part of the library.
+Each script prints a readable result for one stage of the pipeline.
+
+A script is run with the `M` variable.
+
+```bash
+make demo M=transpiler
+make demo M=translator
+make demo M=simulator
+make demo M=vectorizer
+make demo M=metrics
+make demo M=compile
+```
+
+## The shared helpers {.unnumbered}
+
+The file `scripts/_common.py` holds the helpers that the demos share.
+
+| Function | Meaning |
+| --- | --- |
+| `make_info(entangler)` | Builds a synthetic `BackendInfo` for the given entangler. |
+| `bell()` | Builds the Bell circuit. |
+| `ghz3()` | Builds the GHZ circuit. |
+
+## `demo_transpiler.py` {.unnumbered}
+
+The provider information and the transpiled circuit are printed for each local
+backend: the `BasicSimulator`, a Heron-like backend, an Eagle-like backend and a
+fake unknown backend.
+
+## `demo_translator.py` {.unnumbered}
+
+The native operation list of the Bell and GHZ circuits is printed, for both the
+MS and the ZZ entangler. The count of each gate type is also printed.
+
+## `demo_simulator.py` {.unnumbered}
+
+A table is printed. There is one row per step and per qubit, and the values
+`(r, theta, phi)` are given in degrees for the angles.
+
+## `demo_vectorizer.py` {#sec-demo-vectorizer}
+
+The same table is printed, but with the Cartesian values `(x, y, z)` and with the
+probability `p(|1⟩)`.
+
+## `demo_metrics.py` {.unnumbered}
+
+A table is printed with the operation, the accumulated fidelity, the per-qubit
+fidelities, the inactivity, the vibration and the accumulated cost.
+
+## `demo_compile.py` {.unnumbered}
+
+The full pipeline is run for the Bell and GHZ circuits. Two files are written:
+`out/bell.json` and `out/ghz3.json`. The `out` directory is ignored by Git. The
+files can be opened with the [basic viewer](../frontend/viewer.qmd).

@@ -1,0 +1,26 @@
+# Preface {.unnumbered}
+
+QViz is an educational visualiser for trapped-ion quantum circuits. A Qiskit
+circuit and a chosen backend are turned into a JSON file. That file describes
+the native ion gates and the state of every qubit after every gate. A web page
+then draws the ions as Bloch spheres.
+
+This book is the documentation of the **backend** (Python). The frontend is
+described briefly, because a small viewer is included, but the main subject is
+the backend.
+
+The book is written in plain English. Short sentences and the passive voice are
+used, so that the reader is not required to be an expert. Every public function
+is described, together with its parameters, its return value and its units.
+
+The pages are grouped as follows.
+
+- **Getting started** shows how the project is installed and run.
+- **Core concepts** explains the pipeline, the units and the JSON contract.
+- **Backend modules** documents each module, function by function.
+- **Frontend** documents the basic JSON viewer.
+- **Development** explains the tests, the demo scripts and the style rules.
+
+The complete rendered book can be built with Quarto. See
+[Installation](documentation/docs/getting-started/installation.qmd) for the
+commands.

@@ -1,0 +1,66 @@
+# Metrics {#sec-metrics}
+
+The metrics module is found in `backend/core/metrics/metrics.py`. It adds the
+didactic figures to each step: the fidelities, the inactivity, the vibration and
+the estimated cost. This is a simple documented model, and it is **not** a
+simulation of noise.
+
+## `measure(vectorized, info, shots=1024)` {.unnumbered}
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `vectorized` | `VectorizedCircuit` | required | The output of the vectorizer. |
+| `info` | `BackendInfo` | required | The backend information. The noise profile is read from it. |
+| `shots` | int | `1024` | The number of shots. It is used only for the cost. |
+
+**Returns** a `MeasuredCircuit`.
+
+## The initial fidelity {.unnumbered}
+
+The global fidelity starts at the initial value.
+
+$$
+\text{initial\_fidelity} = 100 \times (1 - \text{spam\_error})
+$$
+
+## The per-step rules {.unnumbered}
+
+For each step, one fidelity factor `f` is chosen for the operation.
+
+| Operation | `f` | Price |
+| --- | --- | --- |
+| `virtualz` | 1 | 0 |
+| `gpi`, `gpi2` | `fidelity_1q` | `price_1q` |
+| `ms`, `zz` | `fidelity_2q` | `price_2q` |
+
+The following updates are then made.
+
+- For every target qubit, the per-qubit fidelity is multiplied by `f`.
+- For every other qubit, when the step is not a `virtualz`, the per-qubit
+  fidelity is multiplied by `1 - idle_error_per_step`, and the inactivity of the
+  qubit is increased by one.
+- The global fidelity is multiplied by `f`, and then by `1 -
+  idle_error_per_step` once for each inactive qubit.
+- The accumulated cost is increased by `shots * price`.
+- The vibration of a qubit is `1 - fidelity / 100` when that error is at least
+  `VIBRATION_THRESHOLD`, and zero otherwise.
+
+## What a `virtualz` does not change {.unnumbered}
+
+A `virtualz` operation lasts no time. It therefore changes neither the
+fidelities nor the inactivity. Its fidelity factor is 1, and its price is 0. The
+accumulated values are left unchanged.
+
+## The ideal profile {.unnumbered}
+
+When the ideal profile is used, every fidelity is 1 and every price is 0. All
+the fidelities stay at 100 percent, the cost stays at 0, and the vibration stays
+at 0.
+
+## The guarantees {.unnumbered}
+
+- The accumulated fidelity never increases.
+- The accumulated cost never decreases.
+- The inactivity never decreases.

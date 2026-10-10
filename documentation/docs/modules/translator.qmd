@@ -1,0 +1,210 @@
+# Translator {#sec-translator}
+
+The translator is found in `backend/core/translator/`. It changes any transpiled
+circuit into a sequence of native ion gates. Only `gpi`, `gpi2`, `virtualz` and
+**one** entangler, either `ms` or `zz`, appear in the result. The two entanglers
+are never mixed.
+
+Four files are used.
+
+| File | Responsibility |
+| --- | --- |
+| `translator.py` | The abstract base class and the provider subclasses. |
+| `rules.py` | The translation table, one rule per gate. |
+| `normalize.py` | The entangling angle is reduced to the range [0, 0.25] turns. |
+| `to_qiskit.py` | A Qiskit circuit is rebuilt from a native circuit. |
+
+## The translator classes {.unnumbered}
+
+One class exists per provider. All the classes share the same translation rule.
+The only difference is the target entangler, which is taken from `BackendInfo`.
+
+| Class | Provider |
+| --- | --- |
+| `IonQTranslator` | `"ionq"` |
+| `IBMTranslator` | `"ibm"` |
+| `AWSTranslator` | `"aws"` |
+| `LocalTranslator` | `"local"` |
+| `GenericTranslator` | `"unknown"` |
+
+### `Translator` (abstract base class) {.unnumbered}
+
+| Member | Type | Meaning |
+| --- | --- | --- |
+| `__init__(self, info)` | method | The `BackendInfo` is stored. It is used for the entangler and the profile. |
+| `translate(self, transpiled)` | abstract method | A `TranspiledCircuit` is received, and a `NativeCircuit` is returned. |
+| `_translate(self, transpiled)` | method | The shared implementation. It is called by every subclass. |
+
+### `create(info)` {.unnumbered}
+
+The correct subclass is built from the provider of the backend.
+
+**Parameter**
+
+| Name | Type | Meaning |
+| --- | --- | --- |
+| `info` | `BackendInfo` | The provider field selects the subclass. |
+
+**Returns** a `Translator` of the matching subclass.
+
+## The translation rules {.unnumbered}
+
+The rules are given in `rules.py`. The temporal order is the list order: the
+leftmost operation is applied first. All the identities are exact up to a global
+phase, and a global phase does not change a Bloch vector.
+
+| Source gate | Translation |
+| --- | --- |
+| `x` | `gpi(0)` |
+| `y` | `gpi(π/2)` |
+| `sx`, `sxdg` | `gpi2(0)`, `gpi2(π)` |
+| `rz(λ)`, `p(λ)`, `u1(λ)` | `virtualz(λ)` |
+| `z`, `s`, `sdg`, `t`, `tdg` | `virtualz` with `π`, `π/2`, `-π/2`, `π/4`, `-π/4` |
+| `h` | `virtualz(π)`, `gpi2(π/2)` |
+| `cz(a,b)` | a `zz` operation, or the equivalent MS form, followed by `virtualz(-π/2)` on both qubits |
+| `cx(c,t)` with the MS entangler | `gpi2(c,π/2)`, `ms(c,t)`, `gpi2(c,π)`, `gpi2(t,π)`, `gpi2(c,-π/2)` |
+| `cx(c,t)` with the ZZ entangler | `h(t)`, `cz(c,t)`, `h(t)` |
+| `rzz(θ)` | `zz(θ / 2π)`, then normalized |
+| an IonQ native gate | taken directly, with the phases changed from turns to radians |
+| `id`, `barrier`, `delay`, a final `measure` | ignored |
+| any other one-qubit gate | decomposed with the Euler decomposition, then translated |
+| any other two-qubit gate | decomposed onto `cz`, then translated |
+| a gate of three or more qubits | expanded through its definition, then translated |
+| a mid-circuit `measure`, `reset`, or classical control | `UnsupportedOperationError` |
+
+### `emit(ops, op, qubits, entangler, source_index=None)` {.unnumbered}
+
+One Qiskit operation is translated, and the new native operations are appended
+to the list `ops`.
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `ops` | list of `NativeOp` | The output list. New operations are appended to it. |
+| `op` | Qiskit operation | The operation to translate. |
+| `qubits` | tuple of int | The qubits the operation acts on. |
+| `entangler` | `"ms"` or `"zz"` | The target entangler. |
+| `source_index` | int or `None` | The index of the original instruction, copied onto each new operation. |
+
+No value is returned. The list `ops` is changed.
+
+### `emit_zz(ops, targets, angle, entangler, source_index=None)` {.unnumbered}
+
+A `ZZ(angle)` operation is written, after the angle is normalized and after the
+entangler is converted when necessary.
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `ops` | list of `NativeOp` | The output list. |
+| `targets` | tuple of int | The two qubits. |
+| `angle` | float | The angle in turns. It is normalized inside the function. |
+| `entangler` | `"ms"` or `"zz"` | The target entangler. |
+| `source_index` | int or `None` | The index of the original instruction. |
+
+### `emit_ms(ops, targets, phases, angle, entangler, source_index=None)` {.unnumbered}
+
+An `MS(phases, angle)` operation is written, in the same way.
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `ops` | list of `NativeOp` | The output list. |
+| `targets` | tuple of int | The two qubits. |
+| `phases` | tuple of two floats | The phases in radians. |
+| `angle` | float | The angle in turns. |
+| `entangler` | `"ms"` or `"zz"` | The target entangler. |
+| `source_index` | int or `None` | The index of the original instruction. |
+
+### `translate_circuit(circuit, layout, entangler)` {.unnumbered}
+
+A whole Qiskit circuit is translated, and its qubits are compacted.
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `circuit` | `QuantumCircuit` | The circuit to translate. |
+| `layout` | tuple of int or `None` | The layout produced by the transpiler. |
+| `entangler` | `"ms"` or `"zz"` | The target entangler. |
+
+**Returns** a pair `(ops, num_qubits)`, where `ops` is a list of `NativeOp` and
+`num_qubits` is the number of qubits after compaction.
+
+### `translate_native_ops(native_ops, num_qubits, entangler)` {.unnumbered}
+
+A raw IonQ native gate list is translated. This form is received when the native
+API payload is read.
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `native_ops` | sequence of dict | Each dictionary has a `gate` key and a `target` or `targets` key. A `phase`, `phases` or `angle` key may also be present. |
+| `num_qubits` | int | The number of qubits. |
+| `entangler` | `"ms"` or `"zz"` | The target entangler. |
+
+**Returns** a pair `(ops, num_qubits)`.
+
+## The compaction of the qubits {.unnumbered}
+
+A large backend, such as an IBM device with 156 qubits, is reduced to the qubits
+that are used. The rules are the following.
+
+- The user qubits are kept, in their original order. The order is read from the
+  layout.
+- A user qubit that is never used is still kept. It is a quiet ion in `|0⟩`.
+- A physical qubit that is used only for routing is appended at the end.
+- A physical qubit that is not touched is removed.
+
+One limitation is accepted. A final permutation that is caused by routing is not
+undone.
+
+## The normalization of the angle {.unnumbered}
+
+The file `normalize.py` reduces an entangling angle to the range [0, 0.25] turns.
+The identities that are used are exact up to a global phase.
+
+- One turn is subtracted or added when the angle is outside the range. This is a
+  global phase, so it is free.
+- Half a turn is subtracted when the absolute value is larger than 0.25. A
+  conjugation is added to keep the operation correct.
+- A negative angle is made positive by a conjugation on the first qubit.
+
+### `normalize_zz(targets, angle)` {.unnumbered}
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `targets` | tuple of int | The two qubits. |
+| `angle` | float | The angle in turns. |
+
+**Returns** a list of `NativeOp`. When the angle is zero, an empty list is
+returned and nothing is emitted.
+
+### `normalize_ms(targets, phases, angle)` {.unnumbered}
+
+| Parameter | Type | Meaning |
+| --- | --- | --- |
+| `targets` | tuple of int | The two qubits. |
+| `phases` | tuple of two floats | The phases in radians. |
+| `angle` | float | The angle in turns. |
+
+**Returns** a list of `NativeOp`.
+
+## Rebuilding a Qiskit circuit {.unnumbered}
+
+### `to_qiskit(native, upto=None)` {.unnumbered}
+
+A Qiskit circuit is rebuilt from a `NativeCircuit`. The native gates of
+`qiskit-ionq` are used, and the phases are changed back from radians to turns. A
+`virtualz` operation becomes an `RZ` gate.
+
+This function is used as the oracle in the tests. It is also used by the
+tomography strategy.
+
+| Parameter | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `native` | `NativeCircuit` | required | The circuit to rebuild. |
+| `upto` | int or `None` | `None` | When it is given, only the first `upto` operations are used. `upto=0` gives an empty circuit. |
+
+**Returns** a `QuantumCircuit`.
+
+## A note on global phases {.unnumbered}
+
+Some of the identities differ from the original gate by a global phase, for
+example a factor of `-1` or `-i`. A global phase has no physical meaning, and it
+does not change any Bloch vector. The tests therefore use an equivalence check
+that ignores the global phase.

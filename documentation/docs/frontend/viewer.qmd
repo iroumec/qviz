@@ -1,0 +1,73 @@
+# Basic viewer {#sec-viewer}
+
+A small viewer is included for the JSON file. It is found in
+`frontend/viewer.html`. It is a basic tool, and it is not the final frontend. It
+is written with plain JavaScript and a canvas, so no build step and no extra
+dependency are needed.
+
+## What is shown {.unnumbered}
+
+- One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
+  of that qubit at the current step.
+- The target qubits of the step are highlighted.
+- The two probabilities of each qubit are shown as two bars.
+- The full detail of the step is shown in a side panel: the operation, the
+  targets, the phases, the angle, the accumulated fidelity, the accumulated
+  cost, the virtual Z rotation, the inactivity, the fidelities and the
+  vibration.
+
+The `+z` axis is drawn upwards, and `|0⟩` is at the top. This follows the
+standard convention that is used by the backend.
+
+## How a file is loaded {.unnumbered}
+
+There are three ways to load a JSON file.
+
+1. **Drag and drop.** A JSON file is dropped anywhere on the page.
+2. **The load button.** A JSON file is chosen with the file selector.
+3. **Automatic loading.** When the page is served over HTTP, the file
+   `../out/bell.json` is loaded automatically. If it is not found, a small
+   example that is stored inside the page is used.
+
+A JSON file can be produced with the compile demo.
+
+```bash
+make demo M=compile
+```
+
+This writes `out/bell.json`, which can then be dragged onto the viewer.
+
+## The controls {.unnumbered}
+
+| Control | Effect |
+| --- | --- |
+| Load JSON | Opens the file selector. |
+| Example | Loads the small example that is embedded in the page. |
+| Left arrow | Moves to the previous step. |
+| Play / Pause | Plays the steps automatically, or pauses. |
+| Right arrow | Moves to the next step. |
+| Slider | Jumps directly to a step. Step 0 is the initial state. |
+
+Step 0 is the initial state, in which every qubit is in `|0⟩`. It is not part of
+the JSON; it is added by the viewer, in the same way as the frontend is expected
+to do.
+
+## How the animation works {.unnumbered}
+
+The vector of each sphere is moved smoothly towards the value of the new step. A
+small oscillation is added in proportion to the `vibration` value of the qubit,
+so that a noisy qubit appears to shake.
+
+## The fields that are read {.unnumbered}
+
+The viewer reads only the fields of the contract. The fields that are used are
+`backend`, `total_qubits`, `initial_fidelity`, and, for each step, `step`,
+`operation`, `targets`, `phases`, `angle`, `acumulative_fidelity`,
+`acumulative_cost`, `states`, `probabilities`, `virtual_z`, `inactivity`,
+`fidelities` and `vibration`.
+
+## A note on the files of the frontend {.unnumbered}
+
+The steps of the viewer are described above. The final frontend is expected to be
+larger, and it may use a 3D library. The viewer is kept as a small independent
+file, so that the JSON can be checked without any setup.

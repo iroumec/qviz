@@ -1,0 +1,69 @@
+# Tests and demos {#sec-tests-demos}
+
+This page describes how the automated tests and the demo scripts are run.
+
+## Running the tests {.unnumbered}
+
+```bash
+make test
+```
+
+The command runs `pytest` over the `tests/` directory. All the tests must pass
+before a module is considered finished.
+
+A single test file can also be run.
+
+```bash
+.venv/bin/python -m pytest tests/test_translator.py -v
+```
+
+The tests are described in detail on the
+[Tests](../development/tests.qmd) page.
+
+## Running the linters {.unnumbered}
+
+```bash
+make lint
+```
+
+Two tools are run.
+
+- `flake8` checks the PEP 8 style, with a maximum line length of 88 characters.
+- `pydocstyle` checks that the docstrings follow PEP 257.
+
+## Running a demo {.unnumbered}
+
+Each pipeline stage has a small script that prints a readable result.
+
+```bash
+make demo M=transpiler
+make demo M=translator
+make demo M=simulator
+make demo M=vectorizer
+make demo M=metrics
+make demo M=compile
+```
+
+The `M` variable is required. The command runs
+`scripts/demo_<module>.py` with the virtual environment.
+
+The `demo_compile` script writes two files, `out/bell.json` and
+`out/ghz3.json`. The `out` directory is ignored by Git. These files can be
+opened with the [basic viewer](../frontend/viewer.qmd).
+
+## Viewing the result {.unnumbered}
+
+The JSON that is produced can be inspected by hand, or with the viewer.
+
+```bash
+make demo M=compile
+# then open frontend/viewer.html and drag out/bell.json onto the page
+```
+
+The viewer can also be served over HTTP, so that the last generated file is
+loaded automatically.
+
+```bash
+python -m http.server 8000
+# then open http://localhost:8000/frontend/viewer.html
+```

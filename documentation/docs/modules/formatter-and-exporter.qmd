@@ -1,0 +1,58 @@
+# Formatter and exporter {#sec-formatter-exporter}
+
+Two modules close the pipeline. The formatter builds the JSON-ready dictionary,
+and the exporter writes it as a JSON string.
+
+## `format(measured)` {.unnumbered}
+
+The function is found in `backend/core/formatter/formatter.py`. Because `format`
+is also the name of a Python built-in, the function is usually imported as a
+module: `from backend.core.formatter import formatter`, and called as
+`formatter.format(...)`.
+
+**Parameter**
+
+| Name | Type | Meaning |
+| --- | --- | --- |
+| `measured` | `MeasuredCircuit` | The output of the metrics stage. |
+
+**Returns** a `dict` that follows the JSON contract exactly.
+
+### What the function does {.unnumbered}
+
+1. The four top-level keys are written: `backend`, `total_qubits`,
+   `initial_fidelity` and `steps`.
+2. One entry is written for each step.
+3. A field that does not apply is left out. For example, `phases` is written only
+   for `gpi`, `gpi2` and `ms`, and `angle` is written only for `ms` and `zz`.
+4. Every floating-point number is rounded to `JSON_DECIMALS` decimals.
+5. The value `-0.0` is written as `0.0`.
+
+The full list of keys is given in the
+[JSON contract](../concepts/json-contract.qmd) page.
+
+## `export(data, path=None)` {.unnumbered}
+
+The function is found in `backend/core/exporter/exporter.py`.
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `data` | `dict` | required | The dictionary that is returned by `format`. |
+| `path` | string or `None` | `None` | When it is given, the JSON is also written to this file. |
+
+**Returns** the JSON as a string.
+
+The dictionary is written with two-space indentation, so that a person can read
+it easily. The non-ASCII characters are kept as they are, so that an arrow `→`
+is not escaped.
+
+## Why the dictionary and the string are separated {.unnumbered}
+
+The `compile` function returns a dictionary, not a string. A dictionary is easy
+to test. The `export` function then produces the string.
+
+From JavaScript, the string is the natural form. The string is parsed with
+`JSON.parse`, and the known problem of a Python dictionary becoming a JavaScript
+`Map` in Pyodide is avoided.

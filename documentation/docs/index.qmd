@@ -1,3 +1,55 @@
-# QViz
+# Documentation overview {.unnumbered}
 
-This is the start of the documentation.
+This page explains how the documentation is organised, and which conventions are
+used everywhere in the book.
+
+## Who this documentation is for {.unnumbered}
+
+It is written for three kinds of reader.
+
+- A new contributor, who needs to understand the code before it is changed.
+- A reviewer, who needs to check that the backend behaves as specified.
+- A teammate, who needs to know how the JSON is produced, so that a visualiser
+  can be connected to it.
+
+No previous knowledge of trapped-ion hardware is assumed. The few physics terms
+that are needed are defined where they first appear.
+
+## How the book is organised {.unnumbered}
+
+| Part | What is found there |
+| --- | --- |
+| Getting started | Installation, a first example and the test and demo commands. |
+| Core concepts | The pipeline, the units and the JSON contract. |
+| Backend modules | One page per module, with every function and parameter. |
+| Frontend | The basic viewer that reads the JSON file. |
+| Development | Tests, demos and the coding style. |
+
+## Conventions used in this book {.unnumbered}
+
+- **Passive voice.** The text is written in the passive voice where it is
+  natural, for example "the circuit is transpiled" rather than "we transpile the
+  circuit".
+- **Simple sentences.** One idea is given per sentence. Long sentences are
+  avoided.
+- **Units are always stated.** An angle is never given without saying whether it
+  is measured in radians or in turns. The units are collected on the
+  [Units and conventions](concepts/units-and-conventions.qmd) page.
+- **Code is shown, not executed.** Every code block is written in plain `python`
+  (or `json`) form. Nothing is run while the book is rendered, so the book can be
+  built without installing the package.
+- **Identifiers are kept in English.** Function names, parameter names and file
+  names are written exactly as they appear in the code.
+
+## A note on the word "backend" {.unnumbered}
+
+In Qollab, the platform where the project runs, the word *backend* is used in
+two different ways.
+
+1. The **library**: the Python package named `backend` that contains the
+   pipeline. This is documented in the book.
+2. The **backend object**: the quantum backend that the platform injects into
+   `main.py` (for example an IonQ simulator). It is received as an argument and
+   is never imported.
+
+The meaning is clear from the context on each page.

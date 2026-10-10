@@ -2,12 +2,44 @@ project:
   type: book
 
 book:
-  title: "QViz Overflow"
-  author: "Iñaki Roumec"
+  title: "QViz Documentation"
+  author: "Qubit Overflow"
   date: last-modified
+  search: true
   chapters:
-    - 
+    - index.qmd
     - documentation/docs/index.qmd
+    - part: "Getting started"
+      chapters:
+        - documentation/docs/getting-started/installation.qmd
+        - documentation/docs/getting-started/quickstart.qmd
+        - documentation/docs/getting-started/tests-and-demos.qmd
+    - part: "Core concepts"
+      chapters:
+        - documentation/docs/concepts/pipeline-overview.qmd
+        - documentation/docs/concepts/units-and-conventions.qmd
+        - documentation/docs/concepts/json-contract.qmd
+    - part: "Backend modules"
+      chapters:
+        - documentation/docs/modules/config-and-errors.qmd
+        - documentation/docs/modules/model.qmd
+        - documentation/docs/modules/provider.qmd
+        - documentation/docs/modules/transpiler.qmd
+        - documentation/docs/modules/translator.qmd
+        - documentation/docs/modules/simulator.qmd
+        - documentation/docs/modules/vectorizer.qmd
+        - documentation/docs/modules/metrics.qmd
+        - documentation/docs/modules/formatter-and-exporter.qmd
+        - documentation/docs/modules/compiler.qmd
+        - documentation/docs/modules/tomography.qmd
+    - part: "Frontend"
+      chapters:
+        - documentation/docs/frontend/viewer.qmd
+    - part: "Development"
+      chapters:
+        - documentation/docs/development/tests.qmd
+        - documentation/docs/development/demos.qmd
+        - documentation/docs/development/style-and-conventions.qmd
 
 bibliography: references.bib
 

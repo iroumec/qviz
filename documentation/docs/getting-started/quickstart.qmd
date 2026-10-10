@@ -1,0 +1,85 @@
+# Quickstart {#sec-quickstart}
+
+This page shows the smallest possible use of the backend. A two-qubit Bell
+circuit is compiled, and the resulting JSON is printed.
+
+## The two public functions {.unnumbered}
+
+Only two functions are needed.
+
+```python
+from backend import compile, export
+
+data = compile(backend, circuit)   # a Python dictionary
+text = export(data)                # a JSON string
+```
+
+- `compile` runs the whole pipeline and returns a dictionary.
+- `export` turns that dictionary into a JSON string, and can also write it to a
+  file.
+
+The variable `backend` is provided by Qollab. On a local computer, any object
+that can be used as a Qiskit backend is accepted, for example
+`BasicSimulator()`.
+
+## A complete example {.unnumbered}
+
+```python
+from qiskit import QuantumCircuit
+from qiskit.providers.basic_provider import BasicSimulator
+
+from backend import compile, export
+
+
+def build_circuit() -> QuantumCircuit:
+    """Build a two-qubit Bell-state circuit."""
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    return circuit
+
+
+backend = BasicSimulator()
+data = compile(backend, build_circuit(), shots=1024)
+print(export(data))
+```
+
+When the example is run, the JSON that is produced starts as follows. The first
+two steps are the translation of the Hadamard gate on qubit 0: a virtual Z
+rotation, followed by a `gpi2` rotation.
+
+```json
+{
+  "backend": "basic_simulator → iones (referencia Aria)",
+  "total_qubits": 2,
+  "initial_fidelity": 99.5,
+  "steps": [
+    {
+      "step": 1,
+      "operation": "virtualz",
+      "targets": [0],
+      "acumulative_fidelity": 99.5,
+      "states": [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]],
+      "probabilities": [[1.0, 0.0], [1.0, 0.0]]
+    }
+  ]
+}
+```
+
+Only a few fields are shown above. The full list of fields is given in the
+[JSON contract](../concepts/json-contract.qmd) page.
+
+## What happens behind the two calls {.unnumbered}
+
+When `compile` is called, the following steps are performed, in this order.
+
+1. The provider of the backend is detected.
+2. The circuit is transpiled for that backend.
+3. The transpiled circuit is translated into the native ion gates.
+4. The state of every qubit is computed after every native gate.
+5. The state is converted into Cartesian Bloch vectors.
+6. The didactic metrics are added.
+7. The result is formatted as a dictionary.
+
+Each of these steps is documented on its own page. The overview is given on the
+[Pipeline overview](../concepts/pipeline-overview.qmd) page.

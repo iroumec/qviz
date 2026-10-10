@@ -1,0 +1,120 @@
+# Simulator {#sec-simulator}
+
+The simulator is found in `backend/core/simulator/`. It computes the state of
+every qubit after every native operation. The statevector is computed exactly;
+no noise is added at this stage. Each native gate has its own file, and a
+`matrix` function is defined in each one.
+
+## `simulate(native, strategy="statevector")` {.unnumbered}
+
+The main function of the module.
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `native` | `NativeCircuit` | required | The circuit to simulate. |
+| `strategy` | string | `"statevector"` | The simulation method. Only `"statevector"` is accepted here. The tomography method is documented on its own page. |
+
+**Returns** a `SimulatedCircuit`.
+
+**Raises** `NotImplementedError` if another strategy is given. The tomography
+strategy is handled by the `compiler`, before this function is called.
+
+## How the state is stored {.unnumbered}
+
+The state is a NumPy array of complex numbers with the shape `(2,) * n`, where
+`n` is the number of qubits. It is initialised to `|0...0⟩`. The Qiskit
+little-endian order is used: qubit `q` lives on the axis `n - 1 - q`.
+
+A gate is applied with a tensor contraction over the axes of its target qubits.
+The matrix of a two-qubit gate is written in the convention of the reference
+document, where the first target is the most significant qubit.
+
+## How a qubit is described {.unnumbered}
+
+After each operation, the reduced density matrix of every qubit is found by
+tracing out the other qubits. The Bloch components are then read from it.
+
+$$
+x = 2 \operatorname{Re}(\rho_{01}), \qquad
+y = -2 \operatorname{Im}(\rho_{01}), \qquad
+z = \rho_{00} - \rho_{11}
+$$
+
+The length `r` and the two angles `theta` and `phi` are computed from `(x, y,
+z)`. The angle `phi` is wrapped to the range [0, 2π). When `r` is close to zero,
+both angles are set to zero. When `theta` is close to 0 or to π, `phi` is set to
+zero.
+
+## `virtualz` and inactivity {.unnumbered}
+
+A `virtualz` operation is applied to the state as a real `RZ` rotation, so that
+the vector turns around the Z axis. This is the visible click of a virtual Z
+gate. The accumulated rotation of each qubit is stored, and it is wrapped to the
+range [0, 2π).
+
+## The gate matrices {.unnumbered}
+
+Each file defines one function. The phases are in radians. The angle of `ms` and
+`zz` is in turns.
+
+### `gpi.matrix(phase)` {.unnumbered}
+
+```python
+[[0, exp(-i*phase)],
+ [exp(i*phase), 0]]
+```
+
+**Parameter:** `phase` is the rotation phase, in radians.
+**Returns** a 2x2 NumPy array.
+
+`gpi(phase)` is a rotation of π around the axis `(cos phase, sin phase, 0)`.
+
+### `gpi2.matrix(phase)` {.unnumbered}
+
+```python
+1/sqrt(2) * [[1, -i*exp(-i*phase)],
+             [-i*exp(i*phase), 1]]
+```
+
+**Parameter:** `phase` is the rotation phase, in radians.
+**Returns** a 2x2 NumPy array.
+
+`gpi2(phase)` is a rotation of π/2 around the same axis family. For example,
+`gpi2(pi/2)` is equal to `RY(pi/2)`.
+
+### `ms.matrix(phase0, phase1, angle)` {.unnumbered}
+
+```python
+cos(pi*angle)   on the diagonal,
+-i*exp(-i*(phase0 + phase1))*sin(pi*angle)   at |00><11| and |11><00|,
+-i*exp(-i*(phase0 - phase1))*sin(pi*angle)   at |01><10| and |10><01|.
+```
+
+| Parameter | Unit | Meaning |
+| --- | --- | --- |
+| `phase0` | radians | The phase of the first target qubit. |
+| `phase1` | radians | The phase of the second target qubit. |
+| `angle` | turns | The entanglement angle, in [0, 0.25]. |
+
+**Returns** a 4x4 NumPy array.
+
+### `zz.matrix(angle)` {.unnumbered}
+
+```python
+diag(exp(-i*pi*angle), exp(i*pi*angle),
+     exp(i*pi*angle), exp(-i*pi*angle))
+```
+
+**Parameter:** `angle` is the entanglement angle, in turns.
+**Returns** a 4x4 NumPy array.
+
+### `virtualz.matrix(rotation)` {.unnumbered}
+
+```python
+diag(exp(-i*rotation/2), exp(i*rotation/2))
+```
+
+**Parameter:** `rotation` is the rotation angle, in radians.
+**Returns** a 2x2 NumPy array.

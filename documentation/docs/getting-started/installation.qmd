@@ -1,0 +1,61 @@
+# Installation {#sec-installation}
+
+This page describes how the project is installed on a local computer, and how
+the documentation is built.
+
+## Requirements {.unnumbered}
+
+| Software | Version | Why it is needed |
+| --- | --- | --- |
+| Python | 3.12 or newer | The backend is written in Python. Qollab uses 3.14. |
+| Qiskit | `>=2.5.2,<3` | Circuits, transpilation and the test oracles. |
+| qiskit-ionq | any recent version | The IonQ native gates and the IonQ backend. |
+| NumPy | 2.x | The statevector and the gate matrices. |
+| Quarto | 1.4 or newer | Only for building this book. |
+
+The Python packages are declared in `pyproject.toml`. The same packages, without
+the development tools, are declared in `requirements.txt` for Qollab.
+
+## Installing the library {.unnumbered}
+
+A virtual environment is created and the package is installed in editable mode.
+The commands are run from the project root.
+
+```bash
+make venv          # creates the .venv directory
+make install       # installs the package with its development extras
+```
+
+The `make install` command runs `pip install -e ".[dev]"`. The development
+extras are `pytest`, `jsonschema`, `flake8` and `pydocstyle`.
+
+The same steps can be done by hand:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e ".[dev]"
+```
+
+## Checking the installation {.unnumbered}
+
+```bash
+make test          # runs the test suite with pytest
+make lint          # runs flake8 and pydocstyle
+```
+
+If both commands finish without an error, the installation is correct.
+
+## Building this book {.unnumbered}
+
+The book is a Quarto project. It is configured by `_quarto.yml` in the project
+root. The following commands are available.
+
+```bash
+make -f Makefile.quarto render       # builds the HTML book into _book/
+make -f Makefile.quarto preview      # live preview on http://localhost:4321
+make -f Makefile.quarto pdf-typst    # builds a PDF with Typst
+make -f Makefile.quarto clean        # removes the build output
+```
+
+The output is written to the `_book` directory. This directory is not committed.

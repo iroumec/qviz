@@ -1,0 +1,82 @@
+# Transpiler {#sec-transpiler}
+
+The transpiler is found in `backend/core/transpiler/transpiler.py`. It changes
+the circuit of the user into the gate set of the chosen backend. It is the first
+stage of the pipeline, and the only one that may call `backend.run` before the
+tomography stage.
+
+## `transpile(info, backend, qc, *, allow_remote=True)` {.unnumbered}
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `info` | `BackendInfo` | required | The backend information produced by `provider.detect`. The provider decides which strategy is used. |
+| `backend` | any object | required | The backend object. It is passed to Qiskit, and it may be used for a dry-run job. |
+| `qc` | `QuantumCircuit` | required | The circuit of the user. It is never changed. |
+| `allow_remote` | bool | `True` | When it is `False`, the IonQ dry-run job is not allowed. This is used by the tomography strategy, because that strategy needs the single job for itself. |
+
+**Returns** a `TranspiledCircuit`.
+
+**Raises** `CircuitTooLargeError` if the circuit has more than
+`MAX_QUBITS` qubits, and `TranspilationError` if the circuit is empty or cannot
+be transpiled.
+
+## What is done first {.unnumbered}
+
+Two operations are always performed before the strategies are tried.
+
+1. The final measurements are removed.
+2. The number of qubits is checked against `MAX_QUBITS`.
+
+A circuit with measurements at the end is therefore accepted. A measurement in
+the middle of the circuit is not removed, and it is rejected later by the
+translator.
+
+## The IonQ strategies {.unnumbered}
+
+For an IonQ backend, three strategies are tried, in order. The first one that
+works is used.
+
+| Order | Strategy | How it works | Job spent |
+| --- | --- | --- | --- |
+| 1 | `native-local` | The circuit is transpiled locally with a native-gate backend, by `qiskit.transpile`. | none |
+| 2 | `remote` | A dry-run job is sent with `backend.run(..., dry_run=True)`. The native circuit is read from `job.compiled_circuit(lang="native")`. | one |
+| 3 | `local` | The standard Qiskit transpiler is used. The result is handled like a non-IonQ circuit. | none |
+
+Strategy 1 is used only when the gateset of the backend is already `"native"`.
+Strategy 2 is skipped when `allow_remote` is `False`. If strategy 2 fails for
+any reason, a warning is logged, and strategy 3 is used.
+
+The order of the strategies is important for the platform rule of one job per
+run. The native-local strategy spends no job. The remote strategy spends the one
+job that is allowed.
+
+## The other backends {.unnumbered}
+
+For a backend that is not IonQ, one strategy is used.
+
+1. The circuit is transpiled with `qiskit.transpile(qc, backend=backend,
+   optimization_level=1)`.
+2. If that fails, it is transpiled again with a fixed basis and no coupling map.
+   The basis is `["rz", "sx", "x", "cz", "cx"]`.
+
+If both attempts fail, a `TranspilationError` is raised.
+
+An IonQ circuit is **never** produced for a non-IonQ backend. The change between
+providers is a static translation, which is done by the translator.
+
+## The layout {.unnumbered}
+
+When a layout exists, it is saved in the `layout` field. The layout maps the
+user qubits onto the physical qubits of the backend. It is read with
+`circuit.layout.initial_index_layout(filter_ancillas=True)`. The layout is used
+by the translator, so that unused physical qubits can be removed.
+
+## The meaning of the `source` field {.unnumbered}
+
+The `source` field of the returned object says how the circuit was produced.
+
+- `"ionq-native"`: the circuit already contains native gates, or native
+  operations were returned by the IonQ API.
+- `"qiskit"`: the circuit is a normal Qiskit circuit, and it must be translated.

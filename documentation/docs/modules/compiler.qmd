@@ -1,0 +1,64 @@
+# Compiler {#sec-compiler}
+
+The compiler is found in `backend/core/compiler/compiler.py`. It is the only
+module that knows all the other modules. It connects the stages of the pipeline,
+and it returns the final dictionary.
+
+## `compile(backend, qc, *, entangler=None, strategy="statevector", shots=1024, allow_paid=False)` {.unnumbered}
+
+This is the main entry point of the library. It is exported from `backend` for
+convenience: `from backend import compile`.
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `backend` | any object | required | The backend that is injected by Qollab, or a local backend in a test. |
+| `qc` | `QuantumCircuit` | required | The circuit of the user. It is never changed. |
+| `entangler` | `"ms"`, `"zz"` or `None` | `None` | The target entangler. When it is `None`, it is inferred from the backend. |
+| `strategy` | string | `"statevector"` | `"statevector"` computes the state exactly. `"tomography"` measures the state on the backend. |
+| `shots` | int | `1024` | The number of shots. It is used for the cost, and for the tomography. |
+| `allow_paid` | bool | `False` | It must be set to `True` before tomography is allowed on real IonQ hardware, because credits are spent. |
+
+**Returns** a `dict` that follows the JSON contract.
+
+**Raises**
+
+| Exception | When |
+| --- | --- |
+| `CircuitTooLargeError` | The circuit has more than `MAX_QUBITS` qubits. |
+| `UnsupportedOperationError` | The circuit contains an operation that cannot be shown. |
+| `TranspilationError` | The circuit cannot be transpiled. |
+| `QVizError` | An unknown strategy is requested, or tomography is requested on hardware without `allow_paid`. |
+
+## The steps that are performed {.unnumbered}
+
+The same order is always used.
+
+1. The provider is detected: `provider.detect(backend, entangler)`.
+2. The circuit is transpiled: `transpiler.transpile(...)`.
+3. The matching translator is built and used: `translator.create(info).translate(...)`.
+4. The state is found.
+   - For `"statevector"`, the simulator is used.
+   - For `"tomography"`, the tomography stage is used.
+5. The state is vectorized: `vectorizer.vectorize(...)`.
+6. The metrics are added: `metrics.measure(...)`.
+7. The dictionary is formatted: `formatter.format(...)`.
+
+The remote transpile is disabled when the tomography strategy is used, because
+the tomography stage needs the single allowed job for itself. This is done with
+`allow_remote=False`.
+
+## A complete example {.unnumbered}
+
+```python
+from qiskit import QuantumCircuit
+from backend import compile
+
+circuit = QuantumCircuit(2)
+circuit.h(0)
+circuit.cx(0, 1)
+
+data = compile(backend, circuit, shots=1024)
+first_step = data["steps"][0]
+```

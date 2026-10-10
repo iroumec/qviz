@@ -1,0 +1,71 @@
+# Pipeline overview {#sec-pipeline}
+
+The backend is built as a pipeline. Each stage receives one object, and returns
+a new object of a different type. The stages are connected by the `compiler`
+module, and by nothing else.
+
+## The stages {.unnumbered}
+
+```
+QuantumCircuit + backend
+        │
+        ▼
+[provider]   detect(backend)              ──► BackendInfo
+        │
+        ▼
+[transpiler] transpile(info, backend, qc) ──► TranspiledCircuit
+        │
+        ▼
+[translator] Translator.translate(...)    ──► NativeCircuit
+        │
+        ▼
+[simulator]  simulate(native)             ──► SimulatedCircuit
+        │
+        ▼
+[vectorizer] vectorize(simulated)         ──► VectorizedCircuit
+        │
+        ▼
+[metrics]    measure(vectorized, info)    ──► MeasuredCircuit
+        │
+        ▼
+[formatter]  format(measured)             ──► dict
+        │
+        ▼
+[exporter]   export(data)                 ──► str (JSON)
+```
+
+## What each stage does {.unnumbered}
+
+| Stage | Input | Output | Short description |
+| --- | --- | --- | --- |
+| provider | a backend object | `BackendInfo` | The provider, the entangler and the noise profile are found. |
+| transpiler | circuit and backend | `TranspiledCircuit` | The circuit is changed into the gates of the backend. |
+| translator | `TranspiledCircuit` | `NativeCircuit` | Only `gpi`, `gpi2`, `ms` or `zz`, and `virtualz` are kept. |
+| simulator | `NativeCircuit` | `SimulatedCircuit` | The state of each qubit is computed after each gate. |
+| vectorizer | `SimulatedCircuit` | `VectorizedCircuit` | Angles are changed into `(x, y, z)` vectors. |
+| metrics | `VectorizedCircuit` | `MeasuredCircuit` | Fidelities, inactivity, vibration and cost are added. |
+| formatter | `MeasuredCircuit` | `dict` | The dictionary of the JSON contract is built. |
+| exporter | `dict` | `str` | The dictionary is written as JSON. |
+
+## Two rules that concern every module {.unnumbered}
+
+Two rules are respected by all the modules of the pipeline.
+
+1. **No module imports another pipeline module.** A module may import only
+   `core.model`, `core.errors`, `core.config` and, when needed, `core.provider`.
+   Only `compiler` knows all the other modules. This keeps the modules easy to
+   test and to change.
+2. **The public functions are pure.** An object is received, and a new object is
+   returned. The input is never changed. There is no global state. There are no
+   `print` calls inside `backend/core`; the `logging` module is used instead.
+
+There is one documented exception. The `transpiler` and `tomography` modules are
+allowed to call `backend.run`, because a real measurement is needed. The rule of
+"one job per run" is respected.
+
+## Where the data types are defined {.unnumbered}
+
+Every object that travels between the stages is defined as a frozen dataclass in
+`backend/core/model.py`. A frozen dataclass cannot be changed after it is
+created, so the purity rule is easy to keep. The types are documented on the
+[Data model](../modules/model.qmd) page.

@@ -1,0 +1,81 @@
+# Tests {#sec-tests}
+
+The tests are found in the `tests/` directory. They are run with `pytest`:
+
+```bash
+make test
+```
+
+One file exists for each module. The name of a file is `test_<module>.py`.
+
+## The shared circuits {.unnumbered}
+
+The file `tests/circuits.py` holds the circuits that are used by several test
+files, together with a helper. Every circuit is built by a function, so that a
+fresh circuit is made for each test.
+
+| Function | Circuit |
+| --- | --- |
+| `single_x()` | One qubit, with an `x` gate. |
+| `single_h()` | One qubit, with a Hadamard gate. |
+| `rotations()` | One qubit, with three arbitrary rotations. |
+| `bell()` | Two qubits, in a Bell state. |
+| `bell_measured()` | The Bell circuit, with a final measurement. |
+| `ghz3()` | Three qubits, in a GHZ state. |
+| `swap_test()` | Three qubits, with a `swap` and a `ccx`, so that decompositions are forced. |
+| `idle_qubit()` | Three qubits, where one qubit is never used. |
+
+The helper `make_info(entangler="ms")` builds a synthetic `BackendInfo`. It is
+used by the tests that do not need a real backend.
+
+## The fixtures {.unnumbered}
+
+The file `tests/conftest.py` defines three fixtures. A fixture is a value that
+`pytest` prepares for a test.
+
+| Fixture | Value |
+| --- | --- |
+| `basic_backend` | A `BasicSimulator`, the ideal local backend. |
+| `heron_backend` | A `GenericBackendV2` with the basis `["cz", "rz", "sx", "x"]`, like an IBM Heron device. |
+| `eagle_backend` | A `GenericBackendV2` with the basis `["ecr", "rz", "sx", "x"]`, like an IBM Eagle device. |
+
+No network is used and no credential is needed. Every IonQ backend is mocked.
+
+## The test files {.unnumbered}
+
+| File | What is checked |
+| --- | --- |
+| `test_smoke.py` | The public API exists, and a `NativeOp` can be built. |
+| `test_provider.py` | The provider detection, the entangler rule and the hardware rule. |
+| `test_transpiler.py` | The three IonQ strategies, the fallback and the size limit. |
+| `test_translator.py` | Every rule is checked by an equivalence test. Invariants are also checked. |
+| `test_simulator.py` | Hand-computed cases, the statevector oracle, and the gate matrices. |
+| `test_vectorizer.py` | The round trip from Cartesian to spherical and back, and the probabilities. |
+| `test_metrics.py` | Hand-computed values, monotonicity, the virtual Z rule and the ideal profile. |
+| `test_compile.py` | The schema, a golden file, the export and the forced entangler. |
+| `test_tomography.py` | The estimates, the single run call and the hardware guard. |
+
+## The oracles {.unnumbered}
+
+An oracle is a trusted source of truth that is used for comparison.
+
+- **For the translator:** the circuits `Operator(to_qiskit(native))` and
+  `Operator(circuit)` are compared with the `equiv` method. The `equiv` method
+  ignores the global phase, which has no physical meaning.
+- **For the simulator:** the state is compared with
+  `qiskit.quantum_info.Statevector`. A partial trace gives the reduced state of
+  each qubit.
+- **For the JSON:** the result is validated with the JSON schema that is stored
+  in `documentation/schema/visualization.schema.json`.
+
+## The golden file {.unnumbered}
+
+The file `tests/golden/bell_basic.json` is a snapshot of the full output for the
+Bell circuit on the `BasicSimulator`. The test compares the new result with this
+file. When a change to the output is intended, the golden file is regenerated,
+and the change is mentioned in the review.
+
+## Numerical tolerances {.unnumbered}
+
+The tolerance is `atol = 1e-9` for the statevector comparisons. The tomography is
+statistical, so a larger tolerance is used there: `5 / sqrt(shots)`.

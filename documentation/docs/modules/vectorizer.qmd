@@ -1,0 +1,36 @@
+# Vectorizer {#sec-vectorizer}
+
+The vectorizer is found in `backend/core/vectorizer/vectorizer.py`. It changes
+the spherical coordinates of the simulator into Cartesian coordinates, and it
+computes the two probabilities of each qubit.
+
+## `vectorize(simulated)` {.unnumbered}
+
+**Parameter**
+
+| Name | Type | Meaning |
+| --- | --- | --- |
+| `simulated` | `SimulatedCircuit` | The output of the simulator. |
+
+**Returns** a `VectorizedCircuit`.
+
+## The conversion {.unnumbered}
+
+For every qubit, the spherical angles are changed into a Cartesian vector.
+
+$$
+x = r \sin\theta \cos\phi, \qquad
+y = r \sin\theta \sin\phi, \qquad
+z = r \cos\theta
+$$
+
+The length `r` is clipped to 1 before the conversion, in order to remove a small
+numerical error. The two probabilities are then computed from `z`.
+
+$$
+p(|0\rangle) = \frac{1 + z}{2}, \qquad p(|1\rangle) = \frac{1 - z}{2}
+$$
+
+This conversion is the exact inverse of the one that is used by the simulator.
+The reason for passing through the spherical form is that the user interface also
+shows the angles `theta` and `phi`.

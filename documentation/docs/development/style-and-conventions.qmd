@@ -1,0 +1,110 @@
+# Style and conventions {#sec-style}
+
+This page describes the rules that are followed by the code. The rules are
+checked by two tools, `flake8` and `pydocstyle`, which are run with `make lint`.
+
+## The layout of the project {.unnumbered}
+
+```
+main.py                     Entry point for Qollab.
+requirements.txt            Dependencies for Qollab.
+pyproject.toml              Local development and packaging.
+backend/                    The library.
+  __init__.py               The public API: compile, export, __version__.
+  core/
+    model.py                The frozen dataclasses of the pipeline.
+    errors.py               The exception hierarchy.
+    config.py               The constants.
+    provider/               Provider detection and noise profiles.
+    compiler/               The pipeline orchestration.
+    transpiler/             Transpilation for the backend.
+    translator/             Translation into the native gate set.
+    simulator/              The statevector and the gate matrices.
+    vectorizer/             The Bloch vectors.
+    metrics/                The didactic metrics.
+    formatter/              The JSON contract.
+    exporter/               The JSON serialization.
+tests/                      The pytest suite.
+scripts/                    The demo scripts.
+frontend/                   The basic viewer.
+documentation/              The specification, the schema and this book.
+```
+
+## One module per package {.unnumbered}
+
+Each pipeline stage lives in its own package:
+`backend/core/<module>/<module>.py`. The public function has the same name as the
+module, and it is a verb.
+
+| Module | Function |
+| --- | --- |
+| `transpiler` | `transpile` |
+| `simulator` | `simulate` |
+| `vectorizer` | `vectorize` |
+| `metrics` | `measure` |
+| `formatter` | `format` |
+| `exporter` | `export` |
+| `provider` | `detect` |
+
+## Imports {.unnumbered}
+
+Imports are absolute, from the root of the package.
+
+```python
+from backend.core.transpiler import transpiler   # correct
+from core.transpiler import transpiler            # incorrect
+```
+
+The second form does not work in Qollab, because the project root is the first
+entry of `sys.path` there.
+
+## Purity {.unnumbered}
+
+The public functions are pure. An object is received, and a new object is
+returned. The input is never changed. There is no global state.
+
+A frozen dataclass is used for every object that travels between the stages, so
+that an accidental change raises an error.
+
+## No printing inside the library {.unnumbered}
+
+The `print` function is used only in `scripts/` and in `main.py`. Inside
+`backend/core`, the `logging` module is used instead.
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+logger.warning("a useful message")
+```
+
+## Comments and docstrings {.unnumbered}
+
+- The code is written in English. The identifiers, the comments and the
+  docstrings are in English.
+- Every module, every public class and every public function has a docstring.
+- A docstring starts with a short line in the imperative mood, for example
+  "Return the ...". The line ends with a full stop. A longer description follows
+  after a blank line when it is needed.
+- The units of every parameter and of every return value are stated.
+
+## Type hints {.unnumbered}
+
+Type hints are given in every public signature. The `from __future__ import
+annotations` line is used at the top of a module, so that the newer syntax works
+on older interpreters.
+
+## Line length and formatting {.unnumbered}
+
+- The maximum line length is 88 characters.
+- The rules `E203` and `W503` are ignored, because they conflict with common
+  formatting tools.
+- The settings are stored in `.flake8`.
+
+## Git {.unnumbered}
+
+- `main` is the stable branch. `development` is the integration branch.
+- One branch is used per module: `feature/<module>`.
+- A commit is made only when the team asks for it.
+- A commit message is written in English. The first line is a short summary, and
+  a body with bullets is added when it helps.

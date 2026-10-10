@@ -1,0 +1,67 @@
+# Tomography {#sec-tomography}
+
+The tomography stage is found in `backend/core/simulator/tomography.py`. It is
+an alternative to the exact simulator. Instead of computing the state, the three
+Pauli expectations of each qubit are **measured** on the backend. The effect of
+the real noise is therefore seen.
+
+The tomography is selected with `strategy="tomography"` in `compile`.
+
+## `measure(native, backend, info, *, shots=1024, allow_paid=False)` {.unnumbered}
+
+**Parameters**
+
+| Name | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `native` | `NativeCircuit` | required | The circuit to measure. |
+| `backend` | any object | required | The backend that is used for the measurement. |
+| `info` | `BackendInfo` | required | The backend information. The hardware flag is checked. |
+| `shots` | int | `1024` | The number of shots for each circuit. |
+| `allow_paid` | bool | `False` | It must be `True` before hardware is used. |
+
+**Returns** a `SimulatedCircuit`, so that the rest of the pipeline is unchanged.
+
+**Raises** `QVizError` when the backend is real hardware and `allow_paid` is
+`False`. This guard exists because many circuits are sent, and credits are
+spent.
+
+## How the circuits are built {.unnumbered}
+
+For each prefix of the circuit, three circuits are built. A prefix is the first
+`k` operations, where `k` goes from 1 to `N`, the total number of operations.
+
+| Basis | Preparation before the measurement | What is measured |
+| --- | --- | --- |
+| Z | nothing | `⟨Z⟩` |
+| X | a Hadamard gate on every qubit | `⟨X⟩` |
+| Y | an `Sdg` gate, then a Hadamard, on every qubit | `⟨Y⟩` |
+
+The total number of circuits is therefore `3 * N`. All the circuits are sent in a
+**single** call to `backend.run(list_of_circuits, shots=shots)`. This respects
+the rule of one job per run on IonQ.
+
+For a backend that is not IonQ, the circuits are transpiled for that backend
+before they are sent.
+
+## How an expectation is found {.unnumbered}
+
+The counts of a measurement are used. For one qubit `q`, the bit of the qubit is
+read from each bitstring. The rightmost character is qubit 0.
+
+$$
+\langle \sigma \rangle_q = \frac{n_0 - n_1}{\text{shots}}
+$$
+
+where `n_0` and `n_1` are the numbers of shots in which the bit of qubit `q` is
+0 or 1. The three expectations give `x`, `y` and `z`. The vector is clipped to
+the unit ball, and the angles are computed in the same way as in the exact
+simulator.
+
+## Known conflicts {.unnumbered}
+
+- On IonQ, the remote strategy of the transpiler also spends the single job. The
+  transpiler is therefore called with `allow_remote=False` when the tomography is
+  used.
+- The number of circuits grows quickly. With a noisy simulator, the run time
+  grows with `shots * 3 * N`. A warning is logged.
+- On real hardware, `allow_paid=True` is required. This is a deliberate guard.

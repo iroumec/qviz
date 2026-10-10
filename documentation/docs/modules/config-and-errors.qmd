@@ -1,0 +1,52 @@
+# Configuration and errors {#sec-config-errors}
+
+This page documents two small modules that are used by every other module:
+`backend/core/config.py` and `backend/core/errors.py`.
+
+## The configuration module {.unnumbered}
+
+The file `backend/core/config.py` contains only constants. No function is
+defined there. The constants can be imported as `from backend.core import
+config`, and then used as `config.MAX_QUBITS`.
+
+| Constant | Value | Meaning |
+| --- | --- | --- |
+| `MAX_QUBITS` | `16` | The largest allowed number of qubits. A larger circuit is rejected. |
+| `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
+| `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
+| `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
+| `TWO_PI` | `2 * pi` | One full turn, in radians. It is used for the turns-to-radians conversion. |
+| `NATIVE_OPS` | tuple | The names of the allowed native operations: `gpi`, `gpi2`, `ms`, `zz` and `virtualz`. |
+
+### Why the number of qubits is limited {.unnumbered}
+
+The statevector of 16 qubits occupies about one megabyte, which is acceptable in
+a browser. A chain of more than 16 ions is also of little educational value, so
+the limit is set at 16.
+
+## The error module {.unnumbered}
+
+The file `backend/core/errors.py` defines a small hierarchy of exceptions. Only
+these exceptions are raised by the backend, so that a caller can catch all the
+expected failures with one `except` clause.
+
+```
+QVizError
+├── UnsupportedOperationError
+├── CircuitTooLargeError
+└── TranspilationError
+```
+
+| Exception | Raised when |
+| --- | --- |
+| `QVizError` | The base class. It is not raised directly. It is used to catch any QViz error. |
+| `UnsupportedOperationError` | The circuit contains an operation that cannot be shown, for example a mid-circuit measurement, a `reset`, or classical control flow. |
+| `CircuitTooLargeError` | The circuit has more qubits than `MAX_QUBITS`. |
+| `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
+
+### An unknown provider is not an error {.unnumbered}
+
+If the provider of a backend cannot be recognised, no error is raised. The
+backend is handled by a generic strategy instead. This behaviour is described on
+the [Provider](provider.qmd) page. An error is raised only when an
+operation has no meaning in a visualiser.
