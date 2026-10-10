@@ -6,13 +6,14 @@ files of the root to decide the type of the project. Qollab also runs no
 ``<script>`` of the HTML, loads a single style sheet (``main.css``) and cannot
 read the files of the project from JS. This script builds the project from the
 repository: the real viewer, ``frontend/index.html``. Its markup becomes
-``index.html``, its style ``main.css``, and the modules of ``frontend/js`` are
-copied as they are. ``main.js`` is generated: a short prelude that gives the
-viewer the Qollab services (``window.QVIZ_HOST``) and then imports the entry
-module ``js/main.js``. The project also has ``qollab_api.py``,
-``requirements.txt``, the ``LICENSE`` (MIT) and the libraries ``backend/`` and
-``examples/``. ``main.py`` is left out on purpose: in a JS project it could
-compile a second time and spend a second IonQ job.
+``index.html`` and its style ``main.css``. ``main.js`` is generated: a short
+prelude that gives the viewer the Qollab services (``window.QVIZ_HOST``) followed
+by **all the modules of** ``frontend/js`` **bundled in one file**. Qollab does not
+serve the other files of the project, so a relative ``import("./js/main.js")``
+fails there (``error loading dynamically imported module``). The project also
+has ``qollab_api.py``, ``requirements.txt``, the ``LICENSE`` (MIT) and the
+libraries ``backend/`` and ``examples/``. ``main.py`` is left out on purpose: in
+a JS project it could compile a second time and spend a second IonQ job.
 
 Upload the **content** of ``qollab/``. See ``documentation/prompts/qollab_pruebas.md``.
 
@@ -24,6 +25,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
+from collections.abc import Iterator
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -110,9 +112,6 @@ try {
   document.getElementById("error").textContent =
     "No se pudo conectar con Python: " + error.message;
 }
-
-// The viewer is modular: it imports three and three/addons by name.
-await import("./js/main.js");
 """
 
 
@@ -139,13 +138,88 @@ def split_viewer(html: str) -> tuple[str, str]:
     return style.strip(), markup.strip()
 
 
+_IMPORT = re.compile(
+    r"^import\s+([^\"';]*?)\s+from\s+[\"']([^\"']+)[\"'];?[ \t]*\n", re.M
+)
+_EXPORT_DECLARATION = re.compile(
+    r"^export\s+(?:async\s+function|function|class|const|let|var)\s+(\w+)", re.M
+)
+_EXPORT_DESTRUCTURING = re.compile(r"^export\s+(?:const|let|var)\s+\{([^}]*)\}", re.M)
+
+
+def _module_order(modules: dict[str, str], name: str, seen: set[str]) -> Iterator[str]:
+    """Yield the modules reachable from ``name``, each after what it imports."""
+    if name in seen:
+        return
+    seen.add(name)
+    for _, path in _IMPORT.findall(modules[name]):
+        if path.startswith("."):
+            yield from _module_order(modules, Path(path).stem, seen)
+    yield name
+
+
+def _variable(name: str) -> str:
+    """Return the variable that holds what the module ``name`` exports."""
+    return "__module_" + re.sub(r"\W", "_", name)
+
+
+def _exported_names(source: str) -> list[str]:
+    if re.search(r"^export\s+(default\b|\{)", source, re.M):
+        raise SystemExit("the viewer modules may only use `export <declaration>`")
+    names = _EXPORT_DECLARATION.findall(source)
+    for group in _EXPORT_DESTRUCTURING.findall(source):
+        names += [part.strip().split(":")[-1].strip() for part in group.split(",")]
+    return [name for name in names if name]
+
+
+def bundle_modules(modules: dict[str, str], entry: str = "main") -> str:
+    """Return the modules of the viewer as one script, without relative imports.
+
+    ``modules`` maps a module name (``scene`` for ``scene.js``) to its source.
+    Each module becomes an ``async`` function with its own scope, so two modules
+    may declare the same private name; what it exports is returned as an object
+    and the importers destructure it. The imports of other packages (``three``)
+    are not touched: they are collected, repeated ones dropped, and put first.
+    """
+    external: list[str] = []
+    parts: list[str] = []
+    for name in _module_order(modules, entry, set()):
+        source = modules[name]
+
+        def replace(match: re.Match[str], name: str = name) -> str:
+            clause, path = match.group(1).strip(), match.group(2)
+            if not path.startswith("."):
+                statement = f'import {" ".join(clause.split())} from "{path}";'
+                if statement not in external:
+                    external.append(statement)
+                return ""
+            target = _variable(Path(path).stem)
+            if clause.startswith("{"):
+                return f"const {clause.replace(' as ', ': ')} = {target};\n"
+            if clause.startswith("* as "):
+                return f"const {clause[5:].strip()} = {target};\n"
+            raise SystemExit(f"unsupported import in {name}.js: {clause!r}")
+
+        body = _IMPORT.sub(replace, source)
+        names = _exported_names(source)
+        body = re.sub(r"^export\s+", "", body, flags=re.M)
+        parts.append(
+            f"// ---- {name}.js\n"
+            f"const {_variable(name)} = await (async () => {{\n{body.strip()}\n"
+            f"return {{ {', '.join(names)} }};\n}})();\n"
+        )
+    if re.search(r"^\s*import\s+[^(]", "".join(parts), re.M):
+        raise SystemExit("an import of the viewer was not bundled")
+    return "\n".join(external) + "\n\n" + "\n".join(parts)
+
+
 def _read(path: Path) -> str:
     """Return the text of a file of the repository."""
     return (ROOT / path).read_text(encoding="utf-8")
 
 
 def viewer_files() -> dict[str, str]:
-    """Return every file of the viewer project, keyed by its path inside it."""
+    """Return the three files of the viewer project, keyed by their name."""
     style, markup = split_viewer(_read(_VIEWER))
     shaders = {
         "vert": _read(_SHADERS / "bloch.vert"),
@@ -160,15 +234,15 @@ def viewer_files() -> dict[str, str]:
     prelude = _PRELUDE.replace("__SHADERS__", json.dumps(shaders)).replace(
         "__LASER__", json.dumps(laser)
     )
-    files = {
+    modules = {
+        path.stem: path.read_text(encoding="utf-8")
+        for path in sorted((ROOT / _VIEWER_MODULES).glob("*.js"))
+    }
+    return {
         "index.html": markup + "\n",
         "main.css": style + "\n",
-        "main.js": prelude + "\n",
+        "main.js": prelude + "\n" + bundle_modules(modules),
     }
-    for path in sorted(_VIEWER_MODULES.rglob("*.js")):
-        name = path.relative_to(_VIEWER_MODULES.parent).as_posix()
-        files[name] = path.read_text(encoding="utf-8")
-    return files
 
 
 def _library_files() -> list[Path]:

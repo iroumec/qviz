@@ -43,22 +43,24 @@ The command runs `scripts/package_qollab.py`, which writes the folder `qollab/`
 | --- | --- |
 | `index.html` | The markup of the `<body>` of `frontend/index.html`, without the script. |
 | `main.css` | The `<style>` block of `frontend/index.html`, unchanged. |
-| `main.js` | A generated prelude (the Qollab services), then `import("./js/main.js")`. |
-| `js/` | The modules of `frontend/js`, copied as they are. |
+| `main.js` | A generated prelude (the Qollab services), then all the modules of `frontend/js` bundled in one script. |
 | `qollab_api.py`, `requirements.txt` | The files of the root. |
 | `backend/`, `examples/` | The libraries. |
 
 `main.py` is left out on purpose. In a JS project it could also run, compile a
 second time and spend a second IonQ job. The viewer does what `main.py` does.
 
-The viewer is copied, not rewritten, so a change in `frontend/index.html` reaches
-Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
+The viewer is copied, not rewritten, so a change in `frontend/index.html` or in
+`frontend/js` reaches Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
 
 ## The prelude of `main.js` {.unnumbered}
 
-The viewer is modular: the folder `frontend/js` is copied as it is, and the
-generated `main.js` is only a prelude followed by `await import("./js/main.js")`.
-The prelude runs first, so that the host is ready when the modules read it.
+The viewer is modular (`frontend/js`), but Qollab serves no file of the project
+besides the ones it loads itself: a relative `import("./js/main.js")` fails there
+with `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`.
+So `main.js` is **one script**: the prelude, followed by the modules bundled by
+`bundle_modules` in `scripts/package_qollab.py`. The prelude runs first, so that
+the host is ready when the modules read it.
 
 1. **The host.** It defines `window.QVIZ_HOST` with the services below. If
    Python cannot be reached, the message is shown in the `error` line of the
@@ -69,11 +71,15 @@ The prelude runs first, so that the host is ready when the modules read it.
    as it is.
 2. **The files.** `shaders/` (`bloch` and `lens`) and `models/laser_lens.obj` and
    `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
-3. **The entry.** `main.js` ends with `await import("./js/main.js")`, which
-   starts the viewer. The modules import `three` and `three/addons` by name; the
-   addons are loaded in `js/three-addons.js`, with a fallback, so that the viewer
-   starts without the laser and the environment light when an addon is not
-   available.
+3. **The modules.** Each module of `frontend/js` becomes an `async` function with
+   its own scope, in the order of their imports, and returns what it exports; the
+   modules that import it destructure that object. Two modules may therefore
+   declare the same private name. The imports of `three` are kept once at the
+   top. The addons are loaded in `three-addons.js` with a fallback, so that the
+   viewer starts without the laser and the environment light when an addon is not
+   available. The bundler follows the style of the modules: `export` before a
+   declaration, `import {…}` or `import * as x` from `./name.js`; `export
+   default`, `export { … }` and default imports are rejected at build time.
 
 ## The hooks of the viewer {.unnumbered}
 

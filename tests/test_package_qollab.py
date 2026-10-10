@@ -67,10 +67,13 @@ def test_the_viewer_package_is_the_real_viewer(packaged):
     style = source.split("<style>")[1].split("</style>")[0]
     assert (out / "main.css").read_text().strip() == style.strip()
 
-    # The modules of the viewer are copied as they are.
-    entry = (_ROOT / "frontend" / "js" / "main.js").read_text()
-    assert (out / "js" / "main.js").read_text() == entry
-    assert {"js/main.js", "js/scene.js", "js/three-addons.js"} <= files
+    # Qollab serves no other file of the project: the modules go inside main.js.
+    assert not any(name.startswith("js/") for name in files)
+    js = (out / "main.js").read_text()
+    for path in sorted((_ROOT / "frontend" / "js").glob("*.js")):
+        assert f"// ---- {path.name}\n" in js, path.name
+    assert not re.search(r"^import .* from [\"']\.", js, re.M), "relative import"
+    assert 'import("./js' not in js and "from './" not in js
 
 
 def test_the_viewer_gets_its_shaders_and_the_qollab_services(packaged):
@@ -82,12 +85,10 @@ def test_the_viewer_gets_its_shaders_and_the_qollab_services(packaged):
     assert "uLocalCenter" in js, "the lens shaders are embedded"
     assert "newmtl" in js and "\\nv " in js, "the laser model is embedded"
     assert "window.QVIZ_HOST" in js
-    assert 'import("./js/main.js")' in js
 
-    addons = (out / "js" / "three-addons.js").read_text()
     for name in ("OBJLoader", "RoomEnvironment", "BufferGeometryUtils"):
-        assert name in addons, name
-    assert 'from "three"' in (out / "js" / "scene.js").read_text()
+        assert f"const {{ {name} }}" in js or f"const {name} =" in js, name
+    assert js.count('import * as THREE from "three";') == 1
 
 
 def test_every_service_of_the_prelude_is_used_by_the_viewer(module):
@@ -122,3 +123,31 @@ def test_the_generated_script_is_valid_javascript(packaged, tmp_path):
         ["node", "--check", str(module_file)], capture_output=True, text=True
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_the_bundler_keeps_the_scope_of_each_module(module):
+    modules = {
+        "main": 'import { run } from "./a.js";\nimport * as b from "./b.js";\n'
+        "run(b.value);\n",
+        "a": 'import * as THREE from "three";\nimport { value as v } from "./b.js";\n'
+        "const secret = 1;\nexport function run(x) { return [THREE, v, x, secret]; }\n",
+        "b": 'import * as THREE from "three";\nconst secret = 2;\n'
+        "export const value = secret;\nexport const { first, second: other } = { };\n",
+    }
+    code = module.bundle_modules(modules)
+    assert code.count('import * as THREE from "three";') == 1
+    assert "const { value: v } = __module_b;" in code
+    assert "const b = __module_b;" in code
+    assert "return { value, first, other };" in code
+    # Both modules declare `secret`: only separate scopes make that valid.
+    assert code.count("const secret") == 2
+    assert code.index("// ---- b.js") < code.index("// ---- a.js")
+    assert code.index("// ---- a.js") < code.index("// ---- main.js")
+    assert "import {" not in code.replace("import * as THREE", "")
+
+
+def test_the_bundler_rejects_what_it_cannot_follow(module):
+    with pytest.raises(SystemExit):
+        module.bundle_modules({"main": "export default 1;\n"})
+    with pytest.raises(SystemExit):
+        module.bundle_modules({"main": 'import x from "./main.js";\n'})
