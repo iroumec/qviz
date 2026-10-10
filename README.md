@@ -1,5 +1,7 @@
 # QViz
 
+[![CI](https://github.com/iroumec/QViz/actions/workflows/ci.yml/badge.svg)](https://github.com/iroumec/QViz/actions/workflows/ci.yml)
+
 QViz is an educational visualiser for trapped-ion quantum circuits. It takes a
 Qiskit circuit and a backend, compiles the circuit into the native ion gates
 (GPI, GPI2, MS or ZZ, and VirtualZ), and shows the state of every ion after

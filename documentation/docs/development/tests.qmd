@@ -90,3 +90,20 @@ and the change is mentioned in the review.
 
 The tolerance is `atol = 1e-9` for the statevector comparisons. The tomography is
 statistical, so a larger tolerance is used there: `5 / sqrt(shots)`.
+
+## Continuous integration {.unnumbered}
+
+The checks are run automatically on GitHub Actions, by the workflow in
+`.github/workflows/ci.yml`. It runs on every push to `main` and `development`,
+and on every pull request.
+
+Two jobs are defined.
+
+| Job | What it does |
+| --- | --- |
+| Lint | Runs `flake8` and `pydocstyle`, exactly as `make lint` does. |
+| Tests | Runs `pytest`, exactly as `make test` does, on Python 3.12 and 3.13. |
+
+Python 3.12 is the oldest supported version, and NumPy also needs 3.12 or newer.
+A red mark on a pull request means that the style or a test has to be fixed
+before the change is merged.
