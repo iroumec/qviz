@@ -125,8 +125,9 @@ so.
 
 The exact measurement is done by the backend: `sample` draws the outcomes from the
 statevector and keeps the correlations, so a Bell pair gives only `00` and `11`.
-See the [sampler page](../modules/sampler.qmd). The button is expected to use it
-when Python can be called from the page.
+See the [sampler page](../modules/sampler.qmd). When the viewer runs on Qollab, it
+asks the backend (`HOST.sample`) and the note above is not shown. The way it is
+connected is on the [viewer on Qollab](qollab.qmd) page.
 
 ## How the animation works {.unnumbered}
 

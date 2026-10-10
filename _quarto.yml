@@ -41,6 +41,7 @@ book:
     - part: "Frontend"
       chapters:
         - documentation/docs/frontend/viewer.qmd
+        - documentation/docs/frontend/qollab.qmd
     - part: "Development"
       chapters:
         - documentation/docs/development/tests.qmd

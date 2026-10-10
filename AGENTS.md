@@ -4,6 +4,7 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 
 **Antes de tocar código leé:**
 
+- `memory.md`: el estado actual del proyecto, lo decidido y los pendientes. Es el traspaso entre sesiones (`CLAUDE.md` lo importa). Si algo contradice a `spec.md`, manda `spec.md` y se corrige `memory.md`.
 - `spec.md`: arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
@@ -73,6 +74,17 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ---
 
+### El visor y Qollab
+
+El visor (`frontend/index.html`) es del equipo. Guía completa: `documentation/docs/frontend/qollab.qmd`.
+
+- **No cambies su aspecto ni sus funciones sin aprobación explícita.** Tiene que seguir funcionando solo, servido con `python -m http.server`.
+- Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `circuits`, `load`, `sample`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
+- `make qollab` arma `qollab/` (proyecto JS de 44 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. `make qollab-probe` arma la página de diagnóstico. No edites `qollab/`.
+- Qollab no ejecuta los `<script>` del HTML, solo carga `main.css` y el JS no lee archivos del proyecto: por eso el paquete embebe los shaders y toma los circuitos de Python.
+- Versiones de Qollab (medidas el 2026-10-10): Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. El código tiene que funcionar con qiskit-ionq ≥ 1.0.0.
+- Después de cambiar el visor, `qollab_api.py` o el paquete: `make test`, `make qollab`, subir y, si algo falla, la página de diagnóstico.
+
 ## 4. Tests
 
 - `pytest` en `tests/`, un `test_<modulo>.py` por módulo. Los circuitos de prueba compartidos van en `tests/circuits.py`.
@@ -93,7 +105,9 @@ make venv          # crea .venv
 make install       # instala el paquete + extras de dev
 make test          # corre pytest
 make demo M=translator   # corre scripts/demo_translator.py
-make qollab        # arma qollab/, el proyecto JS que se sube a Qollab
+make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
+make qollab-probe  # lo mismo con la página de diagnóstico
+make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
 ```
 
 (Se crean en M0. Hasta entonces, `python -m pytest`.)
@@ -109,6 +123,21 @@ Entorno local: Python 3.14 (igual que Qollab) y Qiskit `>=2.5.2,<3`.
 - Mensajes de commit en inglés: un resumen corto en la primera línea y, si hace falta, un cuerpo con viñetas, como en el historial.
 
 ---
+
+## 6b. Memoria del proyecto (`memory.md`)
+
+El chat se vacía entre sesiones; el repositorio no. Por eso:
+
+- **Al empezar:** hacé `git pull`, leé `memory.md` y corré `make resume`.
+- **Al terminar cada cambio** (código, documentación o decisión), **actualizá `memory.md` antes de cerrar**, aunque el usuario no lo pida:
+  - la línea "Última actualización" y el último commit subido;
+  - "Qué hay hecho" y "Decisiones tomadas", si cambiaron;
+  - "Pendientes": tachá lo resuelto, agregá lo nuevo, mantené el orden por prioridad;
+  - una línea en "Historial" con la fecha, qué se hizo y si quedó **sin commitear**.
+- **Mantenelo corto** (máx. ~150 líneas, un test lo comprueba): resumí y borrá lo viejo. El diseño va en `spec.md` y las guías en `documentation/`; en `memory.md` solo lo que alguien necesita para retomar.
+- Sin secretos ni datos personales. Si el usuario dice algo que importa para el futuro (una preferencia, una aprobación, una decisión), anotalo ahí.
+- Si usás una memoria propia fuera del repo, no reemplaza a este archivo: es la que ven todos los agentes y el equipo.
+- **Cierre de sesión:** `make test` y `make lint` en verde, `memory.md` al día y, si el usuario lo pidió, commit y push (pull antes).
 
 ## 7. Fuera de alcance (no lo hagas)
 

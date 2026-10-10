@@ -98,8 +98,8 @@ affected on the IonQ backends.
 
 ## The measurement of the viewer {.unnumbered}
 
-The `Medir` button of the basic viewer still draws every qubit independently from
-the marginals (see the [viewer page](../frontend/viewer.qmd)), which is an
-approximation. The exact measurement is `sample`. To use it, the page has to call
-Python from a click, which is one of the points to verify on Qollab (see
-`documentation/prompts/qollab_pruebas.md`).
+The `Medir` button of the viewer uses `sample` when it runs on Qollab, where a
+click can call Python (checked on Qollab on 2026-10-10). When the viewer is used
+alone, there is no Python, and the button draws every qubit independently from the
+marginals, which is an approximation that does not keep the entanglement. See
+[the viewer on Qollab](../frontend/qollab.qmd).

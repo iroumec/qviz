@@ -114,7 +114,7 @@ examples/                       # Circuitos de ejemplo (por ejemplo el sumador Q
 scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
   qollab_js_probe/              # index.html + main.js de prueba para un proyecto JS de Qollab (M9)
-  package_qollab.py             # `make qollab`: arma `qollab/`, el proyecto JS completo que se sube a Qollab (M9)
+  package_qollab.py             # `make qollab` / `make qollab-probe`: arma `qollab/`, el proyecto JS que se sube a Qollab: el visor real o la página de diagnóstico (M9)
 documentation/
   schema/visualization.schema.json   # JSON Schema del contrato. M6
 ```
@@ -541,7 +541,8 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - `sampler.probabilities(data, step)` devuelve la distribución ideal (`2**n` entradas, índice = valor del bitstring).
 - No envía ningún job: respeta la regla de un job por corrida en IonQ.
 - **Puente para Qollab:** `qollab_api.py` expone `run(backend, circuit, shots, entangler) -> str` y `sample_step(visualization, step, shots) -> str`. Devuelven texto (el `dict` → `Map` de Pyodide no se puede imprimir) y `sample_step` responde una **lista de pares** `[bitstring, cuenta]`, no un objeto, porque JavaScript reordena las claves enteras de un objeto (`"10"`, `"11"`) y se perdería el orden.
-- **Limitación:** requiere poder llamar a Python desde un clic en la página. Es el pendiente 2 de `qollab_context.md` §8; la prueba está en `documentation/prompts/qollab_pruebas.md`. Si no se puede, la alternativa es reconstruir y simular el circuito en JavaScript, con el riesgo de duplicar la física en dos lenguajes.
+- **Limitación:** requiere poder llamar a Python desde un clic en la página. **Verificado en Qollab el 2026-10-10** (Built-in): la llamada con `callPromising` funciona después de la primera corrida, las 8 mediciones de la prueba salieron bien, `import * as api from "qollab_api"` funciona con un archivo de la raíz y compilar un Bell y cada medición tardan unos milisegundos. Entonces no hace falta la alternativa de simular en JavaScript.
+- **Conexión con el visor.** El botón Medir de `frontend/index.html` usa `sample` cuando el visor corre en Qollab. **[decisión]** El aspecto y las funciones del visor no se cambian sin aprobación del equipo: lo que Qollab necesita entra como hooks opcionales (`window.QVIZ_HOST` con `shaders`, `circuits`, `load` y `sample`; sin ellos el visor se comporta como siempre) y como código generado por `scripts/package_qollab.py`, que copia el HTML, el CSS y el script del visor sin reescribirlos y les antepone un preludio (three.js como módulo, los shaders embebidos y el host). Lo único visible que cambia: con la medición del backend no se muestra la nota de "qubits entrelazados" (el muestreo ya conserva las correlaciones). Guía completa, reglas para cambios futuros y qué falta verificar en `documentation/docs/frontend/qollab.qmd`.
 
 **Tests:** la distribución conjunta coincide con las marginales de cada paso del JSON y con `Statevector` del circuito original; un Bell sin ruido solo da `00` y `11`; con fidelidad 0 la distribución es uniforme; el orden de bits; la semilla; el rechazo de pasos, shots y datos inválidos; y las funciones de `qollab_api.py` (incluido el orden de la lista de pares).
 
@@ -606,6 +607,7 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 | 2026-10-10 | IBM Berlin (ruido) | — | `fake_berlin` | Igual que Boston. |
 | 2026-10-10 | IonQ Aria 2 (sim) | — | `ionq_simulator` | `options.noise_model = "aria-2"` → entrelazador **MS**. |
 | 2026-10-10 | IonQ Forte 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-1` → entrelazador **ZZ**. |
+| 2026-10-10 | Built-in, página de diagnóstico | — | `basic_simulator` | Versiones de Qollab: qiskit 2.5.2, **qiskit-ionq 1.0.2**, numpy 2.4.6 (Pyodide v314.0.7). `Object.keys(api)` devuelve vacío pero `api.run`, `api.sample_step` y `api.versions` se llaman bien con `callPromising`. Compile de un Bell: 78 ms; cada paso de los checks: 4–9 ms. `ALL CHECKS PASS` (correlaciones: 1.9 % de resultados que no son 00 ni 11, esperado 1.6 %). 8 mediciones seguidas sin error. |
 | 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.1.0 y 1.1.1 (y NumPy 2.0.2). Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ no se puede transpilar (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición; `tomography.measure` lo convierte en un `TranspilationError` que lo explica. |
 | 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
 
@@ -618,7 +620,7 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 4. **M8:** si qiskit-ionq acepta una lista de circuitos en un solo `backend.run` y si el backend precreado acepta compuertas nativas.
 5. **M1b:** el nombre del QPU de IonQ de hardware (no simulado) no apareció en la sonda. `is_hardware` usa los atributos `_simulator`/`_is_simulator` y, como último recurso, la palabra `simulator` en el nombre; falta confirmar el nombre del hardware real.
 6. **`allow_paid`:** no todo backend clasificado como hardware es necesariamente pago. La guarda de M8 es conservadora; se puede relajar cuando se confirme qué máquinas gastan créditos.
-7. **M9:** si una página JS de Qollab puede llamar a Python con `callPromising` desde un clic, **después** de la primera corrida y sin gastar un job; qué tiempo tarda `compile` y `sample` en Pyodide con 16 qubits (`layered16`, 676 pasos); si `import * as api from "qollab_api"` funciona para un archivo Python de la raíz; y si `backend` (el global) y el paquete `backend` conviven bien. Prueba en `documentation/prompts/qollab_pruebas.md`.
+7. **M9:** ~~si una página JS puede llamar a Python con `callPromising` desde un clic; si `import * as api from "qollab_api"` funciona; si `backend` (el global) y el paquete `backend` conviven~~ **verificado el 2026-10-10 en Built-in** (ver §10). Falta: los simuladores de IonQ (el único job lo gasta la compilación; medir no), los tiempos con 16 qubits (`layered16`, 676 pasos), y que el visor 3D se vea igual con el three.js de Qollab (0.186.1; el visor se escribió para r128), y su tamaño dentro del iframe. Prueba en `documentation/prompts/qollab_pruebas.md`.
 
 
 ---

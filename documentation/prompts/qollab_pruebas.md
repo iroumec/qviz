@@ -14,6 +14,8 @@
 | 6 | ¿Medir un paso gasta un job de IonQ? | No debería: la medición es local. |
 | 7 | ¿Los IBM y el AWS local se rechazan con `ProviderDisabledError`? | Están desactivados por defecto (`spec.md` §5.5). |
 
+> **Estado (2026-10-10).** La página de diagnóstico (`make qollab-probe`) ya pasó en Built-in: la llamada desde un clic funciona (ver `spec.md` §10). Ahora `make qollab` sube **el visor real** con el botón Medir conectado al backend; la sección 6 dice qué mirar. Reglas para tocar el visor: `documentation/docs/frontend/qollab.qmd`.
+
 ## 2. Qué subir a Qollab: un único proyecto JS
 
 **No subas el repositorio entero.** Tiene más de 100 archivos, y Qollab admite 100 por proyecto y rechaza la subida completa si se pasa. Además, Qollab decide el tipo de proyecto solo por los archivos de la raíz (`qollab_context.md` §2), y hoy la raíz tiene `main.py` y ningún `index.html`: sería un proyecto Python, sin botones.
@@ -24,16 +26,19 @@ Corré:
 make qollab
 ```
 
-Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo**, 43 archivos:
+Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo**:
 
 ```text
-index.html        la página: Compile, Measure y Run checks
-main.js           llama a Python con callPromising
+index.html        el visor real (o, con `make qollab-probe`, la página de diagnóstico)
+main.css          el estilo del visor, sin cambios
+main.js           un preludio generado + el script del visor, sin cambios
 qollab_api.py     las funciones que llama la página (devuelven texto)
 requirements.txt
 backend/          la biblioteca
 examples/         los circuitos de ejemplo
 ```
+
+`make qollab` arma el visor (44 archivos) y `make qollab-probe` la página de diagnóstico (43), que es la de las secciones 3 a 5.
 
 Subí el **contenido** de `qollab/` (no la carpeta misma), de modo que `index.html` y `main.js` queden en la raíz del proyecto. Se puede subir una y otra vez sobre el mismo proyecto de Qollab: después de cambiar algo en el repositorio, `make qollab` y volver a subir.
 
@@ -123,7 +128,34 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 | | AWS Braket local | Compile | | | | esperado: `ProviderDisabledError` |
 | | IBM Boston | Compile | | | | esperado: `ProviderDisabledError` |
 
-## 6. Cómo decidir con los resultados
+## 6. Probar el visor real (`make qollab`)
+
+Subí el contenido de `qollab/` sobre el mismo proyecto, elegí Built-in y apretá Run.
+
+| # | Qué mirar | Esperado |
+|---|---|---|
+| 1 | La consola y la línea roja de errores del visor | Sin errores. Si dice `No se pudo conectar con Python`, copiame el mensaje. |
+| 2 | El selector de arriba | Lista los 4 circuitos (Bell, GHZ 3, GHZ 16, capas aleatorias) y carga el Bell. |
+| 3 | La escena 3D | Las esferas se ven como en el visor local (ver nota). Rotar con el mouse y el zoom con la rueda. |
+| 4 | Play, flechas y la barra de paso | Igual que en el visor local. |
+| 5 | **Medir** con el Bell en el paso 7 | Casi solo `00` y `11` (~50 % cada uno). **No** aparece la nota de "qubits entrelazados". |
+| 6 | **Medir** con el Bell en el paso 4 | `01` y `10` cerca de 50 % cada uno (el muestreo anterior daba 25 % para los cuatro). |
+| 7 | Cambiar `shots` (por ejemplo 100 y 20000) y medir de nuevo | El histograma cambia con cada clic; la suma de los porcentajes es 100. |
+| 8 | Elegir otro circuito (`ghz16`, `layered16`) | Carga. Anotá cuánto tarda y si la página se congela. En IonQ, la segunda compilación falla con "only one job is allowed": el visor lo muestra en la línea de errores. |
+
+**Nota sobre la escena 3D.** El visor se escribió para three.js r128 y Qollab trae la 0.186.1. El paquete ajusta el manejo de color para que se vea igual, pero eso solo se puede confirmar a ojo: compará los colores de las esferas, de las etiquetas `q0`, `q1` y de los ejes con `python -m http.server` en local. Si algo se ve distinto, decime qué, y lo aprobamos antes de tocar nada.
+
+Si algo falla, corré `make qollab-probe`, subilo y apretá **3. Run checks**: dice si el problema es la conexión con Python o el visor.
+
+### Resultados del visor (completar)
+
+| Fecha | Backend | # (de la tabla) | ¿Bien? | Observaciones |
+|---|---|---|---|---|
+| | Built-in | 1 a 8 | | |
+| | IonQ Aria 2 (sim) | 1, 2, 5, 6 | | |
+| | IonQ Forte 1 (sim) | 1, 2, 5, 6 | | |
+
+## 7. Cómo decidir con los resultados
 
 - **Si los checks pasan (preguntas 1, 2, 3 y 6 bien):** el botón Medir del visor usa `sample_step` y se descarta el muestreo por marginales del frontend. El pedido para el frontend es una llamada: `JSON.parse(await api.sample_step.callPromising(jsonText, step, shots))`.
 - **Si el clic no puede llamar a Python:** la alternativa es reconstruir y simular el circuito en JavaScript a partir del JSON (ver `spec.md` §M9). Avisanos y lo preparamos.

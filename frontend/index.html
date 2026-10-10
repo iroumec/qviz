@@ -149,6 +149,16 @@ const FRAG_URL = "../shaders/bloch.frag";
 const MANIFEST_URL = "../out/manifest.json";
 const OUT_URL = "../out/";
 
+// A host page may define window.QVIZ_HOST before this script runs; Qollab does
+// (see scripts/package_qollab.py). Every field is optional. Without a host the
+// viewer reads the shaders and the files over HTTP and samples the measurements
+// itself, as it always did.
+//   shaders  {vert, frag}              shader sources, instead of fetching them
+//   circuits [{file, label}]           what the selector lists, instead of out/
+//   load     async (file) -> object    the JSON of one entry of the selector
+//   sample   async (data, step, shots) -> [[bitstring, count], ...] from the backend
+const HOST = window.QVIZ_HOST || {};
+
 let data = null;
 let stepIndex = 0;
 let playing = false;
@@ -184,6 +194,11 @@ function escapeHtml(s) {
 
 // ------------------------------------------------------------------ shaders
 async function loadShaders() {
+  if (HOST.shaders) {
+    vertShader = HOST.shaders.vert;
+    fragShader = HOST.shaders.frag;
+    return;
+  }
   const [vert, frag] = await Promise.all([
     fetch(VERT_URL).then((r) => { if (!r.ok) throw new Error(VERT_URL); return r.text(); }),
     fetch(FRAG_URL).then((r) => { if (!r.ok) throw new Error(FRAG_URL); return r.text(); }),
@@ -504,15 +519,17 @@ function renderDetails(step) {
 }
 
 // ------------------------------------------------------------ measurement
-// The JSON only gives the per-qubit (reduced) probabilities and the per-qubit
-// fidelity. A measurement is therefore sampled independently on every qubit.
-// The fidelity is used as a readout error: the probability is pulled towards
-// 0.5 by the factor f, so a noisier qubit gives a flatter distribution.
+// When the host gives a sampler (HOST.sample), the backend measures: it draws the
+// outcomes from the statevector, so the correlations of the entanglement are
+// kept. Otherwise the JSON only gives the per-qubit (reduced) probabilities and
+// the per-qubit fidelity, and a measurement is sampled independently on every
+// qubit. The fidelity is used as a readout error: the probability is pulled
+// towards 0.5 by the factor f, so a noisier qubit gives a flatter distribution.
 function closeMeasurement() {
   document.getElementById("measurePanel").classList.add("hidden");
 }
 
-function runMeasurement() {
+async function runMeasurement() {
   if (!data) return;
   const shots = Math.max(
     1, Math.min(100000, Math.round(Number(document.getElementById("shots").value) || 1024))
@@ -532,24 +549,46 @@ function runMeasurement() {
     radius.push(Math.hypot(state[0], state[1], state[2]));
   }
 
-  const counts = new Map();
   const ones = new Array(n).fill(0);
-  for (let shot = 0; shot < shots; shot++) {
-    const bits = new Array(n);
-    for (let q = 0; q < n; q++) {
-      const bit = Math.random() < p1[q] ? 1 : 0;
-      bits[q] = bit;
-      ones[q] += bit;
+  let sorted = null;
+  let exact = false;
+  if (HOST.sample) {
+    const at = stepIndex;
+    const measured = data;
+    try {
+      sorted = await HOST.sample(data, at, shots);
+      exact = true;
+    } catch (err) {
+      document.getElementById("error").textContent =
+        "No se pudo medir con el backend: " + err.message;
     }
-    // Little-endian: qubit 0 is the rightmost character.
-    const key = bits.slice().reverse().join("");
-    counts.set(key, (counts.get(key) || 0) + 1);
+    // The user may have moved to another step or file while the backend worked.
+    if (at !== stepIndex || measured !== data) return;
   }
-  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-  renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, stepIndex);
+  if (exact) {
+    // Little-endian: qubit 0 is the rightmost character.
+    for (const [bits, count] of sorted) {
+      for (let q = 0; q < n; q++) if (bits[n - 1 - q] === "1") ones[q] += count;
+    }
+  } else {
+    const counts = new Map();
+    for (let shot = 0; shot < shots; shot++) {
+      const bits = new Array(n);
+      for (let q = 0; q < n; q++) {
+        const bit = Math.random() < p1[q] ? 1 : 0;
+        bits[q] = bit;
+        ones[q] += bit;
+      }
+      // Little-endian: qubit 0 is the rightmost character.
+      const key = bits.slice().reverse().join("");
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }
+  renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, stepIndex, exact);
 }
 
-function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step) {
+function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step, exact) {
   const top = sorted.slice(0, 15);
   const rows = top
     .map(([bits, count]) => {
@@ -572,7 +611,7 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step) {
   }
 
   const entangled = radius.some((r) => r < 0.999);
-  const note = entangled
+  const note = entangled && !exact
     ? '<p class="hint">Hay qubits entrelazados. El JSON solo trae las probabilidades ' +
       "marginales, así que el muestreo es independiente y no reproduce las " +
       "correlaciones del entrelazamiento.</p>"
@@ -596,6 +635,10 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step) {
 
 // --------------------------------------------------- generated JSON loading
 async function loadFile(name) {
+  if (HOST.load) {
+    loadData(await HOST.load(name));
+    return;
+  }
   const response = await fetch(OUT_URL + name);
   if (!response.ok) throw new Error(name);
   loadData(await response.json());
@@ -603,6 +646,21 @@ async function loadFile(name) {
 
 async function loadManifest() {
   const select = document.getElementById("fileSelect");
+  if (HOST.circuits) {
+    select.innerHTML = "";
+    for (const entry of HOST.circuits) {
+      const option = document.createElement("option");
+      option.value = entry.file;
+      option.textContent = entry.label || entry.file;
+      select.appendChild(option);
+    }
+    try {
+      await loadFile(select.value);
+    } catch (err) {
+      document.getElementById("error").textContent = "No se pudo cargar " + err.message;
+    }
+    return;
+  }
   try {
     const response = await fetch(MANIFEST_URL);
     if (!response.ok) throw new Error("no manifest");

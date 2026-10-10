@@ -39,6 +39,15 @@ CIRCUITS: dict[str, Callable[[], QuantumCircuit]] = {
 }
 
 
+# The text that the selector of the viewer shows for each circuit.
+_LABELS = {
+    "bell": "Bell (2 qubits)",
+    "ghz3": "GHZ (3 qubits)",
+    "ghz16": "GHZ (16 qubits, performance)",
+    "layered16": "Random layers, depth 4 (16 qubits, performance)",
+}
+
+
 def build_circuit(name: str) -> QuantumCircuit:
     """Build one of the example circuits listed in ``CIRCUITS``."""
     key = (name or "").strip().lower()
@@ -61,6 +70,14 @@ def parse_entangler(value: str | None) -> Entangler | None:
     if text == "zz":
         return "zz"
     raise QVizError(f"entangler must be 'auto', 'ms' or 'zz', got {value!r}")
+
+
+def circuits() -> str:
+    """Return the example circuits as JSON text: ``[{"file": …, "label": …}]``.
+
+    The viewer lists them in its selector, in the place of the files of ``out/``.
+    """
+    return json.dumps([{"file": name, "label": _LABELS[name]} for name in CIRCUITS])
 
 
 def versions() -> str:

@@ -47,6 +47,13 @@ def test_unknown_circuit_is_rejected():
         build_circuit("nope")
 
 
+def test_circuits_lists_every_example_with_a_label():
+    entries = json.loads(qollab_api.circuits())
+    assert [entry["file"] for entry in entries] == list(CIRCUITS)
+    assert all(entry["label"] for entry in entries)
+    assert all(build_circuit(entry["file"]) for entry in entries)
+
+
 def test_versions_lists_the_main_libraries():
     found = json.loads(qollab_api.versions())
     assert set(found) == {"qiskit", "qiskit-ionq", "numpy"}

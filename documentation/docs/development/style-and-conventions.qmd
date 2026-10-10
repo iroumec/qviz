@@ -111,6 +111,17 @@ on older interpreters.
   only, because Qollab needs the whole signature of `main` on one line to build
   its form.
 
+## The memory of the project {.unnumbered}
+
+The chat of an agent is emptied between sessions, but the repository is not. The
+file `memory.md` in the root is the hand-over: the current state, what was
+decided, what is pending, and how to continue. `CLAUDE.md` imports it, and
+`AGENTS.md` asks every agent to read it at the start and to update it at the end
+of each change. `make resume` shows the branch, the last commits, the changes that
+are not pushed and the pending list. The file is kept short (a test checks that it
+stays under 150 lines), and the design stays in `spec.md`, which wins when the two
+disagree.
+
 ## Git {.unnumbered}
 
 - `main` is the stable branch. `development` is the integration branch.
