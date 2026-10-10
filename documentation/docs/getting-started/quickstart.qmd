@@ -19,9 +19,9 @@ text = export(data)                # a JSON string
   file.
 
 The variable `backend` is provided by Qollab. On a local computer, a local
-simulator is accepted, for example `BasicSimulator()`. Only the `ionq` and
-`local` providers are enabled by default; a backend of another provider is
-rejected with `ProviderDisabledError` (see the
+simulator is accepted, for example `BasicSimulator()`. Only IonQ machines and
+local simulators are accepted; any other backend is rejected with
+`UnsupportedProviderError` (see the
 [configuration page](../modules/config-and-errors.qmd)).
 
 ## A complete example {.unnumbered}

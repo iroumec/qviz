@@ -59,7 +59,7 @@ module, and it is a verb.
 | Module | Function |
 | --- | --- |
 | `transpiler` | `transpile` |
-| `translator` | `translate_circuit`, `translate_native_ops` (and `Translator.translate`) |
+| `translator` | `translate`, `translate_circuit`, `translate_native_ops` |
 | `simulator` | `simulate` |
 | `vectorizer` | `vectorize` |
 | `metrics` | `measure` |

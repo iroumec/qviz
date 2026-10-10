@@ -7,7 +7,7 @@ from typing import Literal
 
 from qiskit import QuantumCircuit
 
-Provider = Literal["ionq", "ibm", "aws", "local", "unknown"]
+Provider = Literal["ionq", "local", "unsupported"]
 Entangler = Literal["ms", "zz"]
 OpName = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
 Source = Literal["ionq-native", "qiskit"]

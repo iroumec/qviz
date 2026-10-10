@@ -1,13 +1,14 @@
 """Provider detection.
 
 Turns any injected ``backend`` object into a :class:`BackendInfo` without ever
-raising for an unexpected provider: unknown backends fall back to a generic
-profile (``spec.md`` §M1b).
+raising for an unexpected provider: a backend that is neither IonQ nor the
+built-in simulator is classified ``unsupported`` and ``compile`` rejects it
+(``spec.md`` §M1b).
 
 The detection is deliberately layered. The signals that are checked first are
 the most reliable (the class module and the public attributes). A structural
 fallback is used last: the operation names of the backend are inspected, so that
-a backend with an unusual name is still classified correctly.
+an IonQ backend with an unusual name is still classified correctly.
 
 A note on IonQ. Every IonQ entry in Qollab is named ``ionq_simulator``, so the
 name alone does not say whether the machine is an Aria (MS) or a Forte (ZZ).
@@ -70,8 +71,8 @@ def _safe_getattr(obj: Any, attr: str) -> Any:
 def _noise_model(backend: Any) -> str | None:
     """Return ``options.noise_model`` when it is a string, else ``None``.
 
-    For IBM the value is a Qiskit ``NoiseModel`` object, and for AWS and the
-    built-in simulator the attribute raises. In both cases ``None`` is returned.
+    Other backends hold a Qiskit ``NoiseModel`` object there or raise when it is
+    read. In both cases ``None`` is returned.
     """
     options = _safe_getattr(backend, "options")
     value = _safe_getattr(options, "noise_model")
@@ -119,7 +120,7 @@ def _operation_names(backend: Any) -> set[str]:
 
 
 def detect_provider(backend: Any) -> Provider:
-    """Classify the injected backend into one of the known providers.
+    """Classify the injected backend as IonQ, the built-in simulator or neither.
 
     The class module and the name are checked first. When they give no answer,
     the advertised operation names are inspected as a fallback.
@@ -130,14 +131,6 @@ def detect_provider(backend: Any) -> Provider:
 
     if module.startswith("qiskit_ionq") or "ionq" in name:
         return "ionq"
-    if (
-        name.startswith(("fake_", "ibm_"))
-        or type_name == "genericbackendv2"
-        or "ibm" in module
-    ):
-        return "ibm"
-    if module.startswith("qiskit_braket_provider") or "braket" in name:
-        return "aws"
     if (
         "basicsimulator" in module
         or "basicsimulator" in type_name
@@ -154,17 +147,11 @@ def _structural_provider(operation_names: Iterable[str]) -> Provider:
     """Infer the provider from the advertised operation names, if possible.
 
     Only ``gpi``, ``gpi2`` and ``ms`` are treated as IonQ-native, because
-    ``zz`` and ``rxx`` also exist as ordinary Qiskit gates. The Qollab IBM
-    simulators advertise ``cz``, ``rz`` and ``sx`` together (Qollab probe).
+    ``zz`` and ``rxx`` also exist as ordinary Qiskit gates.
     """
-    names = set(operation_names)
-    if names & {"gpi", "gpi2", "ms"}:
+    if set(operation_names) & {"gpi", "gpi2", "ms"}:
         return "ionq"
-    if "ecr" in names:
-        return "ibm"
-    if {"cz", "rz", "sx"} <= names:
-        return "ibm"
-    return "unknown"
+    return "unsupported"
 
 
 _SIMULATOR_ATTRS = ("_simulator", "_is_simulator", "is_simulator", "simulator")

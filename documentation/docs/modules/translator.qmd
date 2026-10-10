@@ -9,7 +9,7 @@ Three files are used.
 
 | File | Responsibility |
 | --- | --- |
-| `translator.py` | The abstract base class and the provider subclasses. |
+| `translator.py` | The `translate` function. |
 | `rules.py` | The translation table, one rule per gate. |
 | `normalize.py` | The entangling angle is reduced to the range [0, 0.25] turns. |
 
@@ -17,38 +17,24 @@ The opposite direction, rebuilding a Qiskit circuit from a native circuit, is no
 part of the translator. It lives in its own module, described on the
 [`to_qiskit` page](to-qiskit.qmd).
 
-## The translator classes {.unnumbered}
+## `translate(info, transpiled)` {.unnumbered}
 
-One class exists per provider. All the classes share the same translation rule.
-The only difference is the target entangler, which is taken from `BackendInfo`.
+A transpiled circuit is changed into a native circuit. The same translation rule
+is used for every backend. The only thing that changes the result is the target
+entangler, which is taken from `BackendInfo`.
 
-| Class | Provider |
-| --- | --- |
-| `IonQTranslator` | `"ionq"` |
-| `IBMTranslator` | `"ibm"` |
-| `AWSTranslator` | `"aws"` |
-| `LocalTranslator` | `"local"` |
-| `GenericTranslator` | `"unknown"` |
-
-### `Translator` (abstract base class) {.unnumbered}
-
-| Member | Type | Meaning |
-| --- | --- | --- |
-| `__init__(self, info)` | method | The `BackendInfo` is stored. It is used for the entangler and the profile. |
-| `translate(self, transpiled)` | abstract method | A `TranspiledCircuit` is received, and a `NativeCircuit` is returned. |
-| `_translate(self, transpiled)` | method | The shared implementation. It is called by every subclass. |
-
-### `create(info)` {.unnumbered}
-
-The correct subclass is built from the provider of the backend.
-
-**Parameter**
+**Parameters**
 
 | Name | Type | Meaning |
 | --- | --- | --- |
-| `info` | `BackendInfo` | The provider field selects the subclass. |
+| `info` | `BackendInfo` | The backend information. Its `entangler` (`"ms"` or `"zz"`) is the two-qubit gate that is emitted. |
+| `transpiled` | `TranspiledCircuit` | The output of the transpiler: a Qiskit circuit with its layout, or a raw IonQ native gate list. |
 
-**Returns** a `Translator` of the matching subclass.
+**Returns** a `NativeCircuit`.
+
+There is no class per provider. `compile` only accepts IonQ and the built-in
+simulator (see the [configuration page](config-and-errors.qmd)), and the
+subclasses that existed for every provider were identical.
 
 ## The translation rules {.unnumbered}
 
@@ -160,8 +146,7 @@ are rejected, and the message gives the index of the entry:
 
 ## The compaction of the qubits {.unnumbered}
 
-A large backend, such as an IBM device with 156 qubits, is reduced to the qubits
-that are used. The rules are the following.
+A wide backend, with tens of qubits, is reduced to the qubits that are used. The rules are the following.
 
 - The user qubits are kept, in their original order. The order is read from the
   layout.
@@ -170,9 +155,8 @@ that are used. The rules are the following.
 - A physical qubit that is not touched is removed.
 
 One limitation is accepted. A final permutation that is caused by routing is not
-undone. This only matters for the providers that are disabled by default (IBM,
-AWS and unknown), where the coupling map of a chip can force routing. The local
-simulators and the IonQ machines have all-to-all connectivity.
+undone. In practice this does not happen: the local simulators and the IonQ
+machines have all-to-all connectivity, so the transpiler does not need routing.
 
 ## The normalization of the angle {.unnumbered}
 

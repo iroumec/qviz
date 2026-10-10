@@ -48,7 +48,7 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 - **Imports absolutos desde el paquete:** `from backend.core.translator import translator`. El estilo `from core...` no funciona en Qollab.
 - **Datos:** dataclasses `frozen=True` definidos en `core/model.py`. Las funciones son puras: devuelven objetos nuevos y no mutan la entrada.
 - **Sin estado global y sin `print` en `backend/core`.** Se usa `logging.getLogger(__name__)`. Los `print` van solo en `scripts/` y `main.py`.
-- **Errores:** solo las excepciones de `core/errors.py`. `provider.detect` **nunca** falla: un proveedor desconocido cae en la clasificación `unknown`. Quien decide si se acepta es `compile`, con `config.ENABLED_PROVIDERS` (por defecto solo `ionq` y `local`; el resto lanza `ProviderDisabledError`).
+- **Errores:** solo las excepciones de `core/errors.py`. `provider.detect` **nunca** falla: un backend que no es IonQ ni el simulador integrado cae en la clasificación `unsupported`. Quien lo rechaza es `compile`, con `UnsupportedProviderError`.
 - **Unidades (`spec.md` §5.1):** fases en radianes; `angle` de MS/ZZ en turnos [0, 0.25]; fidelidades en %; orden de qubits little-endian de Qiskit; Bloch estándar (|0⟩ = +z). Las compuertas de `qiskit_ionq` usan turnos: convertí en el borde.
 - **Matemática:** NumPy. Nada de dependencias pesadas para lo que NumPy resuelve.
 

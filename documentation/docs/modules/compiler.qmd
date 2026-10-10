@@ -30,7 +30,7 @@ convenience: `from backend import compile`.
 | `CircuitTooLargeError` | The circuit is wider than the effective limit (see the [configuration page](config-and-errors.qmd)). |
 | `UnsupportedOperationError` | The circuit contains an operation that cannot be shown. |
 | `TranspilationError` | The circuit cannot be transpiled. |
-| `ProviderDisabledError` | The provider of the backend is not in `config.ENABLED_PROVIDERS`. By default only `ionq` and `local` are enabled. The message says that the machine is not currently supported and lists the supported ones. |
+| `UnsupportedProviderError` | The backend is neither an IonQ machine nor the built-in simulator. The message says that the machine is not currently supported, names it, and lists the supported ones. |
 | `QVizError` | An unknown strategy is requested, `shots` is not positive, or tomography is requested on hardware without `allow_paid`. |
 
 ## The steps that are performed {.unnumbered}
@@ -39,10 +39,9 @@ The same order is always used. Before the first step, `strategy` and `shots` are
 validated, so that a wrong argument never spends the single IonQ job.
 
 1. The provider is detected: `provider.detect(backend, entangler)`. If the
-   provider is not enabled (`config.ENABLED_PROVIDERS`), `ProviderDisabledError`
-   is raised here, before anything is transpiled and before any job is spent.
+   provider is `"unsupported"`, `UnsupportedProviderError` is raised here, before anything is transpiled and before any job is spent.
 2. The circuit is transpiled: `transpiler.transpile(...)`.
-3. The matching translator is built and used: `translator.create(info).translate(...)`.
+3. The circuit is translated: `translator.translate(info, transpiled)`.
 4. The state is found.
    - For `"statevector"`, the simulator is used.
    - For `"tomography"`, the tomography stage is used.

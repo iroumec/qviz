@@ -1,5 +1,8 @@
 """Demo M1: detect the provider and transpile a Bell circuit.
 
+Only IonQ and the built-in simulator are accepted by ``compile``; the chip and
+the unknown backend show how the transpiler alone behaves.
+
 Run with: python scripts/demo_transpiler.py
 """
 
@@ -14,7 +17,7 @@ from backend.core.transpiler import transpiler
 
 
 class UnknownBackend:
-    """Fake backend used to exercise the generic fallback path."""
+    """Fake backend without a target, used to exercise the fallback basis."""
 
     __module__ = "some_pkg"
     name = "mystery_qpu"
@@ -24,11 +27,8 @@ def main() -> None:
     """Print provider info and the transpiled circuit for each local backend."""
     backends = {
         "BasicSimulator": BasicSimulator(),
-        "GenericBackendV2 (Heron)": GenericBackendV2(
+        "GenericBackendV2 (20-qubit chip)": GenericBackendV2(
             num_qubits=20, basis_gates=["cz", "rz", "sx", "x"]
-        ),
-        "GenericBackendV2 (Eagle)": GenericBackendV2(
-            num_qubits=20, basis_gates=["ecr", "rz", "sx", "x"]
         ),
         "UnknownBackend": UnknownBackend(),
     }

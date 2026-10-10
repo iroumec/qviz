@@ -11,7 +11,7 @@ easy to keep pure.
 
 | Alias | Allowed values | Meaning |
 | --- | --- | --- |
-| `Provider` | `"ionq"`, `"ibm"`, `"aws"`, `"local"`, `"unknown"` | The family of the backend. Only `ionq` and `local` are enabled by default. |
+| `Provider` | `"ionq"`, `"local"`, `"unsupported"` | The family of the backend. `compile` rejects `unsupported`. |
 | `Entangler` | `"ms"`, `"zz"` | The two-qubit native gate that is used for entanglement. |
 | `OpName` | `"gpi"`, `"gpi2"`, `"ms"`, `"zz"`, `"virtual_z"` | The name of a native operation. |
 | `Source` | `"ionq-native"`, `"qiskit"` | How a transpiled circuit was produced. |

@@ -19,7 +19,7 @@ def main() -> None:
     transpiled = TranspiledCircuit(
         source="qiskit", num_qubits=qc.num_qubits, circuit=qc
     )
-    native = translator.create(info).translate(transpiled)
+    native = translator.translate(info, transpiled)
     vectorized = vectorizer.vectorize(simulator.simulate(native))
 
     for step in vectorized.steps:

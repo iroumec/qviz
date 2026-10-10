@@ -54,7 +54,7 @@ QuantumCircuit + backend
 [transpiler]  transpile(backend_info, backend, qc) ──► TranspiledCircuit (compuertas del proveedor)
         │
         ▼
-[translator]  Translator.translate(transpiled) ──► NativeCircuit (GPI, GPI2, MS|ZZ, VirtualZ)
+[translator]  translator.translate(info, transpiled) ──► NativeCircuit (GPI, GPI2, MS|ZZ, VirtualZ)
         │
         ▼
 [simulator]   simulate(native) ──► SimulatedCircuit (r, θ, φ por qubit y por paso)
@@ -73,7 +73,7 @@ QuantumCircuit + backend
 ```
 
 - **provider** queda separado porque el transpiler (para elegir estrategia) y el translator (para elegir MS o ZZ) necesitan conocer el proveedor. El requerimiento pone la detección dentro del "normalizador"; acá vive en un módulo propio que el normalizador usa.
-- **translator** es polimórfico: `translator.py` define la base abstracta `Translator` con el método `translate(transpiled)` y una subclase por proveedor detectado (§M1b): `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`). `compiler` instancia la subclase según `BackendInfo.provider`.
+- **translator** es una función: `translator.translate(info, transpiled)`. La regla de traducción es la misma para todo backend (`rules.py`); lo único que cambia es el entrelazador objetivo de `info`. Hubo una base abstracta `Translator` con una subclase por proveedor (`IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator`, `GenericTranslator`); se quitó porque todas hacían lo mismo y IBM, AWS y `unknown` ya no se aceptan (§5.5).
 - **metrics** queda separado porque fidelidad, costo e inactividad no son estado cuántico ni formato, y mezclarlos en vectorizer o formatter rompería la responsabilidad única.
 - `exporter` ya aparece importado en `backend/__init__.py`.
 
@@ -93,7 +93,7 @@ backend/
     model.py                    # Dataclasses inmutables de la representación intermedia (§5)
     errors.py                   # Jerarquía de excepciones
     constants.py                # Constantes matemáticas fijas (TWO_PI)
-    config.py                   # Parámetros configurables: ENABLED_PROVIDERS, MAX_QUBITS, umbrales, decimales
+    config.py                   # Parámetros configurables: MAX_QUBITS, umbrales, decimales
     provider/   provider.py, profiles.py
     compiler/   compiler.py
     transpiler/ transpiler.py
@@ -153,7 +153,7 @@ counts: dict[str, int] = sample(data, step, shots=1024, seed=None)  # medición 
 
 ### 4.1 Errores
 
-`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError`, `CircuitParseError` (texto OpenQASM ilegible, M10), `ProviderDisabledError` y `TranspilationError`. **`provider.detect` nunca falla**: un proveedor desconocido se clasifica como `unknown` (§7, M1). Quien decide si se acepta es `compile`, con `config.ENABLED_PROVIDERS` (§5.5): por defecto solo `ionq` y `local`, y cualquier otro lanza `ProviderDisabledError` antes de transpilar. Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, parámetros sin ligar (`UnsupportedOperationError`) o más qubits que el límite efectivo (`CircuitTooLargeError`). También se lanza `QVizError` directamente ante un argumento inválido (`strategy` desconocida, `shots <= 0`) o una tomografía en hardware sin `allow_paid`; `compile` valida `strategy` y `shots` antes de tocar el backend, para no gastar el único job de IonQ por un error de tipeo.
+`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError`, `CircuitParseError` (texto OpenQASM ilegible, M10), `UnsupportedProviderError` y `TranspilationError`. **`provider.detect` nunca falla**: un backend que no es IonQ ni el simulador integrado se clasifica como `unsupported` (§7, M1). Quien lo rechaza es `compile` (§5.5): lanza `UnsupportedProviderError` antes de transpilar. Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, parámetros sin ligar (`UnsupportedOperationError`) o más qubits que el límite efectivo (`CircuitTooLargeError`). También se lanza `QVizError` directamente ante un argumento inválido (`strategy` desconocida, `shots <= 0`) o una tomografía en hardware sin `allow_paid`; `compile` valida `strategy` y `shots` antes de tocar el backend, para no gastar el único job de IonQ por un error de tipeo.
 
 ---
 
@@ -180,7 +180,7 @@ Las matrices de cada compuerta nativa están en `documentation/references/ionq_n
 ### 5.2 Tipos
 
 ```python
-Provider  = Literal["ionq", "ibm", "aws", "local", "unknown"]
+Provider  = Literal["ionq", "local", "unsupported"]
 Entangler = Literal["ms", "zz"]
 OpName    = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
 Strategy  = Literal["statevector", "tomography"]
@@ -215,9 +215,9 @@ El estado inicial (todos en |0⟩, `virtual_z` en 0, fidelidad `initial_fidelity
 - `MAX_QUBITS = 16` en `config.py`. Es el tope duro del ancho del circuito. Se eligió 16 por dos motivos: (1) el simulador guarda el statevector completo (`2^n` complejos, 16 bytes cada uno, y cada paso lo recorre y copia varias veces), de modo que memoria y tiempo crecen exponencialmente (con 28 qubits solo el estado ocupa 4 GiB, y en Pyodide la memoria es limitada); (2) al ser un visualizador, con más de ~16 esferas de Bloch el resultado pierde sentido a la vista. Además, si el backend expone su propio número de qubits (`backend.num_qubits`), el límite efectivo es `min(MAX_QUBITS, backend.num_qubits)`, para no mandar un circuito a un backend demasiado chico. Por encima del límite efectivo se lanza `CircuitTooLargeError`.
 - Sin límite duro de pasos. Si hay más de 500, se loguea un warning.
 
-### 5.5 Proveedores habilitados
+### 5.5 Proveedores aceptados
 
-`ENABLED_PROVIDERS` en `config.py` (un `frozenset` de nombres de `Provider`) lista los proveedores que `compile` acepta. **[decisión]** Por defecto: `{"ionq", "local"}`. IBM, AWS y `unknown` quedan **fuera del MVP** y desactivados: sus circuitos se transpilan con el mapa de conexiones de un chip que no es de iones, y el enrutamiento puede permutar las etiquetas de los qubits y agregar SWAPs que los iones no necesitan (§11, punto 6; `documentation/prompts/decision_transpilacion_no_ionq.md`). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total, así que no sufren ese problema. Para probar otro proveedor se agrega su nombre al conjunto. El mensaje del error es formal y legible, en inglés: `This machine is not currently supported (detected: AWS Braket). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (los nombres salen de `config.PROVIDER_LABELS`); el paquete de Qollab le quita el traceback antes de mostrarlo. Se evalúa en `compile`, justo después de `detect` y antes del transpiler, por lo que un backend rechazado no gasta el job de IonQ. En Qollab, esto significa que los simuladores IBM, el AWS Braket local y cualquier backend no reconocido se rechazan con `ProviderDisabledError`.
+`compile` acepta solo dos clases de backend: las máquinas **IonQ** (`ionq`) y el simulador integrado (`local`). **[decisión]** Todo lo demás (IBM, AWS Braket y cualquier backend no reconocido) se clasifica `unsupported` y se rechaza con `UnsupportedProviderError`. El motivo: sus circuitos se transpilan con el mapa de conexiones de un chip que no es de iones, y el enrutamiento puede permutar las etiquetas de los qubits y agregar SWAPs que los iones no necesitan (§11, punto 6; `documentation/prompts/decision_transpilacion_no_ionq.md`). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total, así que no sufren ese problema. No hay interruptor de configuración: soportar otro proveedor es un cambio de diseño. El mensaje del error es formal y legible, en inglés: `This machine is not currently supported (detected: default (BraketLocalBackend)). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (el nombre y la clase del backend rechazado); el paquete de Qollab le quita el traceback antes de mostrarlo. Se evalúa en `compile`, justo después de `detect` y antes del transpiler, por lo que un backend rechazado no gasta el job de IonQ.
 
 ---
 
@@ -330,7 +330,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 
 ### M1 — Provider + Transpiler
 
-**Objetivo:** dado cualquier `backend`, saber de qué proveedor viene (sin fallar nunca por un proveedor inesperado) y obtener el circuito transpilado. Qué proveedores se aceptan lo decide `compile` con `ENABLED_PROVIDERS` (§5.5).
+**Objetivo:** dado cualquier `backend`, saber de qué proveedor viene (sin fallar nunca por un proveedor inesperado) y obtener el circuito transpilado. Qué backends se aceptan lo decide `compile` (§5.5): solo IonQ y el simulador integrado.
 
 **1a. Sonda en Qollab (primera tarea, manual).** Un `main.py` mínimo que imprima `type(backend).__module__`, `type(backend).__name__`, `backend.name`, `backend.options` y, si existe, `backend.target.operation_names`, para cada grupo de backends: Built-in, AWS local, un IBM con ruido, IonQ Aria 1 y IonQ Forte 1 (simulador). El agente no puede correrlo: se lo pide al equipo y anota los resultados en §10. **[a verificar]** todo lo que sigue depende de esto.
 
@@ -339,13 +339,11 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 | Señal (en orden)                                                                      | Proveedor                   |
 | ------------------------------------------------------------------------------------- | --------------------------- |
 | `type(backend).__module__` empieza con `qiskit_ionq` o `backend.name` contiene `ionq` | `ionq`                      |
-| módulo `qiskit_ibm_runtime`, nombre `fake_*`/`ibm_*`, o `GenericBackendV2`            | `ibm`                       |
-| módulo `qiskit_braket_provider` o nombre con `braket`                                 | `aws`                       |
 | `BasicSimulator` / `basic_simulator` / `aer_simulator`                                | `local`                     |
-| fallback estructural: los `operation_names` del backend                               | `ionq`/`ibm`/`unknown`      |
-| cualquier otra cosa                                                                   | `unknown` (`detect` nunca lanza excepción) |
+| fallback estructural: los `operation_names` del backend                               | `ionq`/`unsupported`        |
+| cualquier otra cosa (IBM, AWS Braket, backends no reconocidos)                        | `unsupported` (`detect` nunca lanza excepción) |
 
-El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms` → `ionq` (`zz` y `rxx` no cuentan: también existen como compuertas comunes de Qiskit y darían falsos positivos); `ecr`, o `cz`+`sx`+`rz` juntos → `ibm`; si no, `unknown`. Así un backend con nombre raro pero gates claros queda bien clasificado.
+El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms` → `ionq` (`zz` y `rxx` no cuentan: también existen como compuertas comunes de Qiskit y darían falsos positivos); si no, `unsupported`. Así un backend con nombre raro pero gates claros queda bien clasificado.
 
 - Entrelazador automático **[actualizado]**: primero se mira la compuerta nativa de 2 qubits que anuncia el backend (si anuncia solo `zz`, o solo `ms`); si no, se usa `provider.native_2q_gate` (propio, `aria` → `ms` y `forte` → `zz`; copia de la función de `qiskit-ionq` ≥ 1.0.3, que el qiskit-ionq de Qollab no tiene); si no, el nombre: `forte` o `ideal` → `zz`, `aria` → `ms`; por defecto `ms`. El parámetro `entangler` de `compile` lo puede forzar.
 - `is_hardware`: true solo para QPUs de IonQ (las que gastan créditos). Se prefieren los atributos booleanos `_simulator`/`_is_simulator`/`is_simulator`/`simulator` que pone el SDK; buscar la palabra `simulator` en el nombre queda como último recurso, porque un nombre es una señal débil.
@@ -356,13 +354,13 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 - Primero quita las mediciones finales (`remove_final_measurements`) y valida el ancho contra el límite efectivo (`min(MAX_QUBITS, backend.num_qubits)`, §5.4), que el circuito no esté vacío y que no tenga parámetros sin ligar (`UnsupportedOperationError`). Las tres validaciones ocurren antes de cualquier job.
 - **IonQ, estrategia `native-local`** (candidata, la más deseable): con qiskit-ionq ≥ 1.0.0, `transpile(qc, backend=<backend con gateset="native">)` transpila a GPI/GPI2/MS|ZZ **en local, sin mandar ningún job** (`ionq_native_gates.md` §4.2). Esto evita la duda sobre `dry_run` y no gasta el único job de la corrida. **[a verificar]** si en Qollab se puede obtener la variante nativa del `backend` inyectado (qollab_context §8.4). Ojo: es el transpilador de qiskit-ionq, no el compilador propietario de IonQ, así que el resultado puede diferir del que IonQ ejecutaría.
 - **IonQ, estrategia `remote`** (la del código actual): `backend.run(qc, dry_run=True, job_settings=...)` + `job.compiled_circuit(lang="native")`. La espera del job tiene un tope (`config.REMOTE_JOB_TIMEOUT_S`, 60 s): si se agota, se pasa a `local`. **[a verificar]** que la versión de qiskit-ionq en Qollab soporte `dry_run` y `compiled_circuit`, qué devuelve (¿`QuantumCircuit` con `GPIGate`? ¿dict JSON de IonQ?) y si el dry-run cuenta como el único job de la corrida.
-- **IonQ, estrategia `local` (fallback)**: si `remote` lanza una excepción, se usa `qiskit.transpile(qc, backend=backend, optimization_level=1)` (el backend precreado usa el gateset estándar) y se deja un warning en el log. El translator lo trata igual que a un proveedor no-IonQ.
-- **No IonQ**: `qiskit.transpile(qc, backend=backend, optimization_level=1)`. Si falla (proveedor raro), se reintenta con `transpile(qc, basis_gates=["rz", "sx", "x", "cz", "cx"], optimization_level=1)`, sin mapa de acoplamiento.
+- **IonQ, estrategia `local` (fallback)**: si `remote` lanza una excepción, se usa `qiskit.transpile(qc, backend=backend, optimization_level=1)` (el backend precreado usa el gateset estándar) y se deja un warning en el log. El translator lo trata igual.
+- **Simulador local (`local`)**: `qiskit.transpile(qc, backend=backend, optimization_level=1)`. Si falla (por ejemplo, un backend sin `target`), se reintenta con `transpile(qc, basis_gates=["rz", "sx", "x", "cz", "cx"], optimization_level=1)`, sin mapa de acoplamiento.
 - Se guarda el layout inicial (`circuit.layout.initial_index_layout(filter_ancillas=True)`) si existe, para la compactación en M2.
 - Orden de intento con IonQ: `native-local` → `remote` → `local`. La sonda (1a) decide cuáles son viables; las que no lo sean se descartan del código.
 - En **ningún** caso se transpila hacia IonQ un circuito que vino de otro proveedor (requerimiento: traducción estática).
 
-**Tests (sin red):** `BasicSimulator`; `GenericBackendV2` con bases `["cz", "rz", "sx", "x"]` (tipo IBM Heron) y `["ecr", "rz", "sx", "x"]` (tipo IBM Eagle); un objeto falso sin `target` (proveedor `unknown`); un mock de backend IonQ cuyo `run` devuelve un job falso con un circuito nativo fijo, para probar la estrategia `remote`; y un mock que lanza una excepción, para el fallback. Además, `detect` sobre cada uno.
+**Tests (sin red):** `BasicSimulator`; un `GenericBackendV2` con base `["cz", "rz", "sx", "x"]` (un chip con mapa de conexiones, para probar el layout); un objeto falso sin `target` (clasificado `unsupported`); un mock de backend IonQ cuyo `run` devuelve un job falso con un circuito nativo fijo, para probar la estrategia `remote`; y un mock que lanza una excepción, para el fallback. Además, `detect` sobre cada uno.
 
 **Demo:** `scripts/demo_transpiler.py` imprime el `BackendInfo` y el circuito transpilado de `bell` para cada backend local.
 
@@ -372,9 +370,9 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 
 **Objetivo:** convertir cualquier `TranspiledCircuit` en un `NativeCircuit` equivalente formado solo por `gpi`, `gpi2`, `virtual_z` y un único entrelazador (`ms` **o** `zz`, nunca los dos).
 
-**2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py` y `normalize.py`.
+**2a. Función `translate` (`translator.py`).** `translate(info, transpiled) -> NativeCircuit` recibe el `BackendInfo` y el `TranspiledCircuit` que devuelve `transpiler.transpile()`. La regla de traducción es la misma para todo backend (2c); lo único que cambia es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`). Delega en los helpers `rules.py` y `normalize.py`. No hay clases por proveedor: `compile` solo acepta IonQ y el simulador integrado (§5.5), y las subclases eran idénticas.
 
-**2b. Compactación de qubits.** Los qubits de salida son los del circuito del usuario, en su orden (vía layout inicial). Los qubits físicos que no se tocan se descartan: un IBM de 156 qubits queda en 2 si el circuito es un Bell. Si el routing usó ancillas físicas, se agregan al final. Un qubit del usuario que nunca se usa se conserva (es un ion quieto en |0⟩). Limitación aceptada: las permutaciones finales por routing no se deshacen.
+**2b. Compactación de qubits.** Los qubits de salida son los del circuito del usuario, en su orden (vía layout inicial). Los qubits físicos que no se tocan se descartan: un backend de decenas de qubits queda en 2 si el circuito es un Bell. Si el routing usó ancillas físicas, se agregan al final. Un qubit del usuario que nunca se usa se conserva (es un ion quieto en |0⟩). Limitación aceptada: las permutaciones finales por routing no se deshacen.
 
 **2c. Tabla de reglas (`rules.py`).** Todas son iguales **salvo fase global**, que no afecta a los vectores de Bloch. El orden es temporal (primero se aplica lo de la izquierda).
 
@@ -505,7 +503,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip, marcadores de entorno ni URLs; con comentarios, que Qollab admite). Qollab siempre instala Qiskit y, si el archivo no lo nombra, agrega `qiskit>=2.5.2,<3.0.0`; si lo nombra, usa la línea tal cual. El `qiskit-ionq` lo trae la plataforma con sus backends IonQ (su versión no está documentada, es anterior a 1.0.3), así que el rango pide una versión que ese paquete ya cumple y no fuerza una instalación distinta. NumPy viene con Pyodide.
 - Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). `main.py` compila un circuito de ejemplo (`circuit`: `bell`, `ghz3`, `ghz16` o `layered16`), imprime el JSON (o solo su tamaño si tiene más de 30 pasos) y mide un paso con `sample` (`step`, 0 = el último); la lógica compartida con las páginas JS está en `qollab_api.py`. El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
 
-**Validación (manual, la hace el equipo):** correr en Built-in, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". En AWS local y en un IBM con ruido tiene que aparecer `ProviderDisabledError` con un mensaje claro (están desactivados, §5.5). Los resultados se anotan en §10.
+**Validación (manual, la hace el equipo):** correr en Built-in, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". En AWS local y en un IBM con ruido tiene que aparecer `UnsupportedProviderError` con un mensaje claro (no están soportados, §5.5). Los resultados se anotan en §10.
 
 ---
 
@@ -654,4 +652,4 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 3. **`cumulative_*` y `virtualz`: [resuelto].** El contrato usa `cumulative_*` y el op `virtual_z`. Actualizado en backend, schema y documentación.
 4. **Perfil de ruido para backends no IonQ:** ¿referencia de iones (actual) o `ideal` para los simuladores locales ideales?
 5. **Unidad de costo:** USD estimados (actual) o créditos de Qollab.
-6. **Transpilación de los backends que no son IonQ [aplazada]:** con el mapa de conexiones de un chip de IBM, el enrutamiento puede cambiar las etiquetas de los qubits y la secuencia de pasos varía entre corridas. Para el MVP **se evita desactivando esos proveedores** (`config.ENABLED_PROVIDERS`, §5.5): solo se aceptan `ionq` y `local`, que tienen conectividad total. Si algún día se reactivan IBM, AWS o `unknown`, hay que resolver antes esta decisión. Explicación, evidencia, opciones y sonda para Qollab en `documentation/prompts/decision_transpilacion_no_ionq.md`.
+6. **Transpilación de los backends que no son IonQ [resuelta: no se soportan]:** con el mapa de conexiones de un chip de IBM, el enrutamiento puede cambiar las etiquetas de los qubits y la secuencia de pasos varía entre corridas. **[decisión del usuario, 2026-10-10]** `compile` solo acepta `ionq` y `local`, que tienen conectividad total; IBM, AWS y cualquier otro backend se rechazan con `UnsupportedProviderError` (§5.5) y se eliminaron el interruptor `ENABLED_PROVIDERS`, las clasificaciones `ibm`/`aws`/`unknown` y las subclases del translator. Explicación, evidencia y opciones que se descartaron en `documentation/prompts/decision_transpilacion_no_ionq.md`.

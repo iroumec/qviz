@@ -1,7 +1,7 @@
 # Decisión pendiente: cómo se transpilan los circuitos que no son de IonQ
 
-> Estado: **aplazada para el MVP; abierta si se reactivan esos proveedores.** Escrito el 2026-10-10.
-> **Actualización:** el problema se evita desactivando los proveedores afectados. `config.ENABLED_PROVIDERS` vale por defecto `{"ionq", "local"}`, y `compile` rechaza IBM, AWS y `unknown` con `ProviderDisabledError` antes de transpilar (`spec.md` §5.5). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total y no sufren el problema. Este documento sigue siendo la referencia si se decide implementar esos proveedores en el futuro. Además, la prueba de la sección 3.1 de abajo confirma que el cálculo es exacto y que lo que falla es la interpretación de las etiquetas; y existe una opción **E** (no transpilar y traducir cada compuerta directamente) que se describe en la sección 5.
+> Estado: **resuelta el 2026-10-10: IBM, AWS y los demás backends no se soportan.** Escrito el 2026-10-10. Lo que sigue queda como registro del problema y de las opciones que se descartaron.
+> **Resolución:** `compile` solo acepta `ionq` y `local`, y rechaza IBM, AWS y cualquier otro backend con `UnsupportedProviderError` antes de transpilar (`spec.md` §5.5). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total y no sufren el problema. Se eliminaron `ENABLED_PROVIDERS`, las clasificaciones `ibm`/`aws`/`unknown` y las subclases del translator. Este documento queda como registro del problema y de las opciones que se descartaron.
 > Alcance: `backend/core/transpiler/transpiler.py` y `backend/core/translator/rules.py` (`_compaction`).
 > Lo marcado **[a verificar]** hay que comprobarlo en Qollab, porque los objetos `backend` de Qollab no son idénticos a los que se pueden crear en una máquina local.
 

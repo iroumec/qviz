@@ -34,8 +34,6 @@ These values never change. They are not configuration.
 
 | Parameter | Value | Meaning |
 | --- | --- | --- |
-| `ENABLED_PROVIDERS` | `{"ionq", "local"}` | The providers that `compile` accepts. See below. |
-| `PROVIDER_LABELS` | one readable name per provider | The names used in the message of a rejected backend. |
 | `MAX_QUBITS` | `16` | The hard cap on the circuit width. |
 | `MAX_QASM_CHARS` | `200000` | The longest OpenQASM text that the importer reads. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
@@ -44,39 +42,33 @@ These values never change. They are not configuration.
 | `MAX_SAMPLE_SHOTS` | `100000` | The largest number of shots that `sample` accepts in one call. |
 | `REMOTE_JOB_TIMEOUT_S` | `60.0` | The seconds to wait for the IonQ dry-run job. When the time is over, the local transpile is used. |
 
-### Which providers are enabled {.unnumbered}
+### Which backends are accepted {.unnumbered}
 
-`ENABLED_PROVIDERS` is a set with the names of the providers that `compile`
-accepts. By default only `"ionq"` and `"local"` are enabled. These are the
-providers inside the scope of the MVP: the IonQ machines, which are the target of
-the visualizer, and the local simulators, such as the built-in simulator of
-Qollab, which have no connectivity limit.
+`compile` accepts two kinds of backend: the IonQ machines, which are the target
+of the visualizer, and the local simulators, such as the built-in simulator of
+Qollab, which have no connectivity limit. There is no setting for this. Any other
+backend, such as an IBM or an AWS Braket device, is classified `"unsupported"` and
+rejected.
 
-The other providers, `"ibm"`, `"aws"` and `"unknown"`, are switched off. Their
-circuits are transpiled for a chip that is not a trapped-ion machine. The
-connectivity of that chip can force extra `SWAP` gates and permute the labels of
-the qubits, which is wrong for a visualizer of ions. The problem is described in
-`documentation/prompts/decision_transpilacion_no_ionq.md`. These providers may be
-implemented in the future.
-
-To try one of them, its name is added to the set, for example
-`config.ENABLED_PROVIDERS = frozenset({"ionq", "local", "ibm"})`. The tests do
-this with the `all_providers` fixture.
+The reason is that the circuits of those providers are transpiled for a chip that
+is not a trapped-ion machine. The connectivity of that chip can force extra
+`SWAP` gates and permute the labels of the qubits, which is wrong for a
+visualizer of ions. The problem is described in
+`documentation/prompts/decision_transpilacion_no_ionq.md`.
 
 Two points are important.
 
 - The detection is not affected. `provider.detect` still classifies every
-  backend, and it never fails. Only `compile` applies the list, and it does so
-  right after the detection, before the transpiler can spend the single IonQ job.
-- A backend of a disabled provider is rejected with `ProviderDisabledError`. The
-  message is meant to be read by the user: `This machine is not currently
-  supported (detected: AWS Braket). Currently supported: IonQ (Aria and Forte),
-  the built-in simulator.` The names come from `config.PROVIDER_LABELS`. In
-  Qollab, the generated prelude removes the Python traceback and shows only this
-  text.
+  backend, and it never fails. Only `compile` rejects the unsupported ones, right
+  after the detection, before the transpiler can spend the single IonQ job.
+- A rejected backend raises `UnsupportedProviderError`. The message is meant to be
+  read by the user: `This machine is not currently supported (detected: default
+  (BraketLocalBackend)). Currently supported: IonQ (Aria and Forte), the built-in
+  simulator.` It names the backend and its class. In Qollab, the generated
+  prelude removes the Python traceback and shows only this text.
 
 In Qollab, this means that the IBM noisy simulators, the AWS Braket local
-simulator and any unrecognised backend are rejected with this error by default.
+simulator and any unrecognised backend are rejected with this error.
 
 ### How the width limit is used {.unnumbered}
 
@@ -115,7 +107,7 @@ QVizError
 ├── UnsupportedOperationError
 ├── CircuitTooLargeError
 ├── CircuitParseError
-├── ProviderDisabledError
+├── UnsupportedProviderError
 └── TranspilationError
 ```
 
@@ -125,13 +117,12 @@ QVizError
 | `UnsupportedOperationError` | The circuit contains something that cannot be shown, for example a mid-circuit measurement, a `reset`, classical control flow, an unbound parameter, or a malformed entry in a native gate list. |
 | `CircuitTooLargeError` | The circuit is wider than the effective limit that is described above. |
 | `CircuitParseError` | The text of a circuit (OpenQASM) could not be read: it is empty, too long, has no valid header or has a syntax error. See the [importer](importer.qmd). |
-| `ProviderDisabledError` | The backend belongs to a provider that is not in `ENABLED_PROVIDERS`. It is raised by `compile` before anything is transpiled. |
+| `UnsupportedProviderError` | The backend is neither an IonQ machine nor the built-in simulator. It is raised by `compile` before anything is transpiled. |
 | `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
 
-### An unknown provider is not an error of the detection {.unnumbered}
+### An unsupported provider is not an error of the detection {.unnumbered}
 
-If the provider of a backend cannot be recognised, `provider.detect` does not
-raise an error. It returns the provider `"unknown"`. This behaviour is described
-on the [Provider](provider.qmd) page. Whether such a backend is accepted is
-decided later, by `compile`, with `ENABLED_PROVIDERS`: since `"unknown"` is
-disabled by default, `compile` rejects it with `ProviderDisabledError`.
+If the provider of a backend is not IonQ or the built-in simulator,
+`provider.detect` does not raise an error. It returns the provider
+`"unsupported"`. This behaviour is described on the [Provider](provider.qmd) page.
+The backend is rejected later, by `compile`, with `UnsupportedProviderError`.

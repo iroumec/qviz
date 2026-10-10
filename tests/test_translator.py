@@ -23,7 +23,7 @@ def _translate(qc: QuantumCircuit, entangler: str):
     transpiled = TranspiledCircuit(
         source="qiskit", num_qubits=qc.num_qubits, circuit=qc
     )
-    return translator.create(info).translate(transpiled)
+    return translator.translate(info, transpiled)
 
 
 def _assert_equivalent(qc: QuantumCircuit, entangler: str) -> None:
@@ -115,7 +115,7 @@ def test_native_ops_input_is_parsed():
             {"gate": "gpi", "target": 0, "phase": 0.25},
         ),
     )
-    native = translator.create(make_info("ms")).translate(transpiled)
+    native = translator.translate(make_info("ms"), transpiled)
     assert {op.name for op in native.ops} == {"ms", "gpi"}
 
 
@@ -139,7 +139,7 @@ def _native_payload_translation(payload: list, entangler: str = "ms"):
         source="ionq-native", num_qubits=2, native_ops=tuple(payload)
     )
     info = make_info(entangler)  # type: ignore[arg-type]
-    return translator.create(info).translate(transpiled)
+    return translator.translate(info, transpiled)
 
 
 @pytest.mark.parametrize("entangler", ENTANGLERS)

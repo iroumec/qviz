@@ -50,9 +50,8 @@ ships does not have it.
 
 The machine hints are therefore collected from two places, in this order:
 `options.noise_model`, then the name. Each hint is tested with `native_2q_gate`,
-and the first hit is used. When `options.noise_model` raises an exception (as it
-does for AWS and the built-in simulator) or holds a `NoiseModel` object (as it
-does for IBM), it is ignored, and the name is used.
+and the first hit is used. When `options.noise_model` raises an exception or holds a
+`NoiseModel` object, it is ignored, and the name is used.
 
 ## How the hardware flag is set {.unnumbered}
 
@@ -67,7 +66,7 @@ always preferred when it exists.
 
 ## `detect_provider(backend)` {.unnumbered}
 
-The family of the backend is found, and one of the five provider names is
+The family of the backend is found, and one of the three provider names is
 returned.
 
 **Parameter**
@@ -76,7 +75,7 @@ returned.
 | --- | --- | --- |
 | `backend` | any object | The backend to classify. |
 
-**Returns** one of `"ionq"`, `"ibm"`, `"aws"`, `"local"` or `"unknown"`.
+**Returns** one of `"ionq"`, `"local"` or `"unsupported"`.
 
 The detection is layered. The reliable signals are checked first, and a
 structural fallback is used last.
@@ -86,8 +85,6 @@ structural fallback is used last.
 | Signal | Provider |
 | --- | --- |
 | the class module starts with `qiskit_ionq`, or the name contains `ionq` | `ionq` |
-| the module is `qiskit_ibm_runtime`, the name starts with `fake_` or `ibm_`, the class is `GenericBackendV2`, or the module contains `ibm` | `ibm` |
-| the module starts with `qiskit_braket_provider`, or the name contains `braket` | `aws` |
 | the module, the class or the name contains `BasicSimulator`, `basic_simulator`, `aer_simulator` or `AerSimulator` | `local` |
 
 ### The structural fallback {.unnumbered}
@@ -99,20 +96,15 @@ advertises are inspected. They are read from `target.operation_names`, from
 | Operation names that are found | Provider |
 | --- | --- |
 | any of `gpi`, `gpi2`, `ms` | `ionq` |
-| `ecr` | `ibm` |
-| `cz`, `rz` and `sx` together | `ibm` |
-| anything else | `unknown` |
+| anything else (IBM, AWS Braket, an unrecognised backend) | `unsupported` |
 
 Only `gpi`, `gpi2` and `ms` are treated as IonQ-native here, because `zz` and
-`rxx` also exist as ordinary Qiskit gates and would produce false positives. The
-Qollab IBM simulators advertise `cz`, `rz` and `sx` together, which is the
-signal that is used for `ibm`.
+`rxx` also exist as ordinary Qiskit gates and would produce false positives.
 
-This fallback exists so that a backend with an unusual name, but with a clear
-gate set, is still classified correctly. The detection never raises an error: an unrecognised
-backend is classified as `"unknown"`. Whether it is accepted is decided by
-`compile`, with `config.ENABLED_PROVIDERS`. See the
-[configuration page](config-and-errors.qmd).
+This fallback exists so that an IonQ backend with an unusual name, but with a
+clear gate set, is still classified correctly. The detection never raises an
+error: any other backend is classified as `"unsupported"`. It is `compile` that
+rejects it. See the [configuration page](config-and-errors.qmd).
 
 ## The noise profiles {.unnumbered}
 

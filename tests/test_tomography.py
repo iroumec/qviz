@@ -30,7 +30,7 @@ def _native(entangler: str = "ms"):
     transpiled = TranspiledCircuit(
         source="qiskit", num_qubits=qc.num_qubits, circuit=qc
     )
-    return translator.create(info).translate(transpiled), info
+    return translator.translate(info, transpiled), info
 
 
 @pytest.mark.skipif(
