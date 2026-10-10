@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import math
+from typing import assert_never
 
 import numpy as np
 
@@ -37,7 +38,7 @@ def _matrix(op: NativeOp) -> np.ndarray:
         return zz.matrix(op.angle)
     if op.name == "virtual_z":
         return virtualz.matrix(op.z_rotation)
-    raise ValueError(f"unknown native operation {op.name!r}")
+    assert_never(op.name)
 
 
 def _apply(

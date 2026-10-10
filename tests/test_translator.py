@@ -34,21 +34,9 @@ def _assert_equivalent(qc: QuantumCircuit, entangler: str) -> None:
 
 @pytest.mark.parametrize("entangler", ENTANGLERS)
 @pytest.mark.parametrize(
-    "gate,params",
-    [
-        ("x", 0),
-        ("y", 0),
-        ("sx", 0),
-        ("sxdg", 0),
-        ("z", 0),
-        ("s", 0),
-        ("sdg", 0),
-        ("t", 0),
-        ("tdg", 0),
-        ("h", 0),
-    ],
+    "gate", ["x", "y", "sx", "sxdg", "z", "s", "sdg", "t", "tdg", "h"]
 )
-def test_one_qubit_named_rules(gate, params, entangler):
+def test_one_qubit_named_rules(gate, entangler):
     qc = QuantumCircuit(1)
     getattr(qc, gate)(0)
     _assert_equivalent(qc, entangler)

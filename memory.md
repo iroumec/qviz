@@ -68,6 +68,8 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · Auditoría anti-slop de Python (`documentation/prompts/python-slop`): aplicada la clase A (condiciones redundantes y parámetros sin uso en `provider`/`transpiler`, `tuple()` de más en `normalize`, typo de `server.py`, `importer` quita comentarios una sola vez, test de `translator` sin parámetro muerto). `make test` y `make lint` en verde. Clase B aplicada: B1 (`rules.py` ya no mira `condition`, no existe en Qiskit 2) y B2 (`assert_never` en `simulator._matrix` y `to_qiskit`, `QVizError` en `translator`). En revisión con el usuario: B restantes (una por una), después C. El usuario dijo que IBM/AWS no se usarán, así que la jerarquía `Translator` y el código de IBM/AWS se simplificarán (pendiente; toca `spec.md` §3, §M2, docs y `activity.puml`).
+
 - 2026-10-10 · Estética de la documentación: tema monocromático claro/oscuro (`documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`, cargados tras `cosmo`/`darkly`), `highlight-style: monochrome` en `_quarto.yml` y color de enlaces/cabeceras del PDF Typst. Documentado en `style-and-conventions.qmd`. Sin commitear.
 - 2026-10-10 · El usuario confirmó que el visor funciona bien en la web de Qollab y cerró la sesión.
 - 2026-10-10 · Cierre de sesión. Se quitaron las menciones de FastAPI y Astro (README, AGENTS, spec, memory) y se actualizó "Fuera de alcance" de `AGENTS.md`. Se revisó la desaparición de vectores: es el comportamiento normal descrito arriba.

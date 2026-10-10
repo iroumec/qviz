@@ -165,7 +165,7 @@ def sample(
         )
 
     ideal = probabilities(data, step)
-    num_qubits = int(round(math.log2(len(ideal))))
+    num_qubits = round(math.log2(len(ideal)))
     flips = _noise_flip_probabilities(data, step, num_qubits)
 
     rng = np.random.default_rng(seed)

@@ -31,9 +31,12 @@ _CONSTRUCTS = {
 _HEADER = re.compile(r"\s*OPENQASM\s+(\d+)(?:\.\d+)?\s*;")
 
 
-def _version(text: str) -> int:
-    """Return the major version declared in the header (2 or 3)."""
-    header = _HEADER.match(_COMMENTS.sub(" ", text))
+def _version(code: str) -> int:
+    """Return the major version declared in the header (2 or 3).
+
+    ``code`` is the text without comments.
+    """
+    header = _HEADER.match(code)
     if header is None:
         raise CircuitParseError(
             "the circuit must start with the line OPENQASM 2.0; or OPENQASM 3.0;"
@@ -104,14 +107,15 @@ def load_circuit(text: str) -> QuantumCircuit:
             f"the circuit has {len(source)} characters, maximum is "
             f"{config.MAX_QASM_CHARS}"
         )
-    version = _version(source)
-    found = _CONTROL_FLOW.search(_COMMENTS.sub(" ", source))
+    code = _COMMENTS.sub(" ", source)
+    version = _version(code)
+    found = _CONTROL_FLOW.search(code)
     if found:
         raise UnsupportedOperationError(
             f"control flow ({found.group(1)}) is not supported; "
             "write the gates one after another"
         )
-    if _OPAQUE.search(_COMMENTS.sub(" ", source)):
+    if _OPAQUE.search(code):
         raise UnsupportedOperationError(
             "opaque gates have no definition, so they cannot be translated to the "
             "native gates of IonQ; define the gate with `gate name qubits { ... }`"

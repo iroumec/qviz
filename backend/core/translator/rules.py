@@ -223,7 +223,7 @@ def emit(
             f"reset at source index {source_index} is not supported: it is not a "
             "unitary gate, so it cannot be translated to the native gates of IonQ"
         )
-    if name == "if_else" or getattr(op, "condition", None) is not None:
+    if name == "if_else":
         raise UnsupportedOperationError(
             f"classical control flow at source index {source_index} is not "
             "supported: the visualizer shows one fixed sequence of gates"

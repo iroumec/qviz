@@ -131,10 +131,7 @@ def detect_provider(backend: Any) -> Provider:
     if module.startswith("qiskit_ionq") or "ionq" in name:
         return "ionq"
     if (
-        module.startswith("qiskit_ibm_runtime")
-        or module.startswith("qiskit_ibm_provider")
-        or name.startswith("fake_")
-        or name.startswith("ibm_")
+        name.startswith(("fake_", "ibm_"))
         or type_name == "genericbackendv2"
         or "ibm" in module
     ):
@@ -194,7 +191,7 @@ def _native_family(value: str | None) -> Entangler | None:
     return family if family in ("ms", "zz") else None
 
 
-def _infer_entangler(backend: Any, name: str) -> Entangler:
+def _infer_entangler(backend: Any) -> Entangler:
     """Choose the target entangler from the backend, the hints and the default."""
     names = _operation_names(backend)
     if "zz" in names and "ms" not in names:
@@ -228,7 +225,7 @@ def _display_name(
         if noise:
             return f"IonQ {_pretty_machine(noise)}"
         lowered = name.lower()
-        if _native_family(name) is not None or "forte" in lowered or "aria" in lowered:
+        if "forte" in lowered or "aria" in lowered:
             return f"IonQ {_pretty_machine(name)}"
         if name:
             return name if "ionq" in lowered else f"IonQ {name}"
@@ -255,7 +252,7 @@ def detect(backend: Any, entangler: Entangler | None = None) -> BackendInfo:
     if entangler is not None:
         chosen: Entangler = entangler
     else:
-        chosen = _infer_entangler(backend, name)
+        chosen = _infer_entangler(backend)
 
     is_hardware = provider == "ionq" and not _is_simulator(backend, name)
     hints = _machine_hints(backend)

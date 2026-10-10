@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from backend.core.errors import QVizError
 from backend.core.model import BackendInfo, NativeCircuit, TranspiledCircuit
 from backend.core.translator import rules
 
@@ -34,7 +35,7 @@ class Translator(ABC):
             )
         else:
             if transpiled.circuit is None:  # pragma: no cover - model invariant
-                raise ValueError(
+                raise QVizError(
                     "transpiled circuit has neither circuit nor native ops"
                 )
             ops, num_qubits = rules.translate_circuit(
