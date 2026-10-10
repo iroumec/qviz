@@ -2,7 +2,7 @@
 
 > Visualizador educativo de iones atrapados. Este documento cubre **solo el backend** (Python). El frontend (Astro / three.js) queda para una etapa posterior y aquí solo aparece como consumidor del contrato JSON (§6).
 >
-> Fuentes: requerimientos del equipo, `documentation/diagrams/activity.puml`, `backend/core/compiler/compiler.py` y `documentation/prompts/qollab_context.md` (restricciones de la plataforma).
+> Fuentes: requerimientos del equipo, `documentation/diagrams/activity.puml`, `backend/core/compiler/compiler.py`, `documentation/prompts/qollab_context.md` (restricciones de la plataforma) y `documentation/references/ionq_native_gates.md` (definición de las compuertas nativas, identidades verificadas y errores de la doc de IonQ).
 >
 > Convención de este documento: **[a verificar]** = supuesto que hay que comprobar en Qollab antes de apostar el diseño. **[decisión]** = elección tomada acá que el equipo puede revertir.
 
@@ -151,6 +151,8 @@ Son dataclasses `frozen=True`. Los nombres son orientativos; lo que importa son 
 
 ### 5.1 Unidades y convenciones (obligatorias)
 
+Las matrices de cada compuerta nativa están en `documentation/references/ionq_native_gates.md` §2.
+
 | Magnitud                  | Unidad                                    | Notas                                                                                           |
 | ------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Fases φ de GPI, GPI2 y MS | **radianes**                              | En qiskit-ionq están en _turnos_: φ_rad = 2π·φ_turnos                                           |
@@ -261,24 +263,24 @@ Es el único punto de acoplamiento con el frontend. **No se cambia sin acuerdo d
 
 ### 6.1 Semántica de cada campo
 
-| Campo                  | Definición                                                                                                                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `backend`              | `BackendInfo.display_name`                                                                                                                                                   |
-| `total_qubits`         | Qubits del circuito del usuario más ancillas reales, si las hubo (ver compactación, M2)                                                                                      |
-| `initial_fidelity`     | `100 · (1 − spam_error)` del perfil de ruido                                                                                                                                 |
-| `step`                 | Índice desde 1, consecutivo. La lista se ordena por `step`                                                                                                                   |
-| `operation`            | En minúsculas. **[decisión]** `virtualz`, no `virtualZ`, para no mezclar mayúsculas en un enum                                                                               |
-| `phases`               | **Fases lógicas** (las del circuito con VirtualZ explícitos), no la fase física del láser. La fase del láser sería φ − `virtual_z[q]` y se puede mostrar como dato educativo |
-| `targets`              | Índices de qubit compactados (0 … total_qubits−1)                                                                                                                            |
-| `angle`                | θ en turnos, normalizado a [0, 0.25] (ver M2)                                                                                                                                |
-| `acumulative_fidelity` | Fidelidad global después del paso (§7 M5)                                                                                                                                    |
-| `states`               | Vector de Bloch reducido por qubit, con \|v\| ≤ 1 (\|v\| < 1 si hay entrelazamiento)                                                                                         |
-| `vibration`            | Amplitud de oscilación normalizada [0, 1] por qubit. Vale 0 si el error está por debajo de `VIBRATION_THRESHOLD`. El frontend la mapea a ángulo                              |
-| `acumulative_cost`     | Costo estimado acumulado en **USD** para `shots` shots en el hardware de referencia (§7 M5). **[decisión]** USD y no créditos de Qollab                                      |
-| `probabilities`        | `[(1+z)/2, (1−z)/2]` por qubit                                                                                                                                               |
-| `virtual_z`            | Suma de rotaciones VirtualZ por qubit, normalizada a [0, 2π)                                                                                                                 |
-| `inactivity`           | **[decisión]** Total acumulado (monotónico) de pasos en los que el qubit no fue target. Los pasos `virtualz` no suman inactividad a los demás (duran 0)                      |
-| `fidelities`           | Fidelidad por qubit en %, empieza en 100                                                                                                                                     |
+| Campo                  | Definición                                                                                                                                                                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend`              | `BackendInfo.display_name`                                                                                                                                                                                                                                                                        |
+| `total_qubits`         | Qubits del circuito del usuario más ancillas reales, si las hubo (ver compactación, M2)                                                                                                                                                                                                           |
+| `initial_fidelity`     | `100 · (1 − spam_error)` del perfil de ruido                                                                                                                                                                                                                                                      |
+| `step`                 | Índice desde 1, consecutivo. La lista se ordena por `step`                                                                                                                                                                                                                                        |
+| `operation`            | En minúsculas. **[decisión]** `virtualz`, no `virtualZ`, para no mezclar mayúsculas en un enum                                                                                                                                                                                                    |
+| `phases`               | **Fases lógicas** (las del circuito con VirtualZ explícitos), no la fase física del láser. La fase del láser sería φ − `virtual_z[q]` y se puede mostrar como dato educativo. El signo **−** está verificado contra las matrices; el ejemplo de la doc de IonQ usa **+** (ver `ionq_native_gates.md` §2.3) |
+| `targets`              | Índices de qubit compactados (0 … total_qubits−1)                                                                                                                                                                                                                                                 |
+| `angle`                | θ en turnos, normalizado a [0, 0.25] (ver M2)                                                                                                                                                                                                                                                     |
+| `acumulative_fidelity` | Fidelidad global después del paso (§7 M5)                                                                                                                                                                                                                                                         |
+| `states`               | Vector de Bloch reducido por qubit, con \|v\| ≤ 1 (\|v\| < 1 si hay entrelazamiento)                                                                                                                                                                                                              |
+| `vibration`            | Amplitud de oscilación normalizada [0, 1] por qubit. Vale 0 si el error está por debajo de `VIBRATION_THRESHOLD`. El frontend la mapea a ángulo                                                                                                                                                   |
+| `acumulative_cost`     | Costo estimado acumulado en **USD** para `shots` shots en el hardware de referencia (§7 M5). **[decisión]** USD y no créditos de Qollab                                                                                                                                                           |
+| `probabilities`        | `[(1+z)/2, (1−z)/2]` por qubit                                                                                                                                                                                                                                                                    |
+| `virtual_z`            | Suma de rotaciones VirtualZ por qubit, normalizada a [0, 2π)                                                                                                                                                                                                                                      |
+| `inactivity`           | **[decisión]** Total acumulado (monotónico) de pasos en los que el qubit no fue target. Los pasos `virtualz` no suman inactividad a los demás (duran 0)                                                                                                                                           |
+| `fidelities`           | Fidelidad por qubit en %, empieza en 100                                                                                                                                                                                                                                                          |
 
 Los campos que no aplican **se omiten** (no van como `null`). Los floats se redondean a `JSON_DECIMALS = 6` y `-0.0` se escribe como `0.0`.
 
@@ -332,10 +334,12 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 **1c. `transpiler.transpile(info, backend, qc) -> TranspiledCircuit`**
 
 - Primero quita las mediciones finales (`remove_final_measurements`) y valida `num_qubits ≤ MAX_QUBITS`.
+- **IonQ, estrategia `native-local`** (candidata, la más deseable): con qiskit-ionq ≥ 1.0.0, `transpile(qc, backend=<backend con gateset="native">)` transpila a GPI/GPI2/MS|ZZ **en local, sin mandar ningún job** (`ionq_native_gates.md` §4.2). Esto evita la duda sobre `dry_run` y no gasta el único job de la corrida. **[a verificar]** si en Qollab se puede obtener la variante nativa del `backend` inyectado (qollab_context §8.4). Ojo: es el transpilador de qiskit-ionq, no el compilador propietario de IonQ, así que el resultado puede diferir del que IonQ ejecutaría.
 - **IonQ, estrategia `remote`** (la del código actual): `backend.run(qc, dry_run=True, job_settings=...)` + `job.compiled_circuit(lang="native")`. **[a verificar]** que la versión de qiskit-ionq en Qollab soporte `dry_run` y `compiled_circuit`, qué devuelve (¿`QuantumCircuit` con `GPIGate`? ¿dict JSON de IonQ?) y si el dry-run cuenta como el único job de la corrida.
 - **IonQ, estrategia `local` (fallback)**: si `remote` lanza una excepción, se usa `qiskit.transpile(qc, backend=backend, optimization_level=1)` (el backend precreado usa el gateset estándar) y se deja un warning en el log. El translator lo trata igual que a un proveedor no-IonQ.
 - **No IonQ**: `qiskit.transpile(qc, backend=backend, optimization_level=1)`. Si falla (proveedor raro), se reintenta con `transpile(qc, basis_gates=["rz", "sx", "x", "cz", "cx"], optimization_level=1)`, sin mapa de acoplamiento.
 - Se guarda el layout inicial (`circuit.layout.initial_index_layout(filter_ancillas=True)`) si existe, para la compactación en M2.
+- Orden de intento con IonQ: `native-local` → `remote` → `local`. La sonda (1a) decide cuáles son viables; las que no lo sean se descartan del código.
 - En **ningún** caso se transpila hacia IonQ un circuito que vino de otro proveedor (requerimiento: traducción estática).
 
 **Tests (sin red):** `BasicSimulator`; `GenericBackendV2` con bases `["cz", "rz", "sx", "x"]` (tipo IBM Heron) y `["ecr", "rz", "sx", "x"]` (tipo IBM Eagle); un objeto falso sin `target` (proveedor `unknown`); un mock de backend IonQ cuyo `run` devuelve un job falso con un circuito nativo fijo, para probar la estrategia `remote`; y un mock que lanza una excepción, para el fallback. Además, `detect` sobre cada uno.
@@ -363,9 +367,10 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 | `z`, `s`, `sdg`, `t`, `tdg`                                        | `virtualz(π)`, `virtualz(π/2)`, `virtualz(−π/2)`, `virtualz(π/4)`, `virtualz(−π/4)` |
 | `h`                                                                | `virtualz(π)`, `gpi2(π/2)`                                                          |
 | `cz(a,b)`                                                          | `ZZ⁺(a,b)`, `virtualz(a,−π/2)`, `virtualz(b,−π/2)`                                  |
-| `cx(c,t)`                                                          | `h(t)`, `cz(c,t)`, `h(t)` (expandido con las reglas de arriba)                      |
+| `cx(c,t)`, entrelazador `ms`                                       | `gpi2(c,π/2)`, `ms(c,t; [0,0]; 0.25)`, `gpi2(c,π)`, `gpi2(t,π)`, `gpi2(c,−π/2)` (Maslov, 5 ops; `ionq_native_gates.md` §3) |
+| `cx(c,t)`, entrelazador `zz`                                       | `h(t)`, `cz(c,t)`, `h(t)` (expandido con las reglas de arriba)                      |
 | `rzz(θ)`                                                           | `zz(θ / 2π)` normalizado (2d)                                                       |
-| GPI/GPI2/MS/ZZ de IonQ                                             | Directo, convirtiendo fases de turnos a radianes                                    |
+| GPI/GPI2/MS/ZZ de IonQ                                             | Directo, convirtiendo fases de turnos a radianes. Se acepta como entrada un `QuantumCircuit` con compuertas de `qiskit_ionq` **o** la lista JSON de la API nativa (`gate`, `phase`/`phases`, `angle`, `target`/`targets`; `ionq_native_gates.md` §4.1) |
 | `id`, `barrier`, `delay`, `measure` final                          | Se ignoran                                                                          |
 | Otra compuerta de **1 qubit**                                      | `OneQubitEulerDecomposer(basis="ZSX")` → reglas de arriba                           |
 | Otra compuerta de **2 qubits** (`ecr`, `swap`, `iswap`, `rzx`, …)  | `TwoQubitBasisDecomposer(CZGate(), euler_basis="ZSX")` → reglas de arriba           |
@@ -377,10 +382,10 @@ Donde `ZZ⁺(a,b)` es el entrelazador máximo según el backend:
 - entrelazador `zz`: `zz(a,b; 0.25)`
 - entrelazador `ms`: `gpi2(a,π/2)`, `gpi2(b,π/2)`, `ms(a,b; [0,0]; 0.25)`, `gpi2(a,−π/2)`, `gpi2(b,−π/2)`
 
-Identidades de base (verificadas a mano, confirmar con tests):
+Identidades de base, verificadas numéricamente contra las matrices oficiales el 2026-10-09 (detalle en `documentation/references/ionq_native_gates.md` §3; igual tienen que quedar cubiertas por los tests):
 
-- GPI(φ) = σ*φ = cos φ·X + sin φ·Y. GPI2(φ) = exp(−iπ/4·σ*φ). GPI2(π/2) = RY(π/2).
-- MS(φ0, φ1, t) = exp(−iπt·σ*φ0⊗σ*φ1). ZZ(t) = exp(−iπt·Z⊗Z), con t en turnos.
+- GPI(φ) = σ_φ = cos φ·X + sin φ·Y. GPI2(φ) = exp(−iπ/4·σ_φ). GPI2(π/2) = RY(π/2).
+- MS(φ0, φ1, t) = exp(−iπt·σ_φ0⊗σ_φ1). ZZ(t) = exp(−iπt·Z⊗Z), con t en turnos.
 - CZ = RZ(−π/2)⊗RZ(−π/2) · ZZ(0.25), salvo fase global.
 - XX ↔ ZZ: conjugando con RY(±π/2) en ambos qubits. MS(φ0, φ1, t) = rotar con `virtualz(−φ0)`, `virtualz(−φ1)`, aplicar MS(0, 0, t) y deshacer con `virtualz(φ0)`, `virtualz(φ1)`.
 
@@ -412,7 +417,7 @@ Identidades de base (verificadas a mano, confirmar con tests):
 
 **Objetivo:** calcular, después de cada op, el estado reducido de cada qubit como (r, θ, φ), y el VirtualZ acumulado.
 
-- Un archivo por compuerta (ya existen `gpi.py` y `gpi2.py`), cada uno con `matrix(...) -> np.ndarray` en convención de radianes y turnos (§5.1): `gpi.py`, `gpi2.py`, `ms.py`, `zz.py`, `virtualz.py` (= RZ(λ)).
+- Un archivo por compuerta (ya existen `gpi.py` y `gpi2.py`), cada uno con `matrix(...) -> np.ndarray` en convención de radianes y turnos (§5.1), según las matrices de `ionq_native_gates.md` §2. La doc escribe las matrices de 2 qubits en big-endian; acá se trabaja en little-endian, así que hay que cuidar el orden de los targets: `gpi.py`, `gpi2.py`, `ms.py`, `zz.py`, `virtualz.py` (= RZ(λ)).
 - `simulate(native) -> SimulatedCircuit`: statevector de NumPy con forma `(2,)*n`, inicializado en |0…0⟩. Cada op se aplica con `np.tensordot` sobre los ejes de sus targets. Con el orden little-endian, el qubit q corresponde al eje `n−1−q`.
 - Después de cada op, para cada qubit: la matriz densidad reducida ρ_q (traza parcial) da x = 2·Re ρ01, y = −2·Im ρ01, z = ρ00 − ρ11, y de ahí se calculan r, θ y φ. El vectorizer convierte de vuelta a cartesianas. Se pasa por ángulos porque así lo pide el diagrama de actividad y porque la UI muestra θ y φ.
 - VirtualZ se aplica como RZ real sobre el estado, así el vector gira en Z (es el "click" del VirtualZ). `virtual_z[q]` acumula λ módulo 2π.
@@ -495,7 +500,7 @@ Identidades de base (verificadas a mano, confirmar con tests):
 - **Conflictos conocidos:**
   - Con IonQ, la estrategia `remote` del transpiler ya consume el único job. En modo tomografía, el transpiler tiene que usar la estrategia `local`.
   - **[a verificar]** que qiskit-ionq acepte una lista de circuitos en un solo job.
-  - **[a verificar]** si se pueden mandar compuertas nativas desde el `backend` precreado (qollab_context §8.4). Si no se puede, los prefijos se mandan en gateset estándar y IonQ los recompila (el estado ideal es el mismo).
+  - **[a verificar]** si se pueden mandar compuertas nativas desde el `backend` precreado (qollab_context §8.4). Es lo ideal: con `gateset="native"` IonQ no recompila ni mitiga, así que lo medido corresponde exactamente a los ops visualizados (`ionq_native_gates.md` §5). Si no se puede, los prefijos se mandan en gateset estándar y IonQ los recompila (el estado ideal es el mismo, pero el ruido corresponde al circuito recompilado).
 - **Guarda de costo:** si `info.is_hardware`, se lanza error salvo que se pase `allow_paid=True`, porque 3N circuitos × shots gasta créditos.
 - Advertencia en el log: con los simuladores con ruido, el tiempo escala con circuitos × shots.
 
