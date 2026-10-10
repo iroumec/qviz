@@ -72,6 +72,10 @@ phase, and a global phase does not change a Bloch vector.
 | a gate of three or more qubits | expanded through its definition, then translated |
 | a mid-circuit `measure`, `reset`, or classical control | `UnsupportedOperationError` |
 
+The one-qubit gates with a fixed angle (`x`, `y`, `sx`, `sxdg`, `z`, `s`, `sdg`,
+`t`, `tdg`) are read from three small constant tables in `rules.py`, instead of
+one branch each.
+
 ### `emit(ops, op, qubits, entangler, source_index=None)` {.unnumbered}
 
 One Qiskit operation is translated, and the new native operations are appended
@@ -133,11 +137,23 @@ API payload is read.
 
 | Parameter | Type | Meaning |
 | --- | --- | --- |
-| `native_ops` | sequence of dict | Each dictionary has a `gate` key and a `target` or `targets` key. A `phase`, `phases` or `angle` key may also be present. |
-| `num_qubits` | int | The number of qubits. |
+| `native_ops` | sequence of dict | Each dictionary has a `gate` key and a `target` or `targets` key. A `phase`, `phases` or `angle` key may also be present. Phases and angles are in turns. |
+| `num_qubits` | int | The number of qubits. The targets are checked against it. |
 | `entangler` | `"ms"` or `"zz"` | The target entangler. |
 
-**Returns** a pair `(ops, num_qubits)`.
+**Returns** a list of `NativeOp`.
+
+**Raises** `UnsupportedOperationError` when an entry is malformed. The list comes
+from a remote payload, so each entry is validated before it is used. These cases
+are rejected, and the message gives the index of the entry:
+
+- an entry that is not a dictionary;
+- an unknown `gate`;
+- a missing, non-numeric or out-of-range target, or a repeated target;
+- a number of targets that does not fit the gate (one for `gpi` and `gpi2`, two
+  for `ms` and `zz`);
+- a missing or non-numeric `phase` (`gpi`, `gpi2`), a `phases` value that does
+  not have two numbers (`ms`), or a non-numeric `angle`.
 
 ## The compaction of the qubits {.unnumbered}
 

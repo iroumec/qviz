@@ -14,7 +14,11 @@ from qiskit import QuantumCircuit
 from qiskit import transpile as qiskit_transpile
 
 from backend.core import config
-from backend.core.errors import CircuitTooLargeError, TranspilationError
+from backend.core.errors import (
+    CircuitTooLargeError,
+    TranspilationError,
+    UnsupportedOperationError,
+)
 from backend.core.model import BackendInfo, TranspiledCircuit
 
 logger = logging.getLogger(__name__)
@@ -44,6 +48,11 @@ def transpile(
         )
     if circuit.num_qubits == 0:
         raise TranspilationError("circuit has no qubits")
+    if circuit.parameters:
+        names = ", ".join(sorted(p.name for p in circuit.parameters))
+        raise UnsupportedOperationError(
+            f"circuit has unbound parameters ({names}); bind them before compiling"
+        )
 
     if info.provider == "ionq":
         return _transpile_ionq(info, backend, circuit, allow_remote=allow_remote)

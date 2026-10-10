@@ -6,10 +6,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from qiskit import QuantumCircuit
+from qiskit.circuit import Parameter
 from qiskit_ionq import GPIGate, MSGate
 
 from backend.core import config
-from backend.core.errors import CircuitTooLargeError
+from backend.core.errors import CircuitTooLargeError, UnsupportedOperationError
 from backend.core.model import BackendInfo
 from backend.core.provider import profiles
 from backend.core.transpiler import transpiler
@@ -152,3 +153,12 @@ def _info_for(backend):
     from backend.core.provider import provider
 
     return provider.detect(backend)
+
+
+def test_unbound_parameters_raise_before_any_job_is_spent():
+    qc = QuantumCircuit(1)
+    qc.rz(Parameter("theta"), 0)
+    backend = MagicMock()
+    with pytest.raises(UnsupportedOperationError, match="theta"):
+        transpiler.transpile(_ionq_info(), backend, qc)
+    backend.run.assert_not_called()
