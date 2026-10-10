@@ -26,10 +26,6 @@ Tools used during the project development:
             <br/>Python
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/astro/astro-original.svg" alt="Astro" width="40" height="40" />
-            <br/>Astro
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40" />
             <br/>JavaScript
         </td>
@@ -56,10 +52,6 @@ Tools used during the project development:
         <td align="center" width="96" style="background: transparent; border: none;">
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/qiskit/qiskit-original.svg" alt="Qiskit" width="40" height="40" />
             <br/>Qiskit
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/fastapi/fastapi-original.svg" alt="FastAPI" width="40" height="40" />
-            <br/>FastAPI
         </td>
     </tr>
     <tr>

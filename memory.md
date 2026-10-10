@@ -42,7 +42,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 ## Pendientes (en orden)
 
--2. **README y project card** (los pide el usuario): el material ya está en `documentation/docs/frontend/qollab.qmd`, secciones "At a glance" (resumen reutilizable) y "Problems found on Qollab and how they were solved" (qué falló y por qué existe cada pieza del empaquetado). El `README.md` hoy no describe el proyecto y lista FastAPI.
+-2. **README y project card** (los pide el usuario): el material ya está en `documentation/docs/frontend/qollab.qmd`, secciones "At a glance" (resumen reutilizable) y "Problems found on Qollab and how they were solved" (qué falló y por qué existe cada pieza del empaquetado). El `README.md` hoy no describe el proyecto.
 -1. **Plazo: domingo 2026-10-11, 7 PM ET.** Subir `make qollab` y cargar `examples/qasm/bell.qasm` (OpenQASM 3): si dice `OpenQASM 3 needs the package qiskit-qasm3-import`, Qollab no instaló `qiskit-qasm3-import`/`openqasm3`/`antlr4-python3-runtime`; OpenQASM 2 anda igual y habría que decidir qué hacer con el 3.
 0. **IBM se queda cargando en Qollab** (AWS local ya da el error). Subir `make qollab` con IBM Boston y pegar la consola del navegador para ver dónde se cuelga.
 1. **Subir `make qollab` (visor real) y completar la tabla de `documentation/prompts/qollab_pruebas.md` §6**: que `three/addons/` resuelva en Qollab y la escena 3D con el láser en three.js 0.186.1 (el visor usa la 0.160), el tamaño dentro del iframe, Medir en el paso 4 y 7 del Bell, los simuladores de IonQ (solo la primera compilación; medir no gasta job) y los tiempos con 16 qubits.
@@ -50,7 +50,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 3. Decisión sobre la transpilación de IBM/AWS/`unknown` (opciones A, E, B en el documento de decisión; hay una pregunta preparada para el profesor). Hasta entonces siguen desactivados. Al decidir: reescribir `spec.md` §M2b, `translator.qmd`, `transpiler.qmd`.
 4. Tomografía: reformular "el statevector queda como referencia para comparar" (`tomography.qmd`, `spec.md` §M8) o implementar la comparación. Con qiskit-ionq < 1.0.3 la tomografía sobre un backend que no es IonQ da un `TranspilationError` (las compuertas nativas no traen definición).
 5. S5 (pausado): cambiar la jerarquía `Translator` por una función `translate(info, transpiled)`; toca `compiler`, demos, tests, spec y `activity.puml` (el SVG se regenera con `make render-puml`).
-6. Dudas del usuario: el AWS Braket local queda desactivado (¿se reactiva?); `README.md` no describe el proyecto y lista FastAPI; `errors.md` y `documentation.md` son notas sueltas que conviene llevar a `spec.md` §10 o `documentation/prompts/`.
+6. Dudas del usuario: el AWS Braket local queda desactivado (¿se reactiva?); `README.md` no describe el proyecto; `errors.md` y `documentation.md` son notas sueltas que conviene llevar a `spec.md` §10 o `documentation/prompts/`.
 7. Validar los módulos con el equipo (todos están en "Listo para validar") y correr M7 y M8 en Qollab (IonQ Aria y Forte).
 
 ## Ideas a futuro (sin aprobar)

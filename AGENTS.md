@@ -9,7 +9,7 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
 
-**Alcance actual: solo backend (Python).** No escribas nada de frontend (Astro, JS, HTML, CSS) hasta que el equipo lo pida.
+**Alcance: el backend (Python) es de este agente.** El frontend (JS, HTML, CSS) es del equipo: no lo cambies sin aprobación (ver "El visor y Qollab").
 
 ---
 
@@ -62,7 +62,7 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ## 3. Restricciones de Qollab (no negociables)
 
-- **No hay servidor.** Ni Flask, ni FastAPI, ni sockets, ni POST. El "backend" es un módulo Python que corre en el navegador (Pyodide).
+- **No hay servidor en Qollab.** Ni un framework web, ni sockets, ni POST. El "backend" es un módulo Python que corre en el navegador (Pyodide).
 - **`backend` lo inyecta Qollab** como global de `main.py`. Nunca lo crees ni lo fijes en el código de la librería: se recibe como argumento.
 - **Nunca `import backend` en `main.py`**, porque pisa la variable inyectada. Usá `from backend import compile, export`.
 - **Lo que llama una página JS devuelve texto** (`qollab_api.py`): un `dict` llega a JS como `Map` y `JSON.stringify` da `{}`. Las listas de pares conservan el orden; un objeto JS reordena las claves enteras (`"10"`, `"11"`).

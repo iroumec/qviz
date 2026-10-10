@@ -1,6 +1,6 @@
 # QViz — Especificación del backend
 
-> Visualizador educativo de iones atrapados. Este documento cubre **solo el backend** (Python). El frontend (Astro / three.js) queda para una etapa posterior y aquí solo aparece como consumidor del contrato JSON (§6).
+> Visualizador educativo de iones atrapados. Este documento cubre **solo el backend** (Python). El frontend (three.js) vive en `frontend/` y aquí solo aparece como consumidor del contrato JSON (§6).
 >
 > Fuentes: requerimientos del equipo, `documentation/diagrams/activity.puml`, `backend/core/compiler/compiler.py`, `documentation/prompts/qollab_context.md` (restricciones de la plataforma) y `documentation/references/ionq_native_gates.md` (definición de las compuertas nativas, identidades verificadas y errores de la doc de IonQ).
 >
