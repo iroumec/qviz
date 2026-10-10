@@ -1,0 +1,95 @@
+"""End-to-end tests: compile -> schema, golden file and export."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import jsonschema
+import pytest
+
+from backend import compile, export
+from tests.circuits import ALL_CIRCUITS, bell
+
+_SCHEMA_PATH = (
+    Path(__file__).parent.parent
+    / "documentation"
+    / "schema"
+    / "visualization.schema.json"
+)
+_SCHEMA = json.loads(_SCHEMA_PATH.read_text())
+_GOLDEN = Path(__file__).parent / "golden" / "bell_basic.json"
+
+
+def _assert_lengths(data: dict) -> None:
+    num_qubits = data["total_qubits"]
+    for step in data["steps"]:
+        assert len(step["states"]) == num_qubits
+        assert len(step["probabilities"]) == num_qubits
+        assert len(step["vibration"]) == num_qubits
+        assert len(step["virtual_z"]) == num_qubits
+        assert len(step["inactivity"]) == num_qubits
+        assert len(step["fidelities"]) == num_qubits
+
+
+def _assert_no_null(value) -> None:
+    if isinstance(value, dict):
+        for item in value.values():
+            _assert_no_null(item)
+    elif isinstance(value, list):
+        for item in value:
+            _assert_no_null(item)
+    else:
+        assert value is not None
+
+
+@pytest.mark.parametrize("factory", list(ALL_CIRCUITS.values()), ids=list(ALL_CIRCUITS))
+def test_compile_validates_against_schema(factory, basic_backend):
+    data = compile(basic_backend, factory())
+    jsonschema.validate(data, _SCHEMA)
+    _assert_lengths(data)
+    _assert_no_null(data)
+
+
+def test_bell_golden(basic_backend):
+    data = compile(basic_backend, bell())
+    assert data == json.loads(_GOLDEN.read_text())
+
+
+def test_export_roundtrip(basic_backend):
+    data = compile(basic_backend, bell())
+    assert json.loads(export(data)) == data
+
+
+def test_export_has_no_negative_zero(basic_backend):
+    data = compile(basic_backend, bell())
+    assert "-0.0" not in export(data)
+
+
+def test_shots_scale_cost(basic_backend):
+    cheap = compile(basic_backend, bell(), shots=100)
+    pricey = compile(basic_backend, bell(), shots=1000)
+    assert (
+        pricey["steps"][-1]["acumulative_cost"]
+        > cheap["steps"][-1]["acumulative_cost"]
+    )
+
+
+def test_entangler_forced_zz(basic_backend):
+    data = compile(basic_backend, bell(), entangler="zz")
+    operations = {step["operation"] for step in data["steps"]}
+    assert "zz" in operations
+    assert "ms" not in operations
+
+
+def test_entangler_forced_ms(basic_backend):
+    data = compile(basic_backend, bell(), entangler="ms")
+    operations = {step["operation"] for step in data["steps"]}
+    assert "ms" in operations
+    assert "zz" not in operations
+
+
+def test_ibm_backend_is_compacted(heron_backend):
+    data = compile(heron_backend, bell())
+    assert data["total_qubits"] == 2
+    assert "referencia Aria" in data["backend"]

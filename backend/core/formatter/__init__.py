@@ -1,0 +1,1 @@
+"""JSON contract formatting."""

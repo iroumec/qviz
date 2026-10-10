@@ -6,6 +6,10 @@ start
 
 :Quantum Circuit; <<object>>
 
+:Provider Detection;
+
+:BackendInfo; <<object>>
+
 :Transpiler;
 
 :Transpiled Quantum Circuit; <<object>>
@@ -22,9 +26,15 @@ start
 
 :Vectorized Circuit (vectors instead of angles); <<object>>
 
+:Metrics;
+
+:Measured Circuit (fidelities, cost, vibration); <<object>>
+
 :Formatter;
 
 :JSON; <<object>>
+
+:Exporter;
 
 stop
 

@@ -17,6 +17,8 @@ dependencies = [
 dev = [
     "pytest",
     "jsonschema",
+    "flake8",
+    "pydocstyle",
 ]
 
 [tool.setuptools.packages.find]
@@ -24,3 +26,6 @@ include = ["backend*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.pydocstyle]
+convention = "pep257"

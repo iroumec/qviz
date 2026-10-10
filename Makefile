@@ -1,10 +1,30 @@
 SHELL := /bin/bash
+
+VENV := .venv
+PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: test
+.PHONY: venv install test lint demo render-puml install-plantuml
+
+venv:
+	python3 -m venv $(VENV)
+
+install:
+	$(PY) -m pip install --upgrade pip
+	$(PY) -m pip install -e ".[dev]"
 
 test:
-	source .venv/bin/activate && python -m pytest tests/ -v
+	$(PY) -m pytest tests/ -v
+
+lint:
+	$(PY) -m flake8 backend main.py scripts tests
+	$(PY) -m pydocstyle backend
+
+demo:
+ifndef M
+	$(error Usage: make demo M=translator)
+endif
+	$(PY) scripts/demo_$(M).py
 
 install-plantuml:
 	@sudo apt update && sudo apt install -y plantuml graphviz
@@ -15,3 +35,6 @@ render-puml:
 # Git workflow makefile is included so that its targets become
 # available from the this Makefile.
 include Makefile.git
+
+# Quarto.
+include Makefile.quarto

@@ -2,3 +2,6 @@
 .commit.md
 __pycache__/
 .pytest_cache
+out/
+*.egg-info/
+.quarto

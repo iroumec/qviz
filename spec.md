@@ -524,17 +524,17 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 ## 8. Estado
 
-| Módulo                        | Estado    | Rama | Validado por |
-| ----------------------------- | --------- | ---- | ------------ |
-| M0 Fundaciones                | Pendiente |      |              |
-| M1 Provider + Transpiler      | Pendiente |      |              |
-| M2 Translator                 | Pendiente |      |              |
-| M3 Simulator                  | Pendiente |      |              |
-| M4 Vectorizer                 | Pendiente |      |              |
-| M5 Metrics                    | Pendiente |      |              |
-| M6 Formatter + Exporter + API | Pendiente |      |              |
-| M7 Integración Qollab         | Pendiente |      |              |
-| M8 Tomografía                 | Pendiente |      |              |
+| Módulo                        | Estado            | Rama        | Validado por |
+| ----------------------------- | ----------------- | ----------- | ------------ |
+| M0 Fundaciones                | Listo para validar | development |              |
+| M1 Provider + Transpiler      | Listo para validar | development |              |
+| M2 Translator                 | Listo para validar | development |              |
+| M3 Simulator                  | Listo para validar | development |              |
+| M4 Vectorizer                 | Listo para validar | development |              |
+| M5 Metrics                    | Listo para validar | development |              |
+| M6 Formatter + Exporter + API | Listo para validar | development |              |
+| M7 Integración Qollab         | Listo para validar | development |              |
+| M8 Tomografía                 | Listo para validar | development |              |
 
 Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 
@@ -549,6 +549,8 @@ Estados posibles: Pendiente → En curso → Listo para validar → Validado.
 | numpy            | BSD-3-Clause | Statevector                                         |
 | pytest (dev)     | MIT          | Tests                                               |
 | jsonschema (dev) | MIT          | Validación del contrato                             |
+| flake8 (dev)     | MIT          | Estilo PEP 8                                        |
+| pydocstyle (dev) | MIT          | Docstrings PEP 257                                  |
 
 ---
 
@@ -558,6 +560,15 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 
 | Fecha | Backend | `type(backend)` | `backend.name` | Observaciones |
 | ----- | ------- | --------------- | -------------- | ------------- |
+
+Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
+
+1. **M1a:** `type(backend)`, `backend.name`, `backend.options` y `backend.target.operation_names` de cada grupo. La detección de `provider.py` es heurística y hay que confirmarla.
+2. **M1c:** si con el `backend` inyectado se puede transpilar a nativas en local (`gateset="native"`). Si no, ¿funciona el dry-run remoto y cuenta como el único job? El código intenta `native-local → remote → local`.
+3. **M5:** si `backend.calibration()` de qiskit-ionq está disponible; de tener prioridad sobre `profiles.py`. Los valores actuales de `spam_error`, `fidelity_*` y precios son estimaciones ilustrativas.
+4. **M8:** si qiskit-ionq acepta una lista de circuitos en un solo `backend.run` y si el backend precreado acepta compuertas nativas.
+5. **M1b:** `is_hardware` se infiere con `_is_simulator` o el nombre; confirmar cómo distingue Qollab los QPUs de IonQ de sus simuladores.
+
 
 ---
 

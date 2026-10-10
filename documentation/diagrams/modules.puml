@@ -4,24 +4,54 @@
 
 title Modules
 
-package "qviz" {
+package "backend" {
 
-    package "backend" {
-    
-        package "core" {
-            [__init__.py]
-            package "compiler" {
-                [compiler.py]
-            }
-            package "formatter" {
-                
-            }
+    package "core" {
+        [model.py]
+        [errors.py]
+        [config.py]
+
+        package "provider" {
+            [provider.py]
+            [profiles.py]
+        }
+        package "compiler" {
+            [compiler.py]
+        }
+        package "transpiler" {
+            [transpiler.py]
+        }
+        package "translator" {
+            [translator.py]
+            [rules.py]
+            [normalize.py]
+            [to_qiskit.py]
+        }
+        package "simulator" {
+            [simulator.py]
+            [gpi.py]
+            [gpi2.py]
+            [ms.py]
+            [zz.py]
+            [virtualz.py]
+        }
+        package "vectorizer" {
+            [vectorizer.py]
+        }
+        package "metrics" {
+            [metrics.py]
+        }
+        package "formatter" {
+            [formatter.py]
+        }
+        package "exporter" {
+            [exporter.py]
         }
     }
+}
 
-    package "frontend" {
-    
-    }
+package "scripts" {
+    [demo_*.py]
 }
 
 @enduml

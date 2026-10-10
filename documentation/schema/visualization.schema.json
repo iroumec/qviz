@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qviz.dev/schema/visualization.schema.json",
+  "title": "QViz visualization",
+  "description": "Contract between the QViz backend and frontend (spec.md §6).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["backend", "total_qubits", "initial_fidelity", "steps"],
+  "properties": {
+    "backend": { "type": "string" },
+    "total_qubits": { "type": "integer", "minimum": 1, "maximum": 16 },
+    "initial_fidelity": { "type": "number", "minimum": 0, "maximum": 100 },
+    "steps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "vector": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    },
+    "pair": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step",
+        "operation",
+        "targets",
+        "acumulative_fidelity",
+        "states",
+        "vibration",
+        "acumulative_cost",
+        "probabilities",
+        "virtual_z",
+        "inactivity",
+        "fidelities"
+      ],
+      "properties": {
+        "step": { "type": "integer", "minimum": 1 },
+        "operation": { "enum": ["gpi", "gpi2", "ms", "zz", "virtualz"] },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "phases": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "angle": { "type": "number", "minimum": 0, "maximum": 0.25 },
+        "acumulative_fidelity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/vector" }
+        },
+        "vibration": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "acumulative_cost": { "type": "number", "minimum": 0 },
+        "probabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/pair" }
+        },
+        "virtual_z": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "number", "minimum": 0, "maximum": 6.283186 }
+        },
+        "inactivity": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "fidelities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "number", "minimum": 0, "maximum": 100 }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "operation": { "const": "gpi" } } },
+          "then": {
+            "required": ["phases"],
+            "properties": {
+              "phases": { "minItems": 1, "maxItems": 1 },
+              "targets": { "maxItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "gpi2" } } },
+          "then": {
+            "required": ["phases"],
+            "properties": {
+              "phases": { "minItems": 1, "maxItems": 1 },
+              "targets": { "maxItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "ms" } } },
+          "then": {
+            "required": ["phases", "angle"],
+            "properties": {
+              "phases": { "minItems": 2, "maxItems": 2 },
+              "targets": { "minItems": 2, "maxItems": 2 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "zz" } } },
+          "then": {
+            "required": ["angle"],
+            "not": { "required": ["phases"] },
+            "properties": { "targets": { "minItems": 2, "maxItems": 2 } }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "virtualz" } } },
+          "then": {
+            "not": { "required": ["phases"] },
+            "properties": { "targets": { "minItems": 1, "maxItems": 1 } }
+          }
+        }
+      ]
+    }
+  }
+}
