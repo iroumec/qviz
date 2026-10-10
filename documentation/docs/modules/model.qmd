@@ -5,6 +5,8 @@ Every object that travels between the pipeline stages is defined in
 dataclass cannot be changed after it is created, so the pipeline functions are
 easy to keep pure.
 
+![The objects of the pipeline and their relationships.](../../diagrams/svg/DataModel.svg)
+
 ## Type aliases {.unnumbered}
 
 | Alias | Allowed values | Meaning |

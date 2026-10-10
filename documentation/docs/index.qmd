@@ -5,12 +5,15 @@ used everywhere in the book.
 
 ## Who this documentation is for {.unnumbered}
 
-It is written for three kinds of reader.
+The book has two audiences.
 
-- A new contributor, who needs to understand the code before it is changed.
-- A reviewer, who needs to check that the backend behaves as specified.
-- A teammate, who needs to know how the JSON is produced, so that a visualiser
-  can be connected to it.
+- For the **project**: a new contributor, who needs to understand the code
+  before it is changed; a reviewer, who needs to check that the backend behaves
+  as specified; and a teammate, who needs to know how the JSON is produced, so
+  that a visualiser can be connected to it.
+- For the **teaching**: a teacher or a student, who wants to see what a quantum
+  circuit really does on a trapped-ion machine. It is the reason the project
+  exists; see [Why QViz](concepts/motivation.qmd).
 
 No previous knowledge of trapped-ion hardware is assumed. The few physics terms
 that are needed are defined where they first appear.
@@ -19,10 +22,12 @@ that are needed are defined where they first appear.
 
 | Part | What is found there |
 | --- | --- |
+| Introduction | Why the project exists, and the pedagogical idea behind it. |
 | Getting started | Installation, a first example and the test and demo commands. |
 | Core concepts | The pipeline, the units and the JSON contract. |
 | Backend modules | One page per module, with every function and parameter. |
-| Frontend | The basic viewer that reads the JSON file. |
+| Examples | Complete circuits, such as the QFT adder and the performance tests. |
+| Frontend | The viewer that reads the JSON file, and its use on Qollab. |
 | Development | Tests, demos and the coding style. |
 
 ## Conventions used in this book {.unnumbered}

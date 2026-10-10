@@ -34,6 +34,15 @@ QuantumCircuit + backend
 [exporter]   export(data)                 ──► str (JSON)
 ```
 
+The same order is shown in the activity diagram.
+
+![The pipeline: from the circuit to the JSON.](../../diagrams/svg/Activity.svg)
+
+The modules that implement the stages, and the way they depend on each other,
+are shown next. Only `compiler` knows every module.
+
+![The modules of the backend.](../../diagrams/svg/Modules.svg)
+
 ## What each stage does {.unnumbered}
 
 | Stage | Input | Output | Short description |

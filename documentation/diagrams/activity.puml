@@ -1,6 +1,8 @@
-@startuml "Activity Diagram"
+@startuml Activity
 
 !include style.puml
+
+title Pipeline
 
 start
 

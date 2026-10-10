@@ -18,6 +18,8 @@ grid is not used. The scene can be rotated by dragging, and the zoom is changed
 with the mouse wheel. The number of qubits and the number of steps are shown,
 together with a live frame-rate counter, so that the performance can be watched.
 
+![How the frontend is connected to the backend.](../../diagrams/svg/Frontend.svg)
+
 The spheres are drawn with the **shaders in the `shaders/` folder**
 (`bloch.vert` and `bloch.frag`). The fragment shader is a volumetric
 raymarcher: the axes, the state vector, the angle sweeps, the sphere shell and

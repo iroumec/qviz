@@ -43,6 +43,9 @@ package "backend" {
         package "metrics" {
             [metrics.py]
         }
+        package "sampler" {
+            [sampler.py]
+        }
         package "formatter" {
             [formatter.py]
         }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="755px" preserveAspectRatio="none" style="width:409px;height:755px;" version="1.1" viewBox="0 0 409 755" width="409px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="Helvetica" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="54" x="176.5" y="23.9233">Pipeline</text><ellipse cx="204" cy="37.4609" fill="#000000" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="207" x="100.5" y="67.4609"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="187" x="110.5" y="88.5996">Quantum Circuit; &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="114.5" y="102.5684"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="120" x="110.5" y="116.5371">:Provider Detection</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="184" x="112" y="149.3672"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="164" x="122" y="170.5059">BackendInfo; &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="126" y="184.4746"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="122" y="198.4434">:Transpiler</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="276" x="66" y="231.2734"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="256" x="76" y="252.4121">Transpiled Quantum Circuit; &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="80" y="266.3809"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="137" x="76" y="280.3496">:Normalizer/Translator</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="308" x="50" y="313.1797"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="288" x="60" y="334.3184">IonQ Transpiled Quantum Circuit; &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="64" y="348.2871"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="176" x="60" y="362.2559">:State Calculator / Simulator</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="268" x="70" y="395.0859"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="248" x="80" y="416.2246">Simulated Circuit (angles); &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="84" y="430.1934"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="80" y="444.1621">:Vectorizer</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="388" x="10" y="476.9922"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="368" x="20" y="498.1309">Vectorized Circuit (vectors instead of angles); &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="24" y="512.0996"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="49" x="20" y="526.0684">:Metrics</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="375" x="16.5" y="558.8984"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="355" x="26.5" y="580.0371">Measured Circuit (fidelities, cost, vibration); &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="30.5" y="594.0059"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="26.5" y="607.9746">:Formatter</text><rect fill="#F8F8F8" height="61.9063" rx="12.5" ry="12.5" style="stroke: #383838; stroke-width: 1.5;" width="136" x="136" y="640.8047"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="116" x="146" y="661.9434">JSON; &lt;&lt;object&gt;&gt;</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="150" y="675.9121"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="57" x="146" y="689.8809">:Exporter</text><ellipse cx="204" cy="733.7109" fill="#FFFFFF" rx="11" ry="11" style="stroke: #000000; stroke-width: 1.0;"/><ellipse cx="204" cy="733.7109" fill="#000000" rx="6" ry="6" style="stroke: #7F7F7F; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="47.4609" y2="67.4609"/><polygon fill="#383838" points="200,57.4609,204,67.4609,208,57.4609,204,61.4609" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="129.3672" y2="149.3672"/><polygon fill="#383838" points="200,139.3672,204,149.3672,208,139.3672,204,143.3672" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="211.2734" y2="231.2734"/><polygon fill="#383838" points="200,221.2734,204,231.2734,208,221.2734,204,225.2734" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="293.1797" y2="313.1797"/><polygon fill="#383838" points="200,303.1797,204,313.1797,208,303.1797,204,307.1797" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="375.0859" y2="395.0859"/><polygon fill="#383838" points="200,385.0859,204,395.0859,208,385.0859,204,389.0859" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="456.9922" y2="476.9922"/><polygon fill="#383838" points="200,466.9922,204,476.9922,208,466.9922,204,470.9922" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="538.8984" y2="558.8984"/><polygon fill="#383838" points="200,548.8984,204,558.8984,208,548.8984,204,552.8984" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="620.8047" y2="640.8047"/><polygon fill="#383838" points="200,630.8047,204,640.8047,208,630.8047,204,634.8047" style="stroke: #383838; stroke-width: 1.0;"/><line style="stroke: #383838; stroke-width: 1.5;" x1="204" x2="204" y1="702.7109" y2="722.7109"/><polygon fill="#383838" points="200,712.7109,204,722.7109,208,712.7109,204,716.7109" style="stroke: #383838; stroke-width: 1.0;"/><!--MD5=[c2a737a0b3fe5b21942e05055cbb0a89]
+@startuml Activity
+
+
+skinparam monochrome true
+
+skinparam backgroundColor       #FFFFFF
+skinparam shadowing             false
+skinparam roundcorner           0
+skinparam defaultFontName       Helvetica
+skinparam defaultFontSize       12
+skinparam ArrowFontSize         11
+skinparam ParticipantFontSize   12
+skinparam NoteFontSize          11
+skinparam TitleFontSize         15
+skinparam LegendFontSize        11
+skinparam GroupFontSize         11
+
+skinparam ArrowThickness        1
+skinparam ParticipantBorderThickness 1
+skinparam LifeLineThickness     1
+
+title Pipeline
+
+start
+
+:Quantum Circuit; <<object>>
+
+:Provider Detection;
+
+:BackendInfo; <<object>>
+
+:Transpiler;
+
+:Transpiled Quantum Circuit; <<object>>
+
+:Normalizer/Translator;
+
+:IonQ Transpiled Quantum Circuit; <<object>>
+
+:State Calculator / Simulator;
+
+:Simulated Circuit (angles); <<object>>
+
+:Vectorizer;
+
+:Vectorized Circuit (vectors instead of angles); <<object>>
+
+:Metrics;
+
+:Measured Circuit (fidelities, cost, vibration); <<object>>
+
+:Formatter;
+
+:JSON; <<object>>
+
+:Exporter;
+
+stop
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 07:22:07 GMT-03:00 2020)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 26+35-2893
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

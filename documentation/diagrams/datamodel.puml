@@ -1,0 +1,29 @@
+@startuml DataModel
+
+!include style.puml
+
+title Data model
+
+class NoiseProfile
+class BackendInfo
+class TranspiledCircuit
+class NativeOp
+class NativeCircuit
+class SimulatedCircuit
+class VectorizedCircuit
+class MeasuredCircuit
+
+BackendInfo *-- NoiseProfile
+NativeCircuit *-- BackendInfo
+NativeCircuit *-- NativeOp
+SimulatedCircuit *-- NativeCircuit
+VectorizedCircuit *-- NativeCircuit
+MeasuredCircuit *-- NativeCircuit
+
+note right of NativeCircuit
+  Frozen dataclasses, defined in
+  backend/core/model.py. An object
+  between two stages is never changed.
+end note
+
+@enduml

@@ -5,6 +5,11 @@ circuit and a chosen backend are turned into a JSON file. That file describes
 the native ion gates and the state of every qubit after every gate. A web page
 then draws the ions as Bloch spheres.
 
+The purpose is **pedagogical**. There is a gap between the logical gates of a
+circuit and the native gates that the machine really runs. By showing every
+native gate and the state of every ion, the gap is closed, and the physics of
+each gate can be explained. See [Why QViz](documentation/docs/concepts/motivation.qmd).
+
 This book is the documentation of the **backend** (Python). The frontend is
 described briefly, because a small viewer is included, but the main subject is
 the backend.
@@ -15,10 +20,12 @@ is described, together with its parameters, its return value and its units.
 
 The pages are grouped as follows.
 
+- **Introduction** explains why the project exists.
 - **Getting started** shows how the project is installed and run.
 - **Core concepts** explains the pipeline, the units and the JSON contract.
 - **Backend modules** documents each module, function by function.
-- **Frontend** documents the basic JSON viewer.
+- **Examples** shows complete circuits, such as the QFT adder.
+- **Frontend** documents the viewer and its use on Qollab.
 - **Development** explains the tests, the demo scripts and the style rules.
 
 The complete rendered book can be built with Quarto. See

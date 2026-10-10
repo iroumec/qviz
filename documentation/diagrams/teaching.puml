@@ -1,0 +1,27 @@
+@startuml Teaching
+
+!include style.puml
+
+title From logical gates to the ion chain
+
+left to right direction
+
+rectangle "Logical circuit\n(h, cx, rz, ...)" as logical
+rectangle "Native gate sequence\nGPI, GPI2, MS or ZZ, VirtualZ" as native
+rectangle "Bloch sphere per ion\n(one native gate at a time)" as bloch
+
+logical -right-> native : transpile + translate
+native -right-> bloch : simulate + vectorize
+
+note bottom of native
+  This is the gap that the visualiser opens:
+  the abstract circuit and what the machine
+  really runs are not the same thing.
+end note
+
+note bottom of bloch
+  Every native gate can be watched,
+  so the physics behind it can be explained.
+end note
+
+@enduml

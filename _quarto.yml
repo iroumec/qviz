@@ -9,6 +9,9 @@ book:
   chapters:
     - index.qmd
     - documentation/docs/index.qmd
+    - part: "Introduction"
+      chapters:
+        - documentation/docs/concepts/motivation.qmd
     - part: "Getting started"
       chapters:
         - documentation/docs/getting-started/installation.qmd

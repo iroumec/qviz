@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="419px" preserveAspectRatio="none" style="width:498px;height:419px;" version="1.1" viewBox="0 0 498 419" width="498px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="Helvetica" font-size="15" lengthAdjust="spacingAndGlyphs" textLength="252" x="126.5" y="13.9233">From logical gates to the ion chain</text><!--MD5=[529824a45bda88b3d6154191df317794]
+entity logical--><rect fill="#F8F8F8" height="47.9375" style="stroke: #000000; stroke-width: 1.5;" width="105" x="303.5" y="25.4609"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="85" x="313.5" y="46.5996">Logical circuit</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="77" x="313.5" y="60.5684">(h, cx, rz, ...)</text><!--MD5=[8c8bbed30e6eb653cef95688a7c95b5f]
+entity native--><rect fill="#F8F8F8" height="47.9375" style="stroke: #000000; stroke-width: 1.5;" width="198" x="257" y="122.4609"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="138" x="267" y="143.5996">Native gate sequence</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="178" x="267" y="157.5684">GPI, GPI2, MS or ZZ, VirtualZ</text><!--MD5=[0495c5e5488b33fa6fb446e36ae3d056]
+entity bloch--><rect fill="#F8F8F8" height="47.9375" style="stroke: #000000; stroke-width: 1.5;" width="189" x="261.5" y="288.4609"/><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="130" x="271.5" y="309.5996">Bloch sphere per ion</text><text fill="#000000" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="169" x="271.5" y="323.5684">(one native gate at a time)</text><path d="M227,205.4609 L227,253.875 A0,0 0 0 0 227,253.875 L485,253.875 A0,0 0 0 0 485,253.875 L485,215.4609 L475,205.4609 L360,205.4609 L356,170.7609 L352,205.4609 L227,205.4609 A0,0 0 0 0 227,205.4609 " fill="#ECECEC" style="stroke: #383838; stroke-width: 1.0;"/><path d="M475,205.4609 L475,215.4609 L485,215.4609 L475,205.4609 " fill="#ECECEC" style="stroke: #383838; stroke-width: 1.0;"/><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="235" x="233" y="220.6714">This is the gap that the visualiser opens:</text><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="237" x="233" y="233.4761">the abstract circuit and what the machine</text><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="200" x="233" y="246.2808">really runs are not the same thing.</text><path d="M225.5,371.4609 L225.5,407.0703 A0,0 0 0 0 225.5,407.0703 L486.5,407.0703 A0,0 0 0 0 486.5,407.0703 L486.5,381.4609 L476.5,371.4609 L360,371.4609 L356,336.8709 L352,371.4609 L225.5,371.4609 A0,0 0 0 0 225.5,371.4609 " fill="#ECECEC" style="stroke: #383838; stroke-width: 1.0;"/><path d="M476.5,371.4609 L476.5,381.4609 L486.5,381.4609 L476.5,371.4609 " fill="#ECECEC" style="stroke: #383838; stroke-width: 1.0;"/><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="195" x="231.5" y="386.6714">Every native gate can be watched,</text><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="240" x="231.5" y="399.4761">so the physics behind it can be explained.</text><!--MD5=[737b166d0110f7ce93d7de309ecc551e]
+link logical to native--><path d="M356,73.5909 C356,86.6209 356,102.8109 356,116.6209 " fill="none" id="logical-&gt;native" style="stroke: #383838; stroke-width: 1.0;"/><polygon fill="#383838" points="356,121.9809,360,112.9809,356,116.9809,352,112.9809,356,121.9809" style="stroke: #383838; stroke-width: 1.0;"/><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="118" x="287" y="102.1714">transpile + translate</text><!--MD5=[368b08d4571d5a13270653d5ce1f11b0]
+link native to bloch--><path d="M256.93,150.9009 C172.75,158.6009 71.7,179.5509 113.5,236.4609 C146.2,280.9809 204.93,300.1309 256.4,308.0809 " fill="none" id="native-&gt;bloch" style="stroke: #383838; stroke-width: 1.0;"/><polygon fill="#383838" points="261.35,308.8209,253.0295,303.5513,256.4034,308.0918,251.8629,311.4658,261.35,308.8209" style="stroke: #383838; stroke-width: 1.0;"/><text fill="#000000" font-family="Helvetica" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="116" x="78.5" y="233.6714">simulate + vectorize</text><!--MD5=[9fda0d508917e5edb9ad5f22f66dd460]
+@startuml Teaching
+
+
+skinparam monochrome true
+
+skinparam backgroundColor       #FFFFFF
+skinparam shadowing             false
+skinparam roundcorner           0
+skinparam defaultFontName       Helvetica
+skinparam defaultFontSize       12
+skinparam ArrowFontSize         11
+skinparam ParticipantFontSize   12
+skinparam NoteFontSize          11
+skinparam TitleFontSize         15
+skinparam LegendFontSize        11
+skinparam GroupFontSize         11
+
+skinparam ArrowThickness        1
+skinparam ParticipantBorderThickness 1
+skinparam LifeLineThickness     1
+
+title From logical gates to the ion chain
+
+left to right direction
+
+rectangle "Logical circuit\n(h, cx, rz, ...)" as logical
+rectangle "Native gate sequence\nGPI, GPI2, MS or ZZ, VirtualZ" as native
+rectangle "Bloch sphere per ion\n(one native gate at a time)" as bloch
+
+logical -right-> native : transpile + translate
+native -right-> bloch : simulate + vectorize
+
+note bottom of native
+  This is the gap that the visualiser opens:
+  the abstract circuit and what the machine
+  really runs are not the same thing.
+end note
+
+note bottom of bloch
+  Every native gate can be watched,
+  so the physics behind it can be explained.
+end note
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 07:22:07 GMT-03:00 2020)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 26+35-2893
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
