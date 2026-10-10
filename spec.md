@@ -96,7 +96,8 @@ backend/
     provider/   provider.py, profiles.py
     compiler/   compiler.py
     transpiler/ transpiler.py
-    translator/ translator.py, rules.py, normalize.py, to_qiskit.py
+    translator/ translator.py, rules.py, normalize.py
+    to_qiskit.py                # Puente NativeCircuit -> QuantumCircuit (lo usan la tomografía y los tests)
     simulator/  simulator.py, gpi.py, gpi2.py, ms.py, zz.py, virtualz.py, tomography.py (M8)
     vectorizer/ vectorizer.py
     metrics/    metrics.py
@@ -358,7 +359,7 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 
 **Objetivo:** convertir cualquier `TranspiledCircuit` en un `NativeCircuit` equivalente formado solo por `gpi`, `gpi2`, `virtual_z` y un único entrelazador (`ms` **o** `zz`, nunca los dos).
 
-**2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py`, `normalize.py` y `to_qiskit.py`.
+**2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py` y `normalize.py`.
 
 **2b. Compactación de qubits.** Los qubits de salida son los del circuito del usuario, en su orden (vía layout inicial). Los qubits físicos que no se tocan se descartan: un IBM de 156 qubits queda en 2 si el circuito es un Bell. Si el routing usó ancillas físicas, se agregan al final. Un qubit del usuario que nunca se usa se conserva (es un ion quieto en |0⟩). Limitación aceptada: las permutaciones finales por routing no se deshacen.
 
@@ -404,7 +405,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 **2e. Conmutación MS ↔ ZZ.** Si el circuito de IonQ trae el entrelazador que no corresponde (o el usuario forzó el otro con `entangler`), se reescribe con las identidades de 2c. Esto también cubre el extra "Conmutador de compuertas".
 
-**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`.** Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtual_z. Se usa como oráculo en los tests y para la tomografía en M8.
+**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`** (`core/to_qiskit.py`, fuera del paquete `translator` porque va en el sentido inverso a la traducción y lo usan también la tomografía y los tests, sin que ningún módulo del pipeline importe a otro). Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtual_z. Se usa como oráculo en los tests y para la tomografía en M8.
 
 **Sin optimización** en el MVP: no se fusionan compuertas consecutivas. Un pase de fusión es opcional para después.
 

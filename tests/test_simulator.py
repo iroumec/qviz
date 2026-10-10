@@ -9,8 +9,8 @@ from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 
 from backend.core.model import NativeCircuit, NativeOp
 from backend.core.simulator import gpi, gpi2, ms, simulator, virtualz, zz
+from backend.core.to_qiskit import to_qiskit
 from backend.core.translator import rules
-from backend.core.translator.to_qiskit import to_qiskit
 from tests.circuits import make_info
 
 _PERM = np.array(

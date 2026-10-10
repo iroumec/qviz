@@ -10,8 +10,8 @@ from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 
 from backend.core.errors import UnsupportedOperationError
 from backend.core.model import TranspiledCircuit
+from backend.core.to_qiskit import to_qiskit
 from backend.core.translator import translator
-from backend.core.translator.to_qiskit import to_qiskit
 from tests.circuits import ALL_CIRCUITS, make_info
 
 _RNG = np.random.default_rng(20261010)

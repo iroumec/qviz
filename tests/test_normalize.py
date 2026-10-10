@@ -9,8 +9,8 @@ from qiskit.quantum_info import Operator
 from qiskit_ionq import MSGate, ZZGate
 
 from backend.core.model import NativeCircuit
+from backend.core.to_qiskit import to_qiskit
 from backend.core.translator import normalize
-from backend.core.translator.to_qiskit import to_qiskit
 from tests.circuits import make_info
 
 _RNG = np.random.default_rng(20261010)
