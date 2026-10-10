@@ -595,3 +595,4 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 3. **`cumulative_*` y `virtualz`: [resuelto].** El contrato usa `cumulative_*` y el op `virtual_z`. Actualizado en backend, schema y documentación.
 4. **Perfil de ruido para backends no IonQ:** ¿referencia de iones (actual) o `ideal` para los simuladores locales ideales?
 5. **Unidad de costo:** USD estimados (actual) o créditos de Qollab.
+6. **Transpilación de los backends que no son IonQ [urgente]:** con el mapa de conexiones de un chip de IBM, el enrutamiento puede cambiar las etiquetas de los qubits y la secuencia de pasos varía entre corridas. Explicación, evidencia, opciones y sonda para Qollab en `documentation/prompts/decision_transpilacion_no_ionq.md`.
