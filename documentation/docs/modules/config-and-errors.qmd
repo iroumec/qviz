@@ -27,7 +27,6 @@ turn = constants.TWO_PI
 | Constant | Value | Meaning |
 | --- | --- | --- |
 | `TWO_PI` | `2 * pi` | One full turn, in radians. It is used for the turns-to-radians conversion. |
-| `NATIVE_OPS` | tuple | The names of the allowed native operations: `gpi`, `gpi2`, `ms`, `zz` and `virtual_z`. |
 
 These values never change. They are not configuration.
 

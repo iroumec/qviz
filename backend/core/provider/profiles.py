@@ -14,7 +14,7 @@ single-qubit gate at 1024 shots) is reproduced.
 
 from __future__ import annotations
 
-from backend.core.model import NoiseProfile
+from backend.core.model import Entangler, NoiseProfile, Provider
 
 ARIA = NoiseProfile(
     spam_error=0.005,
@@ -43,19 +43,8 @@ IDEAL = NoiseProfile(
     price_2q=0.0,
 )
 
-PROFILES = {
-    "aria": ARIA,
-    "forte": FORTE,
-    "ideal": IDEAL,
-}
 
-
-def get_profile(machine: str) -> NoiseProfile:
-    """Return the noise profile for a reference machine name."""
-    return PROFILES[machine]
-
-
-def profile_for(provider: str, name: str, entangler: str) -> NoiseProfile:
+def profile_for(provider: Provider, name: str, entangler: Entangler) -> NoiseProfile:
     """Pick a profile from the provider, backend name and entangler.
 
     IonQ uses the profile of the named machine (``aria``/``forte``/``ideal``);
@@ -63,11 +52,12 @@ def profile_for(provider: str, name: str, entangler: str) -> NoiseProfile:
     (MS -> Aria, ZZ -> Forte), because the visualizer always shows the circuit
     *as if* it ran on trapped ions.
     """
-    lowered = name.lower()
-    if "ideal" in lowered:
-        return IDEAL
-    if "forte" in lowered:
-        return FORTE
-    if "aria" in lowered:
-        return ARIA
+    if provider == "ionq":
+        lowered = name.lower()
+        if "ideal" in lowered:
+            return IDEAL
+        if "forte" in lowered:
+            return FORTE
+        if "aria" in lowered:
+            return ARIA
     return FORTE if entangler == "zz" else ARIA

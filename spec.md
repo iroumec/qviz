@@ -91,7 +91,7 @@ backend/
     __init__.py
     model.py                    # Dataclasses inmutables de la representación intermedia (§5)
     errors.py                   # Jerarquía de excepciones
-    constants.py                # Constantes matemáticas fijas (TWO_PI, NATIVE_OPS)
+    constants.py                # Constantes matemáticas fijas (TWO_PI)
     config.py                   # Parámetros configurables: MAX_QUBITS, umbrales, decimales
     provider/   provider.py, profiles.py
     compiler/   compiler.py
@@ -427,7 +427,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - `simulate(native) -> SimulatedCircuit`: statevector de NumPy con forma `(2,)*n`, inicializado en |0…0⟩. Cada op se aplica con `np.tensordot` sobre los ejes de sus targets. Con el orden little-endian, el qubit q corresponde al eje `n−1−q`.
 - Después de cada op, para cada qubit: la matriz densidad reducida ρ_q (traza parcial) da x = 2·Re ρ01, y = −2·Im ρ01, z = ρ00 − ρ11, y de ahí se calculan r, θ y φ. El vectorizer convierte de vuelta a cartesianas. Se pasa por ángulos porque así lo pide el diagrama de actividad y porque la UI muestra θ y φ.
 - VirtualZ se aplica como RZ real sobre el estado, así el vector gira en Z (es el "click" del VirtualZ). `virtual_z[q]` acumula λ módulo 2π.
-- `strategy="tomography"` levanta `NotImplementedError` hasta M8.
+- `simulate` solo calcula el statevector exacto; la tomografía (M8) se elige en `compiler`, antes de llamarla.
 
 **Tests:**
 

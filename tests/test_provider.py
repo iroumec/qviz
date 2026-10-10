@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from backend.core.provider import provider
+from backend.core.provider import profiles, provider
 
 
 class _IonQFake:
@@ -120,3 +120,21 @@ def test_ionq_noise_model_selects_zz():
     info = provider.detect(_IonQNoise("forte-1"))
     assert info.entangler == "zz"
     assert info.display_name == "IonQ Forte 1"
+
+
+def test_ionq_profile_follows_the_machine_name():
+    assert profiles.profile_for("ionq", "Forte 1", "ms") is profiles.FORTE
+    assert profiles.profile_for("ionq", "aria-2", "zz") is profiles.ARIA
+    assert profiles.profile_for("ionq", "ideal simulator", "ms") is profiles.IDEAL
+
+
+def test_ionq_profile_falls_back_to_the_entangler():
+    assert profiles.profile_for("ionq", "ionq_simulator", "zz") is profiles.FORTE
+    assert profiles.profile_for("ionq", "ionq_simulator", "ms") is profiles.ARIA
+
+
+def test_other_providers_ignore_the_name():
+    # The name never selects the profile outside IonQ; the entangler does.
+    assert profiles.profile_for("ibm", "fake_forte_ideal", "ms") is profiles.ARIA
+    assert profiles.profile_for("local", "aria", "zz") is profiles.FORTE
+    assert profiles.profile_for("unknown", "ideal", "ms") is profiles.ARIA
