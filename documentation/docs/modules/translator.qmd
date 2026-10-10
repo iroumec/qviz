@@ -170,7 +170,9 @@ that are used. The rules are the following.
 - A physical qubit that is not touched is removed.
 
 One limitation is accepted. A final permutation that is caused by routing is not
-undone.
+undone. This only matters for the providers that are disabled by default (IBM,
+AWS and unknown), where the coupling map of a chip can force routing. The local
+simulators and the IonQ machines have all-to-all connectivity.
 
 ## The normalization of the angle {.unnumbered}
 

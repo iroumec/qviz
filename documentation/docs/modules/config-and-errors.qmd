@@ -34,11 +34,43 @@ These values never change. They are not configuration.
 
 | Parameter | Value | Meaning |
 | --- | --- | --- |
+| `ENABLED_PROVIDERS` | `{"ionq", "local"}` | The providers that `compile` accepts. See below. |
 | `MAX_QUBITS` | `16` | The hard cap on the circuit width. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
 | `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
 | `REMOTE_JOB_TIMEOUT_S` | `60.0` | The seconds to wait for the IonQ dry-run job. When the time is over, the local transpile is used. |
+
+### Which providers are enabled {.unnumbered}
+
+`ENABLED_PROVIDERS` is a set with the names of the providers that `compile`
+accepts. By default only `"ionq"` and `"local"` are enabled. These are the
+providers inside the scope of the MVP: the IonQ machines, which are the target of
+the visualizer, and the local simulators, such as the built-in simulator of
+Qollab, which have no connectivity limit.
+
+The other providers, `"ibm"`, `"aws"` and `"unknown"`, are switched off. Their
+circuits are transpiled for a chip that is not a trapped-ion machine. The
+connectivity of that chip can force extra `SWAP` gates and permute the labels of
+the qubits, which is wrong for a visualizer of ions. The problem is described in
+`documentation/prompts/decision_transpilacion_no_ionq.md`. These providers may be
+implemented in the future.
+
+To try one of them, its name is added to the set, for example
+`config.ENABLED_PROVIDERS = frozenset({"ionq", "local", "ibm"})`. The tests do
+this with the `all_providers` fixture.
+
+Two points are important.
+
+- The detection is not affected. `provider.detect` still classifies every
+  backend, and it never fails. Only `compile` applies the list, and it does so
+  right after the detection, before the transpiler can spend the single IonQ job.
+- A backend of a disabled provider is rejected with `ProviderDisabledError`. The
+  message names the backend, the provider that was detected and the providers
+  that are enabled.
+
+In Qollab, this means that the IBM noisy simulators, the AWS Braket local
+simulator and any unrecognised backend are rejected with this error by default.
 
 ### How the width limit is used {.unnumbered}
 
@@ -76,6 +108,7 @@ expected failures with one `except` clause.
 QVizError
 ├── UnsupportedOperationError
 ├── CircuitTooLargeError
+├── ProviderDisabledError
 └── TranspilationError
 ```
 
@@ -84,11 +117,13 @@ QVizError
 | `QVizError` | The base class, which is used to catch any QViz error. It is also raised directly for a wrong argument or a refused action: an unknown `strategy`, `shots` that is not positive, or tomography on hardware without `allow_paid`. |
 | `UnsupportedOperationError` | The circuit contains something that cannot be shown, for example a mid-circuit measurement, a `reset`, classical control flow, an unbound parameter, or a malformed entry in a native gate list. |
 | `CircuitTooLargeError` | The circuit is wider than the effective limit that is described above. |
+| `ProviderDisabledError` | The backend belongs to a provider that is not in `ENABLED_PROVIDERS`. It is raised by `compile` before anything is transpiled. |
 | `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
 
-### An unknown provider is not an error {.unnumbered}
+### An unknown provider is not an error of the detection {.unnumbered}
 
-If the provider of a backend cannot be recognised, no error is raised. The
-backend is handled by a generic strategy instead. This behaviour is described on
-the [Provider](provider.qmd) page. An error is raised only when an operation has
-no meaning in a visualiser.
+If the provider of a backend cannot be recognised, `provider.detect` does not
+raise an error. It returns the provider `"unknown"`. This behaviour is described
+on the [Provider](provider.qmd) page. Whether such a backend is accepted is
+decided later, by `compile`, with `ENABLED_PROVIDERS`: since `"unknown"` is
+disabled by default, `compile` rejects it with `ProviderDisabledError`.

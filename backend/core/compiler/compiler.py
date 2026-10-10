@@ -10,7 +10,8 @@ from typing import Any
 
 from qiskit import QuantumCircuit
 
-from backend.core.errors import QVizError
+from backend.core import config
+from backend.core.errors import ProviderDisabledError, QVizError
 from backend.core.formatter import formatter
 from backend.core.metrics import metrics
 from backend.core.model import Entangler, Strategy
@@ -33,7 +34,8 @@ def compile(  # noqa: A001 - public API name
     """Run the whole pipeline and return the JSON-ready visualization dict.
 
     The arguments are validated before anything else, so that a typo never
-    spends the single IonQ job allowed per run.
+    spends the single IonQ job allowed per run. A backend of a provider that is
+    not in ``config.ENABLED_PROVIDERS`` is rejected before any transpilation.
     """
     if strategy not in ("statevector", "tomography"):
         raise QVizError(f"unknown strategy {strategy!r}")
@@ -41,6 +43,13 @@ def compile(  # noqa: A001 - public API name
         raise QVizError(f"shots must be positive, got {shots}")
 
     info = provider.detect(backend, entangler=entangler)
+    if info.provider not in config.ENABLED_PROVIDERS:
+        enabled = ", ".join(sorted(config.ENABLED_PROVIDERS))
+        raise ProviderDisabledError(
+            f"backend {info.name!r} was detected as provider {info.provider!r}, "
+            f"which is not enabled (enabled providers: {enabled}); "
+            "see config.ENABLED_PROVIDERS"
+        )
     transpiled = transpiler.transpile(
         info, backend, qc, allow_remote=strategy != "tomography"
     )

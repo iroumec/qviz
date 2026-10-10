@@ -1,6 +1,7 @@
 # Decisión pendiente: cómo se transpilan los circuitos que no son de IonQ
 
-> Estado: **abierta, requiere decisión del equipo.** Escrito el 2026-10-10.
+> Estado: **aplazada para el MVP; abierta si se reactivan esos proveedores.** Escrito el 2026-10-10.
+> **Actualización:** el problema se evita desactivando los proveedores afectados. `config.ENABLED_PROVIDERS` vale por defecto `{"ionq", "local"}`, y `compile` rechaza IBM, AWS y `unknown` con `ProviderDisabledError` antes de transpilar (`spec.md` §5.5). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total y no sufren el problema. Este documento sigue siendo la referencia si se decide implementar esos proveedores en el futuro. Además, la prueba de la sección 3.1 de abajo confirma que el cálculo es exacto y que lo que falla es la interpretación de las etiquetas; y existe una opción **E** (no transpilar y traducir cada compuerta directamente) que se describe en la sección 5.
 > Alcance: `backend/core/transpiler/transpiler.py` y `backend/core/translator/rules.py` (`_compaction`).
 > Lo marcado **[a verificar]** hay que comprobarlo en Qollab, porque los objetos `backend` de Qollab no son idénticos a los que se pueden crear en una máquina local.
 
@@ -65,6 +66,20 @@ Se instalaron los mismos paquetes que usa Qollab (`qiskit-ibm-runtime`, `qiskit-
 | Cadena lineal de 5 qubits (sin IBM, ver §4) | todos los pares interactúan | **error 2,0 en 10 de 10 corridas** |
 
 Sin mapa de conexiones, las 8 transpilaciones del mismo circuito dieron exactamente el mismo resultado (28 compuertas, sin layout).
+
+### 3.1 El cálculo es exacto; lo que falla es la interpretación
+
+Se midió sobre una cadena lineal de 5 qubits, con un circuito de 4 qubits en el que interactúan todos los pares (6 compuertas de dos qubits), 6 corridas:
+
+- El circuito nativo que produce QViz es **equivalente** (`Operator.equiv`) al circuito transpilado del que sale, en las 6 corridas. El translator y el simulador no se equivocan.
+- El circuito transpilado equivale al original solo **salvo una permutación de cables** (layout inicial y final). QViz usa solo el inicial. Aplicando también el final, el error contra el estado exacto baja de 2.0 a 1e-14 en las 6 corridas.
+- Aun así, no es solo un parámetro que falta: con el mapa del chip hay **15** compuertas de dos qubits en lugar de 6 y 125–128 pasos en lugar de 47. Los 9 extras son SWAPs que los iones no necesitan.
+
+| Cómo se transpila | Compuertas de 2 qubits | Pasos | Error de etiquetas |
+|---|---|---|---|
+| Con el mapa del chip (hoy) | 15 | 125–128, varía | 2.0 |
+| Con el mapa + layout final (B) | 15 | 125–128 | 1e-14 |
+| Sin mapa (A) | 6 | 47 | 5e-15 |
 
 ## 4. Cómo reproducirlo sin Qollab y sin IBM
 
@@ -140,9 +155,23 @@ Usar `final_index_layout()` para permutar los qubits al final.
 
 - **En contra:** un visualizador educativo que rotula mal los qubits de forma silenciosa es peor que uno que falla. No lo recomendamos.
 
+### E. No transpilar y traducir cada compuerta del usuario directamente
+
+`rules.py` ya sabe descomponer cualquier compuerta de 1, 2 o 3 qubits, así que para los proveedores que no son IonQ no haría falta transpilar.
+
+- **A favor:**
+  - No depende del chip ni de la semilla; es determinista.
+  - Cada paso nativo puede enlazarse con la compuerta del usuario que lo originó (`source_index` apuntaría al circuito del usuario y no al transpilado; hoy ese campo no sale en el JSON).
+  - La `h` queda en 2 pasos y no en 3 (el Bell da 7 pasos, con A da 8).
+  - Es coherente con la regla de `AGENTS.md` de no optimizar ni fusionar compuertas en el MVP.
+  - Permitiría simplificar `_compaction`, porque no habría layout.
+- **En contra:**
+  - No fusiona rotaciones consecutivas: tres rotaciones dan 10 pasos en lugar de 5 y el sumador QFT de 2 bits da 185 en lugar de 118.
+- Se verificó que es equivalente al circuito original en los 9 circuitos de prueba.
+
 ### Recomendación
 
-**A.** Además del cambio, hay que agregar un test de regresión basado en §4 (un chip de conectividad lineal y un circuito con interacciones no vecinas, comparado contra `Statevector`) y la verificación en Qollab de la §6.
+**A** o **E**; se descarta B (sigue mostrando compuertas que los iones no necesitan). Sea cual sea la elegida, además del cambio hay que agregar un test de regresión basado en §4 (un chip de conectividad lineal y un circuito con interacciones no vecinas, comparado contra `Statevector`) y la verificación en Qollab de la §6.
 
 ## 6. Qué hay que verificar en Qollab
 

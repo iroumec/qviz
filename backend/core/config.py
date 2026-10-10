@@ -7,6 +7,19 @@ the mathematics of the library. The values that must never change are kept in
 
 from __future__ import annotations
 
+from backend.core.model import Provider
+
+ENABLED_PROVIDERS: frozenset[Provider] = frozenset({"ionq", "local"})
+"""Providers that ``compile`` accepts; any other backend is rejected up front.
+
+Only IonQ (the target machines) and the local simulators are inside the MVP.
+IBM, AWS and unknown backends are switched off because their circuits go through
+a chip-specific transpilation (coupling map, routing) that does not make sense
+for trapped ions and can permute the qubit labels (``spec.md`` §11, item 6). To
+try one of them, add its name here (``"ibm"``, ``"aws"`` or ``"unknown"``). The
+provider detection itself never fails: only ``compile`` applies this list.
+"""
+
 MAX_QUBITS: int = 16
 """Hard cap on the circuit width.
 

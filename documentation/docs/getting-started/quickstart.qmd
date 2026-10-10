@@ -18,9 +18,11 @@ text = export(data)                # a JSON string
 - `export` turns that dictionary into a JSON string, and can also write it to a
   file.
 
-The variable `backend` is provided by Qollab. On a local computer, any object
-that can be used as a Qiskit backend is accepted, for example
-`BasicSimulator()`.
+The variable `backend` is provided by Qollab. On a local computer, a local
+simulator is accepted, for example `BasicSimulator()`. Only the `ionq` and
+`local` providers are enabled by default; a backend of another provider is
+rejected with `ProviderDisabledError` (see the
+[configuration page](../modules/config-and-errors.qmd)).
 
 ## A complete example {.unnumbered}
 

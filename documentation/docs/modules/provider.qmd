@@ -106,8 +106,10 @@ Qollab IBM simulators advertise `cz`, `rz` and `sx` together, which is the
 signal that is used for `ibm`.
 
 This fallback exists so that a backend with an unusual name, but with a clear
-gate set, is still classified correctly. An unknown provider is never an error,
-because the generic translator is used for it.
+gate set, is still classified correctly. The detection never raises an error: an unrecognised
+backend is classified as `"unknown"`. Whether it is accepted is decided by
+`compile`, with `config.ENABLED_PROVIDERS`. See the
+[configuration page](config-and-errors.qmd).
 
 ## The noise profiles {.unnumbered}
 

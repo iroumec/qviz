@@ -15,5 +15,9 @@ class CircuitTooLargeError(QVizError):
     """The circuit has more qubits than ``config.MAX_QUBITS``."""
 
 
+class ProviderDisabledError(QVizError):
+    """The backend belongs to a provider that is not in ``config.ENABLED_PROVIDERS``."""
+
+
 class TranspilationError(QVizError):
     """The circuit could not be transpiled for the requested backend."""
