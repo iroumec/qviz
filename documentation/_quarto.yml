@@ -56,14 +56,19 @@ bibliography: references.bib
 
 format:
   html:
-    theme: cosmo
+    theme:
+      light: [cosmo, theme-light.scss]
+      dark: [darkly, theme-dark.scss]
+    highlight-style: monochrome
   typst:
     document-class: book
     include-in-header:
       - text: |
           #set par(leading: 1.35em)
           #set page(margin: (x: 3.2cm, y: 3.0cm))
+          #show link: set text(fill: rgb("#18181b"))
           #show heading: set block(above: 2.0em, below: 1.0em)
+          #show heading: set text(fill: rgb("#101013"))
           #show table: set table(
             stroke: 0.5pt,
             inset: 8pt,

@@ -1,0 +1,110 @@
+/*-- scss:defaults --*/
+//
+// QViz documentation theme, light variant.
+//
+// A monochromatic grey palette with modern typography. The file is loaded
+// after the built-in `cosmo` theme, so every value set here wins. The shared
+// rules live in `theme-rules.scss`; only colour tokens differ between the
+// light and dark variants.
+//
+
+// Grey scale: the only family of colours in the book.
+$white:    #ffffff;
+$gray-100: #f7f7f8;
+$gray-200: #ececed;
+$gray-300: #dedee0;
+$gray-400: #b8b8bc;
+$gray-500: #8a8a90;
+$gray-600: #6a6a70;
+$gray-700: #4a4a50;
+$gray-800: #2c2c30;
+$gray-900: #18181b;
+$black:    #09090b;
+
+// Collapse every named colour onto the grey scale. Nothing in the book keeps
+// a second hue, so headings, links, callouts and badges all read the same.
+$blue:    $gray-900;
+$indigo:  $gray-900;
+$purple:  $gray-900;
+$pink:    $gray-900;
+$red:     $gray-900;
+$orange:  $gray-700;
+$yellow:  $gray-700;
+$green:   $gray-700;
+$teal:    $gray-700;
+$cyan:    $gray-700;
+
+$primary:   $gray-900;
+$secondary: $gray-600;
+$success:   $gray-700;
+$info:      $gray-700;
+$warning:   $gray-700;
+$danger:    $gray-900;
+$light:     $gray-100;
+$dark:      $gray-900;
+
+// Body
+$body-bg:               $white;
+$body-color:            #202024;
+$text-muted:            $gray-600;
+$headings-color:        #101013;
+$headings-font-weight:  600;
+$border-color:          #e6e6e8;
+$border-radius:         0.6rem;
+$enable-rounded:        true;
+
+// Links
+$link-color:            $gray-900;
+$link-hover-color:      $black;
+$link-decoration:       underline;
+$link-hover-decoration: underline;
+
+// Typography
+$font-family-sans-serif: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular,
+  Menlo, Consolas, "Liberation Mono", monospace;
+$font-size-base:  1rem;
+$line-height-base: 1.65;
+
+// Code
+$code-bg:                #f4f4f5;
+$code-color:             #202024;
+$code-block-bg:          #fafafa;
+$code-block-border-left: false;
+
+// Table of contents and sidebar
+$toc-color:           $gray-600;
+$toc-active-border:   $gray-900;
+$toc-inactive-border: #ececed;
+$toc-font-size:       0.9rem;
+$sidebar-bg:          #fafafa;
+$sidebar-fg:          #52525b;
+$sidebar-hl:          $gray-900;
+$sidebar-border:      #e6e6e8;
+
+// Navbar
+$navbar-bg: $white;
+$navbar-fg: $gray-900;
+$navbar-hl: $black;
+
+// Callouts, monochromatic
+$callout-border-width:   1px;
+$callout-color-note:      $gray-600;
+$callout-color-tip:       $gray-600;
+$callout-color-warning:   $gray-600;
+$callout-color-caution:   $gray-600;
+$callout-color-important: $gray-600;
+
+// Use the system font stack; do not fetch a web font.
+$web-font-path: false;
+
+// Tokens consumed by `theme-rules.scss`.
+$qviz-ink:        $gray-900;
+$qviz-ink-strong: $black;
+$qviz-ink-muted:  $gray-600;
+$qviz-line:       #e6e6e8;
+$qviz-surface:    #fafafa;
+
+/*-- scss:rules --*/
+@import "theme-rules";

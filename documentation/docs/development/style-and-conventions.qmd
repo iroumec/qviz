@@ -42,6 +42,9 @@ shaders/                    The volumetric shaders of the spheres.
 documentation/              The specification, the schema and this book.
   _quarto.yml               The configuration of this book.
   index.qmd                 The preface.
+  theme-light.scss          The light theme of the book (monochromatic).
+  theme-dark.scss           The dark theme of the book.
+  theme-rules.scss          The rules that both themes share.
   docs/                     The chapters of this book.
   diagrams/                 The PlantUML diagrams and their SVG renders.
   schema/                   The JSON schema of the contract.
@@ -122,6 +125,23 @@ on older interpreters.
 - The settings are stored in `.flake8`. The rule `E501` is ignored for `main.py`
   only, because Qollab needs the whole signature of `main` on one line to build
   its form.
+
+## The theme of the book {.unnumbered}
+
+The book has a monochromatic theme: a single grey family, with no second hue.
+Headings, links, callouts and code all read the same ink, and the active entry of
+the sidebar is the one that is set in bold.
+
+The theme is split in three SCSS files under `documentation/`:
+
+- `theme-light.scss` is loaded after the built-in `cosmo` theme.
+- `theme-dark.scss` is loaded after the built-in `darkly` theme.
+- `theme-rules.scss` holds the rules that both variants share. Only the colour
+  tokens change between them.
+
+The colour blocks use the `/*-- scss:defaults --*/` and `/*-- scss:rules --*/`
+markers that Quarto expects. The syntax highlighting uses Pandoc's `monochrome`
+style, with a small grey hierarchy added by `theme-rules.scss`.
 
 ## The memory of the project {.unnumbered}
 

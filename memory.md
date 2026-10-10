@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (cierre de sesión: M10 OpenQASM, servidor local, licencia MIT y arreglo del paquete de Qollab). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (estética de la documentación: tema monocromático claro/oscuro). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -23,7 +23,7 @@ make server            # el visor en local, con compilar y medir en Python (scri
 - Contrato JSON en `spec.md` §6 y `documentation/schema/` (`total_qubits` ≤ 16).
 - M10 `importer.load_circuit` (OpenQASM 2/3) + `qollab_api.run_qasm` + hook `HOST.compileQasm`: el visor carga `.qasm` (botón y arrastrar) sin gastar el job de IonQ (`compile(..., allow_remote=False)`); sin Qollab sigue cargando JSON. Ejemplos en `examples/qasm/`.
 - Qollab: `main.py` (proyecto Python), `qollab_api.py` (lo que llaman las páginas JS), `scripts/package_qollab.py` (`make qollab`).
-- Documentación: `spec.md` (español), Quarto en `documentation/docs/` (inglés), guías en `documentation/prompts/`.
+- Documentación: `spec.md` (español), Quarto en `documentation/docs/` (inglés, con tema monocromático claro/oscuro: `documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`), guías en `documentation/prompts/`.
 - CI en GitHub Actions (`.github/workflows/ci.yml`): job de lint (flake8 + pydocstyle, igual que `make lint`) y tests en Python 3.12 y 3.13 (igual que `make test`).
 
 ## Decisiones tomadas (detalle en `spec.md`)
@@ -68,6 +68,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-10 · Estética de la documentación: tema monocromático claro/oscuro (`documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`, cargados tras `cosmo`/`darkly`), `highlight-style: monochrome` en `_quarto.yml` y color de enlaces/cabeceras del PDF Typst. Documentado en `style-and-conventions.qmd`. Sin commitear.
 - 2026-10-10 · Cierre de sesión. Se quitaron las menciones de FastAPI y Astro (README, AGENTS, spec, memory) y se actualizó "Fuera de alcance" de `AGENTS.md`. Se revisó la desaparición de vectores: es el comportamiento normal descrito arriba.
 - 2026-10-11 · Arreglo en Qollab: `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`. Qollab no sirve los archivos de `js/`, así que el `import("./js/main.js")` del preludio fallaba. `package_qollab.py` ahora arma un solo `main.js` (preludio + los módulos de `frontend/js` empaquetados con `bundle_modules`, cada uno en su ámbito); el paquete pasó a 51 archivos. Probado el JS con `node --check` y un arnés con stubs; falta probar en Qollab.
 - 2026-10-10 · Licencia MIT: `LICENSE` (titular "Qubit Overflow", 2026; cambiarlo si el equipo prefiere otro), `license` en `pyproject.toml`, sección en el README y copia en el paquete de Qollab (64 archivos). `spec.md` §2 recoge la respuesta de los organizadores.

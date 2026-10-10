@@ -1,0 +1,159 @@
+// Shared rules for the QViz documentation theme.
+//
+// Imported from both `theme-light.scss` and `theme-dark.scss`, so the light and
+// dark books stay identical except for the colour tokens. The tokens used here
+// ($qviz-ink, $qviz-ink-strong, $qviz-ink-muted, $qviz-line, $qviz-surface) are
+// defined in each theme file before this one is imported.
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin-top: 2.4rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid $qviz-line;
+}
+
+h3 {
+  margin-top: 1.8rem;
+}
+
+a {
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 0.06em;
+  text-decoration-color: $qviz-ink-muted;
+}
+
+a:hover {
+  text-decoration-color: $qviz-ink;
+}
+
+// Inline code, kept quiet and boxed.
+p > code,
+li > code,
+td > code,
+h1 code,
+h2 code,
+h3 code,
+h4 code {
+  padding: 0.1em 0.34em;
+  font-size: 0.85em;
+  color: $qviz-ink;
+  background-color: $qviz-surface;
+  border: 1px solid $qviz-line;
+  border-radius: 0.35rem;
+}
+
+// Code blocks, softly rounded with a single hairline border.
+div.sourceCode {
+  background-color: $qviz-surface;
+  border: 1px solid $qviz-line;
+  border-radius: 0.6rem;
+}
+
+pre.sourceCode {
+  border: none;
+}
+
+// Tables, reduced to horizontal rules.
+table {
+  border-color: $qviz-line;
+}
+
+thead th {
+  border-bottom: 2px solid $qviz-line !important;
+  font-weight: 600;
+}
+
+tbody td,
+tbody th {
+  border-bottom: 1px solid $qviz-line;
+}
+
+// Blockquote.
+blockquote {
+  padding-left: 1rem;
+  color: $qviz-ink-muted;
+  border-left: 3px solid $qviz-line;
+}
+
+// Callouts, monochromatic surfaces with a quiet accent edge.
+.callout {
+  border: 1px solid $qviz-line !important;
+  border-left-width: 4px !important;
+  border-radius: 0.6rem;
+}
+
+.callout.callout-style-default > .callout-header {
+  background-color: transparent !important;
+  font-weight: 600;
+}
+
+// Navigation: the active entry is the one that gets the ink.
+.navbar {
+  border-bottom: 1px solid $qviz-line;
+}
+
+.sidebar-navigation .active,
+.sidebar nav[role="doc-toc"] a.active {
+  color: $qviz-ink !important;
+  font-weight: 600;
+}
+
+.sidebar nav[role="doc-toc"] a.active {
+  border-left-color: $qviz-ink !important;
+}
+
+.quarto-title-banner {
+  border-bottom: 1px solid $qviz-line;
+}
+
+// Syntax highlighting, kept inside the grey family. The Pandoc `monochrome`
+// style supplies the font styles (italic comments); the shades below add the
+// little hierarchy that a single ink cannot give.
+div.sourceCode code span,
+pre > code.sourceCode > span {
+  color: $qviz-ink;
+}
+
+code span.co,
+code span.cv,
+code span.do,
+code span.an,
+code span.in,
+code span.wa {
+  color: $qviz-ink-muted;
+  font-style: italic;
+}
+
+code span.kw,
+code span.cf,
+code span.dt,
+code span.im,
+code span.ot,
+code span.fu {
+  color: $qviz-ink-strong;
+}
+
+code span.st,
+code span.ch,
+code span.vs,
+code span.ss,
+code span.dv,
+code span.fl,
+code span.bn,
+code span.cn,
+code span.sc {
+  color: $qviz-ink-muted;
+}
