@@ -121,18 +121,6 @@ The file `profiles.py` contains three ready-made profiles.
 The numbers are simple estimates that were taken from public IonQ material. They
 are **not** a calibrated noise model. They can be replaced before the demo.
 
-## `get_profile(machine)` {.unnumbered}
-
-A profile is returned by its short name.
-
-**Parameter**
-
-| Name | Type | Meaning |
-| --- | --- | --- |
-| `machine` | string | One of `"aria"`, `"forte"` or `"ideal"`. |
-
-**Returns** a `NoiseProfile`.
-
 ## `profile_for(provider, name, entangler)` {.unnumbered}
 
 The correct profile is chosen for a backend.
@@ -141,14 +129,15 @@ The correct profile is chosen for a backend.
 
 | Name | Type | Meaning |
 | --- | --- | --- |
-| `provider` | string | The provider name. |
-| `name` | string | The raw backend name. It is used to find `aria`, `forte` or `ideal`. |
+| `provider` | string | The provider name. Only `"ionq"` uses the name of the backend. |
+| `name` | string | The raw backend name. For IonQ it is used to find `aria`, `forte` or `ideal`. |
 | `entangler` | `"ms"` or `"zz"` | The fallback entangler when the name gives no hint. |
 
 **Returns** a `NoiseProfile`.
 
-**The rule.** The name is checked first. A name that contains `ideal` gives the
-ideal profile, `forte` gives the Forte profile and `aria` gives the Aria profile.
-If the name gives no hint, the reference machine of the entangler is used: Aria
-for MS and Forte for ZZ. A non-IonQ backend is therefore shown *as if* it ran on
-trapped ions.
+**The rule.** For an IonQ backend, the name is checked first. A name that
+contains `ideal` gives the ideal profile, `forte` gives the Forte profile and
+`aria` gives the Aria profile. If the name gives no hint, or if the backend is
+not IonQ, the reference machine of the entangler is used: Aria for MS and Forte
+for ZZ. A non-IonQ backend is therefore shown *as if* it ran on trapped ions,
+whatever its name is.

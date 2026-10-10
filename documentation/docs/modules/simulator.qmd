@@ -5,7 +5,7 @@ every qubit after every native operation. The statevector is computed exactly;
 no noise is added at this stage. Each native gate has its own file, and a
 `matrix` function is defined in each one.
 
-## `simulate(native, strategy="statevector")` {.unnumbered}
+## `simulate(native)` {.unnumbered}
 
 The main function of the module.
 
@@ -14,12 +14,12 @@ The main function of the module.
 | Name | Type | Default | Meaning |
 | --- | --- | --- | --- |
 | `native` | `NativeCircuit` | required | The circuit to simulate. |
-| `strategy` | string | `"statevector"` | The simulation method. Only `"statevector"` is accepted here. The tomography method is documented on its own page. |
 
 **Returns** a `SimulatedCircuit`.
 
-**Raises** `NotImplementedError` if another strategy is given. The tomography
-strategy is handled by the `compiler`, before this function is called.
+This function always computes the exact statevector. The tomography method is
+documented on its own page; the `compiler` chooses between the two before this
+function is called.
 
 ## How the state is stored {.unnumbered}
 

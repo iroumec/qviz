@@ -11,6 +11,3 @@ import math
 
 TWO_PI: float = 2.0 * math.pi
 """A full turn, in radians. Used for the turns-to-radians conversion."""
-
-NATIVE_OPS = ("gpi", "gpi2", "ms", "zz", "virtual_z")
-"""The names of the allowed native operations."""

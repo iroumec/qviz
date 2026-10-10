@@ -83,11 +83,8 @@ def _angles(state: np.ndarray, qubit: int, n: int) -> QubitAngles:
     return QubitAngles(r, theta, phi)
 
 
-def simulate(native: NativeCircuit, strategy: str = "statevector") -> SimulatedCircuit:
+def simulate(native: NativeCircuit) -> SimulatedCircuit:
     """Simulate every native op, storing the reduced state after each step."""
-    if strategy != "statevector":
-        raise NotImplementedError(f"strategy {strategy!r} is not implemented yet")
-
     n = native.num_qubits
     state = np.zeros((2,) * n, dtype=complex)
     state[(0,) * n] = 1.0
