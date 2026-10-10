@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from backend.core import config
 from backend.core.model import MeasuredCircuit, MeasuredStep
 
@@ -14,11 +16,11 @@ def _round(value: float) -> float:
     return 0.0 if rounded == 0 else rounded
 
 
-def _round_list(values) -> list[float]:
+def _round_list(values: Iterable[float]) -> list[float]:
     return [_round(value) for value in values]
 
 
-def _round_points(points) -> list[list[float]]:
+def _round_points(points: Iterable[Iterable[float]]) -> list[list[float]]:
     return [[_round(component) for component in point] for point in points]
 
 

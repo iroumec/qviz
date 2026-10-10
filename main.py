@@ -26,6 +26,6 @@ def build_circuit() -> QuantumCircuit:
 def main(shots: int = 1024, entangler: str = "ms") -> None:
     """Compile the example circuit and print the visualization JSON."""
     forced = entangler if entangler in ("ms", "zz") else None
-    selected = backend  # noqa: F821 - global injected by Qollab
-    data = compile(selected, build_circuit(), entangler=forced, shots=shots)
+    circuit = build_circuit()
+    data = compile(backend, circuit, entangler=forced, shots=shots)  # noqa: F821
     print(export(data))

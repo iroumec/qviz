@@ -52,8 +52,11 @@ No network is used and no credential is needed. Every IonQ backend is mocked.
 | `test_simulator.py` | Hand-computed cases, the statevector oracle, and the gate matrices. |
 | `test_vectorizer.py` | The round trip from Cartesian to spherical and back, and the probabilities. |
 | `test_metrics.py` | Hand-computed values, monotonicity, the virtual Z rule and the ideal profile. |
-| `test_compile.py` | The schema, a golden file, the export and the forced entangler. |
-| `test_tomography.py` | The estimates, the single run call and the hardware guard. |
+| `test_compile.py` | The schema, a golden file, the export, the forced entangler and the argument validation. |
+| `test_normalize.py` | The ZZ and MS angle normalization is equivalent to the original gate, and the angles stay in range. |
+| `test_formatter.py` | Which fields are present for each operation, the rounding and the negative zero. |
+| `test_exporter.py` | The JSON text, the file output and the rejection of `NaN` and infinities. |
+| `test_tomography.py` | The estimates (with a fixed seed), the single run call and the hardware guard. |
 
 ## The oracles {.unnumbered}
 

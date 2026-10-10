@@ -5,10 +5,10 @@ Run with: python scripts/demo_transpiler.py
 
 from __future__ import annotations
 
-from qiskit import QuantumCircuit
 from qiskit.providers.basic_provider import BasicSimulator
 from qiskit.providers.fake_provider import GenericBackendV2
 
+from _common import bell
 from backend.core.provider import provider
 from backend.core.transpiler import transpiler
 
@@ -18,14 +18,6 @@ class UnknownBackend:
 
     __module__ = "some_pkg"
     name = "mystery_qpu"
-
-
-def bell() -> QuantumCircuit:
-    """Build a two-qubit Bell-state circuit."""
-    qc = QuantumCircuit(2)
-    qc.h(0)
-    qc.cx(0, 1)
-    return qc
 
 
 def main() -> None:

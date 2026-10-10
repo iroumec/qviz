@@ -10,8 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def export(data: dict, path: str | None = None) -> str:
-    """Serialize ``data`` to indented JSON and optionally write it to disk."""
-    text = json.dumps(data, ensure_ascii=False, indent=2)
+    """Serialize ``data`` to indented JSON and optionally write it to disk.
+
+    ``NaN`` and infinities are not valid JSON, so they raise ``ValueError``.
+    """
+    text = json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False)
     if path is not None:
         Path(path).write_text(text, encoding="utf-8")
         logger.info("wrote visualization JSON to %s", path)

@@ -17,7 +17,10 @@ The machine family is read from ``backend.options.noise_model`` instead, which i
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
+
+from qiskit_ionq.helpers import native_2q_gate
 
 from backend.core.model import BackendInfo, Entangler, Provider
 from backend.core.provider import profiles
@@ -165,12 +168,8 @@ def _native_family(value: str | None) -> Entangler | None:
     """Return the native entangler implied by a machine family name, if any."""
     if not value:
         return None
-    try:
-        from qiskit_ionq.helpers import native_2q_gate
-    except Exception:  # noqa: BLE001 - qiskit-ionq is optional at this point
-        return None
     family = native_2q_gate(value)
-    return family  # type: ignore[return-value]
+    return family if family in ("ms", "zz") else None
 
 
 def _infer_entangler(backend: Any, name: str) -> Entangler:

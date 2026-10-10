@@ -15,9 +15,8 @@ from backend.core.model import NativeOp
 
 
 def _wrap(angle: float) -> float:
-    """Fold ``angle`` into (-0.5, 0.5] turns (±1 turn is a global phase)."""
-    wrapped = (angle + 0.5) % 1.0 - 0.5
-    return wrapped
+    """Fold ``angle`` into [-0.5, 0.5) turns (±1 turn is a global phase)."""
+    return (angle + 0.5) % 1.0 - 0.5
 
 
 def normalize_zz(targets: tuple[int, ...], angle: float) -> list[NativeOp]:
