@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qviz"
+version = "0.1.0"
+description = "Educational trapped-ion circuit visualizer for Qollab"
+requires-python = ">=3.12"
+dependencies = [
+    "qiskit>=2.5.2,<3",
+    "qiskit-ionq",
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "jsonschema",
+]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

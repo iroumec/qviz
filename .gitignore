@@ -1,2 +1,3 @@
 .venv/
 .commit.md
+__pycache__/

@@ -1,8 +1,8 @@
-from core.transpiler import transpiler
-from core.translator import translator
-from core.simulator import simulator
-from core.vectorizer import vectorizer
-from core.formatter import formatter
+from backend.core.transpiler import transpiler
+from backend.core.translator import translator
+from backend.core.simulator import simulator
+from backend.core.vectorizer import vectorizer
+from backend.core.formatter import formatter
 
 def compile(backend, qc):
     

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="516px" preserveAspectRatio="none" style="width:481px;height:516px;background:#000000;" version="1.1" viewBox="0 0 481 516" width="481px" zoomAndPan="magnify"><defs/><g><rect fill="#1B141D" height="1" style="stroke: #1B141D; stroke-width: 1.0;" width="1" x="0" y="0"/><rect fill="#33FF02" height="21.2969" style="stroke: #33FF02; stroke-width: 1.0;" width="474" x="5" y="5"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="231" x="6" y="20">[From activity.puml (line 27) ]</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="40.2969"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="225" x="5" y="56.5938">@startuml "Activity Diagram"</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="72.8906"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="89.1875"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="228" x="5" y="105.4844">skinparam monochrome true</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="121.7813"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="15" x="5" y="138.0781">...</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="175" x="5" y="154.375">... ( skipping 19 lines )</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="15" x="5" y="170.6719">...</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="186.9688"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="92" x="5" y="203.2656">:Transpiler;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="219.5625"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="329" x="5" y="235.8594">:Transpiled Quantum Circuit; &lt;&lt;object&gt;&gt;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="252.1563"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="183" x="5" y="268.4531">:Normalizer/Translator;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="284.75"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="370" x="5" y="301.0469">:IonQ Transpiled Quantum Circuit; &lt;&lt;object&gt;&gt;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="317.3438"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="226" x="5" y="333.6406">:State Calculator / Simulator;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="349.9375"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="316" x="5" y="366.2344">:Simulated Circuit (angles); &lt;&lt;object&gt;&gt;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="382.5313"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="95" x="5" y="398.8281">:Vectorizer;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="415.125"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="474" x="5" y="431.4219">:Vectorized Circuit (vectors instead of angles); &lt;&lt;object&gt;&gt;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="447.7188"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="90" x="5" y="464.0156">:Formatter;</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="10" y="480.3125"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="151" x="5" y="496.6094">:JSON; &lt;&lt;object&gt;&gt;</text><text fill="#FF0000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="106" x="10" y="512.9063">Syntax Error?</text><!--MD5=[750530aa116eb2eb2684d3bc69e6f0f6]
+@startuml "Activity Diagram"
+
+
+skinparam monochrome true
+
+skinparam backgroundColor       #FFFFFF
+skinparam shadowing             false
+skinparam roundcorner           0
+skinparam defaultFontName       Helvetica
+skinparam defaultFontSize       12
+skinparam ArrowFontSize         11
+skinparam ParticipantFontSize   12
+skinparam NoteFontSize          11
+skinparam TitleFontSize         15
+skinparam LegendFontSize        11
+skinparam GroupFontSize         11
+
+skinparam ArrowThickness        1
+skinparam ParticipantBorderThickness 1
+skinparam LifeLineThickness     1
+
+start
+
+:Quantum Circuit; <<object>>
+
+:Transpiler;
+
+:Transpiled Quantum Circuit; <<object>>
+
+:Normalizer/Translator;
+
+:IonQ Transpiled Quantum Circuit; <<object>>
+
+:State Calculator / Simulator;
+
+:Simulated Circuit (angles); <<object>>
+
+:Vectorizer;
+
+:Vectorized Circuit (vectors instead of angles); <<object>>
+
+:Formatter;
+
+:JSON; <<object>>
+
+end
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 07:22:07 GMT-03:00 2020)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 26+35-2893
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

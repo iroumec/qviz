@@ -8,52 +8,20 @@ package "qviz" {
 
     package "backend" {
     
-        
+        package "core" {
+            [__init__.py]
+            package "compiler" {
+                [compiler.py]
+            }
+            package "formatter" {
+                
+            }
+        }
     }
 
     package "frontend" {
     
     }
 }
-
-' -----------------------------------------------------------------------------
-' Imports
-' -----------------------------------------------------------------------------
-[Simulation] ..> [Matrix]
-[Simulation] ..> [RasterLoader]
-[Simulation] ..> [createRunoffModel]
-[Simulation] ..> [createRainfallProvider]
-[AutomataModel] ..> [RunoffModel]
-[CorralitoModel] ..> [RunoffModel]
-[UniformRainfallProvider] ..> [RainfallProvider]
-[HyetographRainfallProvider] ..> [RainfallProvider]
-[ZonalRainfallProvider] ..> [RainfallProvider]
-
-' -----------------------------------------------------------------------------
-' Desktop composition
-' -----------------------------------------------------------------------------
-[MainWindow] *-- "1" [Workspace] : embeds the central area
-[Workspace] *-- "0..*" SimulationView : displays
-[Workspace] *-- "1" [EmptyStateScreen] : shows until a simulation exists
-[MainWindow] ..> [NewSimulationDialog]
-[MainWindow] ..> [Simulation]
-[NewSimulationDialog] ..> [SimulationConfiguration]
-[SimulationView] ..> [SimulationSnapshot]
-[SimulationSnapshot] ..> [TerrainGrid]
-[SimulationSnapshot] ..> [WaterState]
-[SimulationSnapshot] ..> [AlphaState]
-[SimulationSnapshot] ..> [SimulationMetrics]
-[TerrainGrid] ..> [Matrix]
-
-' -----------------------------------------------------------------------------
-' Desktop widget usage
-' -----------------------------------------------------------------------------
-[HeightmapView] ..> [DynamicImage]
-[AlphasView] ..> [DynamicImage]
-[RunoffView] ..> [DynamicImage]
-[MeshView] ..> [TerrainGLWidget]
-[Runoff3DView] ..> [TerrainGLWidget]
-[Runoff3DView] ..> [RunoffGLWidget]
-[DischargeView] ..> [SimulationMetrics]
 
 @enduml
