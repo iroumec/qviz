@@ -1,7 +1,7 @@
 // The panels around the scene: the readouts, the detail of the step, the health
 // bar, and the measurement of the current step.
 
-import { HOST } from "./config.js";
+import { sampleStep } from "./host.js";
 import { state } from "./state.js";
 import { setError } from "./utils.js";
 
@@ -73,9 +73,9 @@ export function closeMeasurement() {
 }
 
 /**
- * Measure the current step. When the host gives a sampler, the backend draws the
- * outcomes from the statevector and the correlations are kept. Otherwise the
- * JSON only has the marginal probabilities, and every qubit is sampled alone.
+ * Measure the current step. The backend draws the outcomes from the statevector,
+ * so the correlations of the entanglement are kept. The JSON only has marginal
+ * probabilities, which cannot give them, so there is no other way to measure.
  */
 export async function runMeasurement() {
   if (!state.data) return;
@@ -88,57 +88,36 @@ export async function runMeasurement() {
 
   const p1 = [];
   const fidelity = [];
-  const radius = [];
   for (let q = 0; q < n; q++) {
     const base = step ? step.probabilities[q][1] : 0;
     const f = step ? step.fidelities[q] / 100 : 1;
     p1.push(0.5 + (base - 0.5) * f);
     fidelity.push(f);
-    const vector = step ? step.states[q] : [0, 0, 1];
-    radius.push(Math.hypot(vector[0], vector[1], vector[2]));
   }
 
+  const at = state.stepIndex;
+  const measured = state.data;
+  let sorted;
+  try {
+    sorted = await sampleStep(state.data, at, shots);
+  } catch (error) {
+    setError("No se pudo medir: " + error.message);
+    return;
+  }
+  // The user may have moved to another step or file while the backend worked.
+  if (at !== state.stepIndex || measured !== state.data) return;
+  setError("");
+
+  // Little-endian: qubit 0 is the rightmost character.
   const ones = new Array(n).fill(0);
-  let sorted = null;
-  let exact = false;
-
-  if (HOST.sample) {
-    const at = state.stepIndex;
-    const measured = state.data;
-    try {
-      sorted = await HOST.sample(state.data, at, shots);
-      exact = true;
-    } catch (error) {
-      setError("No se pudo medir con el backend: " + error.message);
-    }
-    // The user may have moved to another step or file while the backend worked.
-    if (at !== state.stepIndex || measured !== state.data) return;
+  for (const [bits, count] of sorted) {
+    for (let q = 0; q < n; q++) if (bits[n - 1 - q] === "1") ones[q] += count;
   }
 
-  if (exact) {
-    // Little-endian: qubit 0 is the rightmost character.
-    for (const [bits, count] of sorted) {
-      for (let q = 0; q < n; q++) if (bits[n - 1 - q] === "1") ones[q] += count;
-    }
-  } else {
-    const counts = new Map();
-    for (let shot = 0; shot < shots; shot++) {
-      const bits = new Array(n);
-      for (let q = 0; q < n; q++) {
-        const bit = Math.random() < p1[q] ? 1 : 0;
-        bits[q] = bit;
-        ones[q] += bit;
-      }
-      const key = bits.slice().reverse().join("");
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-    sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-  }
-
-  renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, state.stepIndex, exact);
+  renderMeasurement(sorted, shots, p1, ones, fidelity, n, at);
 }
 
-function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step, exact) {
+function renderMeasurement(sorted, shots, p1, ones, fidelity, n, step) {
   const top = sorted.slice(0, 15);
   const rows = top
     .map(([bits, count]) => {
@@ -160,13 +139,6 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step, e
     );
   }
 
-  const entangled = radius.some((r) => r < 0.999);
-  const note = entangled && !exact
-    ? '<p class="hint">Hay qubits entrelazados. El JSON solo trae las probabilidades ' +
-      "marginales, así que el muestreo es independiente y no reproduce las " +
-      "correlaciones del entrelazamiento.</p>"
-    : "";
-
   document.getElementById("measurePanel").innerHTML =
     `<button class="close" id="measureClose">Cerrar</button>` +
     `<h2>Medición · paso ${step} · ${shots} shots</h2>` +
@@ -176,8 +148,7 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, radius, n, step, e
     (sorted.length > top.length
       ? `<p class="hint">… y ${sorted.length - top.length} resultados más.</p>`
       : "") +
-    `<hr /><table>${qubitRows.join("")}</table>` +
-    note;
+    `<hr /><table>${qubitRows.join("")}</table>`;
 
   document.getElementById("measurePanel").classList.remove("hidden");
   document.getElementById("measureClose").addEventListener("click", closeMeasurement);

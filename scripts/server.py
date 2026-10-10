@@ -1,17 +1,22 @@
-"""Serve the viewer locally, with a compiler for OpenQASM circuits.
+"""Serve the viewer locally, with the Python services that Qollab gives it.
 
-Without Qollab there is no Python in the page, so the viewer cannot compile the
-circuit that a person loads. This server gives it one: it serves the repository
-(the viewer, the shaders, the model and ``out/``) and answers
-``POST /api/compile`` with the same code that Qollab runs (``qollab_api.run_qasm``)
-on the built-in simulator. It is a tool for development, not for Qollab.
+Without Qollab there is no Python in the page, so the viewer could neither compile
+the circuit that a person loads nor measure it. This server serves the repository
+(the viewer, the shaders, the model and ``out/``) and gives the viewer the same two
+services, with the same code that Qollab runs (``qollab_api``) on the built-in
+simulator. It is a tool for development, not for Qollab.
 
-The body of the request is the OpenQASM text. The optional query ``shots`` and
-``entangler`` (``auto``, ``ms`` or ``zz``) are the ones of ``run_qasm``. The reply
-is the JSON of the visualization, or ``{"error": "..."}`` with the status 400
-(the circuit is not valid) or 500 (something unexpected).
+- ``POST /api/compile``: the body is the OpenQASM text; the optional query
+  ``shots`` and ``entangler`` (``auto``, ``ms`` or ``zz``) are the ones of
+  ``run_qasm``. The reply is the JSON of the visualization.
+- ``POST /api/sample``: the body is that JSON; the query has ``step`` and
+  ``shots``. The reply is the list of ``[bitstring, count]`` pairs of
+  ``sample_step``, drawn from the statevector, so the entanglement is kept.
 
-Run with: python scripts/serve.py [--port 8000] [--host 127.0.0.1]   (or: make serve)
+An error is ``{"error": "..."}`` with the status 400 (the request is not valid) or
+500 (something unexpected).
+
+Run with: python scripts/server.py [--port 8000] [--host 127.0.0.1]   (or: make serverr)
 """
 
 from __future__ import annotations
@@ -35,6 +40,8 @@ from backend.core import config  # noqa: E402
 from backend.core.errors import QVizError  # noqa: E402
 
 COMPILE_PATH = "/api/compile"
+SAMPLE_PATH = "/api/sample"
+MAX_SAMPLE_BYTES = 64_000_000
 VIEWER_PATH = "/frontend/index.html"
 
 
@@ -58,24 +65,28 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:  # noqa: N802 - name fixed by http.server
-        """Compile the OpenQASM text of the body and reply with the JSON."""
+        """Run the service named by the path on the body of the request."""
         url = urlparse(self.path)
-        if url.path != COMPILE_PATH:
+        if url.path not in (COMPILE_PATH, SAMPLE_PATH):
             self._reply(HTTPStatus.NOT_FOUND, {"error": f"no such service: {url.path}"})
             return
+        compiling = url.path == COMPILE_PATH
         length = int(self.headers.get("Content-Length") or 0)
-        if length > 2 * config.MAX_QASM_CHARS:
-            self._reply(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "file too big"})
+        if length > (2 * config.MAX_QASM_CHARS if compiling else MAX_SAMPLE_BYTES):
+            self._reply(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "body too big"})
             return
         text = self.rfile.read(length).decode("utf-8", errors="replace")
         query = parse_qs(url.query)
+        shots = query.get("shots", ["1024"])[0]
         try:
-            body = qollab_api.run_qasm(
-                self.backend,
-                text,
-                int(query.get("shots", ["1024"])[0]),
-                query.get("entangler", ["auto"])[0],
-            )
+            if compiling:
+                body = qollab_api.run_qasm(
+                    self.backend, text, int(shots), query.get("entangler", ["auto"])[0]
+                )
+            else:
+                body = qollab_api.sample_step(
+                    text, int(query.get("step", ["0"])[0]), int(shots)
+                )
         except (QVizError, ValueError) as error:
             self._reply(HTTPStatus.BAD_REQUEST, {"error": str(error)})
         except Exception as error:  # noqa: BLE001 - a bug must not stop the server

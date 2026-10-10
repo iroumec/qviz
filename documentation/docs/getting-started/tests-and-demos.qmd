@@ -70,12 +70,12 @@ The JSON that is produced can be inspected by hand, or with the viewer.
 
 ```bash
 make outputs
-make serve
+make server
 # then open http://localhost:8000/frontend/index.html
 ```
 
 The page `frontend/index.html` is connected to the files in `out/`. It reads the
 manifest, fills a selector with the available files, and opens the default one.
 An OpenQASM file (`examples/qasm/*.qasm`) can be loaded with the button *Cargar circuito*
-or dragged onto the page: `make serve` compiles it (a plain `python -m http.server`
+or dragged onto the page: `make server` compiles it (a plain `python -m http.server`
 cannot).

@@ -88,11 +88,11 @@ files can be read.
 
 ```bash
 make outputs
-make serve            # or: make serve PORT=9000
+make server            # or: make server PORT=9000
 # then open http://localhost:8000/frontend/index.html
 ```
 
-`make serve` runs `scripts/serve.py`. It serves the repository like
+`make server` runs `scripts/server.py`. It serves the repository like
 `python -m http.server`, and it adds `POST /api/compile`: the body is the OpenQASM
 text, the optional query has `shots` and `entangler` (`auto`, `ms` or `zz`), and
 the reply is the JSON of the visualization. It calls `qollab_api.run_qasm`, so the
@@ -136,18 +136,18 @@ At `f = 1` the probability is unchanged. At `f = 0` the qubit is fully random.
 This is the same as a readout error of `(1 - f) / 2`. A noisier qubit therefore
 gives a flatter distribution.
 
-One limitation is worth noting. The JSON contains only the **reduced** (marginal)
-probability of each qubit. The shots are therefore drawn **independently** on
-every qubit, and the correlations of an entangled state are not reproduced. For
-example, the two Bell outcomes `00` and `11` are not separated from `01` and
-`10` by this simple model. When an entangled qubit is measured, the panel says
-so.
+The JSON contains only the **reduced** (marginal) probability of each qubit, and
+the marginals cannot give the correlations of an entangled state. Drawing every
+qubit independently would give a Bell pair `00`, `01`, `10` and `11` with 25 %
+each, which does not model entanglement at all. The viewer therefore **never**
+measures by itself: it always asks Python (Qollab, or `make server`), and if there
+is none, it shows an error instead of a wrong histogram.
 
-The exact measurement is done by the backend: `sample` draws the outcomes from the
+The measurement is done by the backend: `sample` draws the outcomes from the
 statevector and keeps the correlations, so a Bell pair gives only `00` and `11`.
-See the [sampler page](../modules/sampler.qmd). When the viewer runs on Qollab, it
-asks the backend (`HOST.sample`) and the note above is not shown. The way it is
-connected is on the [viewer on Qollab](qollab.qmd) page.
+See the [sampler page](../modules/sampler.qmd). The viewer asks the backend
+(`HOST.sample` on Qollab, `POST /api/sample` of `make server` locally). The way it
+is connected is on the [viewer on Qollab](qollab.qmd) page.
 
 ## How the animation works {.unnumbered}
 

@@ -80,7 +80,7 @@ El visor (`frontend/index.html`) es del equipo. Guía completa: `documentation/d
 
 - **No cambies su aspecto ni sus funciones sin aprobación explícita.** Tiene que seguir funcionando solo, servido con `python -m http.server`.
 - Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `laser`, `circuits`, `load`, `sample`, `compileQasm`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
-- `make qollab` arma `qollab/` (proyecto JS de 62 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. `make qollab-probe` arma la página de diagnóstico. No edites `qollab/`.
+- `make qollab` arma `qollab/` (proyecto JS de 63 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. `make qollab-probe` arma la página de diagnóstico. No edites `qollab/`.
 - Qollab no ejecuta los `<script>` del HTML, solo carga `main.css` y el JS no lee archivos del proyecto: por eso el paquete embebe los shaders y el modelo del láser, y toma los circuitos de Python.
 - Versiones de Qollab (medidas el 2026-10-10): Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. El código tiene que funcionar con qiskit-ionq ≥ 1.0.0.
 - Después de cambiar el visor, `qollab_api.py` o el paquete: `make test`, `make qollab`, subir y, si algo falla, la página de diagnóstico.
@@ -108,7 +108,7 @@ make demo M=translator   # corre scripts/demo_translator.py
 make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
 make qollab-probe  # lo mismo con la página de diagnóstico
 make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
-make serve         # el visor en http://localhost:8000 con un compilador de circuitos OpenQASM (PORT=9000 cambia el puerto)
+make server        # el visor en http://localhost:8000 con compilar y medir en Python, sin Qollab (PORT=9000)
 ```
 
 (Se crean en M0. Hasta entonces, `python -m pytest`.)

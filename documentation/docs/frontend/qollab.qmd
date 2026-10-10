@@ -88,7 +88,7 @@ a field is missing, the viewer does what it always did.
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |
 | `sample` | `async (data, step, shots) -> [[bitstring, count], …]` | Measures with the backend. |
-| `compileQasm` | `async (text) -> object` | Compiles a circuit written in OpenQASM 2 or 3 (`qollab_api.run_qasm`, without the IonQ job). It is how the user loads a circuit: the button *Cargar circuito* and dropping a `.qasm` file both call it, and the circuit becomes a new entry of the selector. The viewer no longer loads JSON files; without this hook it asks the local server (`make serve`). |
+| `compileQasm` | `async (text) -> object` | Compiles a circuit written in OpenQASM 2 or 3 (`qollab_api.run_qasm`, without the IonQ job). It is how the user loads a circuit: the button *Cargar circuito* and dropping a `.qasm` file both call it, and the circuit becomes a new entry of the selector. The viewer no longer loads JSON files; without this hook it asks the local server (`make server`). |
 
 The test `test_every_service_of_the_prelude_is_used_by_the_viewer` fails if the
 prelude defines a service that the viewer does not read. **To add a service:**
@@ -98,7 +98,9 @@ function to `qollab_api.py` if it needs one, and document it in this table.
 
 ## The measurement {.unnumbered}
 
-The `Medir` button draws the outcomes with the backend when `HOST.sample` exists.
+The `Medir` button always draws the outcomes with the backend: `HOST.sample` on
+Qollab, or `POST /api/sample` of the local server (`make server`), which runs the
+same function.
 
 1. `HOST.sample(data, step, shots)` sends the JSON text of the current file, the
    step and the shots to `qollab_api.sample_step`, which calls `backend.sample`
@@ -106,16 +108,15 @@ The `Medir` button draws the outcomes with the backend when `HOST.sample` exists
 2. The reply is a list of `[bitstring, count]` pairs, from the most to the least
    frequent. It is a list and not an object because JavaScript sorts the
    integer-like keys of an object (`"10"`, `"11"`).
-3. The panel is drawn as before. The only difference is that the note about
-   entanglement is not shown, because the measurement keeps the correlations.
-4. If the backend fails, the error is shown, and the viewer falls back to the
-   independent sampling of the marginals, with the note.
+3. The panel is drawn as before, without the note about entanglement, because the
+   measurement keeps the correlations.
+4. If the backend fails, or there is no Python, the error is shown. There is no
+   fallback: sampling the marginals independently does not model entanglement.
 5. If the user changes the step or the file while Python works, the reply is
    dropped.
 
 On Qollab, a Bell pair at its last step gives `00` and `11` only, and at step 4
-it gives `01` and `10` at about 50 % each. The independent sampling gave 25 % for
-the four outcomes.
+it gives `01` and `10` at about 50 % each.
 
 ## `qollab_api.py` {.unnumbered}
 

@@ -1,4 +1,4 @@
-"""Tests for the local server of the viewer."""
+"""Tests for the local server of the viewer (scripts/server.py)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-_SCRIPT = Path(__file__).parent.parent / "scripts" / "serve.py"
+_SCRIPT = Path(__file__).parent.parent / "scripts" / "server.py"
 _BELL = (
     'OPENQASM 3.0;\ninclude "stdgates.inc";\n'
     "qubit[2] q; h q[0]; cx q[0], q[1];"
@@ -20,7 +20,7 @@ _BELL = (
 
 @pytest.fixture(scope="module")
 def base():
-    spec = importlib.util.spec_from_file_location("serve", _SCRIPT)
+    spec = importlib.util.spec_from_file_location("server", _SCRIPT)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     server = module.make_server(port=0)
@@ -90,3 +90,44 @@ def test_the_root_goes_to_the_viewer_and_the_files_are_served(base):
     with urllib.request.urlopen(base + "/shaders/bloch.frag") as response:
         assert response.status == 200
         assert response.headers["Cache-Control"] == "no-store"
+
+
+def _counts(base, data, step, shots):
+    status, reply = _post(
+        f"{base}/api/sample?step={step}&shots={shots}", json.dumps(data)
+    )
+    assert status == 200
+    return dict(reply)
+
+
+def test_it_measures_with_the_correlations_of_the_entanglement(base):
+    _, data = _post(base + "/api/compile", _BELL)
+    final = _counts(base, data, len(data["steps"]), 2000)
+    assert sum(final.values()) == 2000
+    # A Bell pair gives 00 and 11: independent qubits would give 25 % of each.
+    assert final.get("00", 0) + final.get("11", 0) > 1900
+    assert final.get("01", 0) + final.get("10", 0) < 100
+
+
+def test_it_measures_the_initial_state(base):
+    _, data = _post(base + "/api/compile", _BELL)
+    assert _counts(base, data, 0, 500)["00"] > 450
+
+
+def test_the_measurement_is_the_one_of_qollab(base):
+    import qollab_api
+
+    _, data = _post(base + "/api/compile", _BELL)
+    expected = dict(json.loads(qollab_api.sample_step(json.dumps(data), 4, 3000)))
+    got = _counts(base, data, 4, 3000)
+    for bits in ("01", "10"):
+        assert abs(got[bits] - expected[bits]) < 300  # about 50 % each, both
+
+
+def test_a_bad_measurement_is_a_400(base):
+    _, data = _post(base + "/api/compile", _BELL)
+    for query in ("step=999&shots=10", "step=1&shots=0", "step=x&shots=10"):
+        status, reply = _post(f"{base}/api/sample?{query}", json.dumps(data))
+        assert status == 400 and reply["error"]
+    status, reply = _post(base + "/api/sample?step=1&shots=10", "not json")
+    assert status == 400
