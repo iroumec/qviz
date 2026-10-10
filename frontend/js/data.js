@@ -5,7 +5,7 @@ import { HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
-import { escapeHtml, setError } from "./utils.js";
+import { escapeHtml, setError, setStatus } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
 import {
   buildReadouts,
@@ -45,7 +45,7 @@ const userCircuits = new Map();
 
 /** Compile a circuit file (OpenQASM 2 or 3) and show it. */
 export async function loadCircuitFile(file) {
-  setError("Compilando " + file.name + "…");
+  setStatus("Compilando " + file.name + "…");
   try {
     const compiled = await compileQasm(await file.text());
     const key = "file:" + file.name;

@@ -12,7 +12,16 @@ export function escapeHtml(value) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[character]));
 }
 
-/** Write a message in the error line of the viewer. */
+/** Write a message in the error line of the viewer (red). */
 export function setError(message) {
-  document.getElementById("error").textContent = message;
+  const line = document.getElementById("error");
+  line.classList.remove("status");
+  line.textContent = message;
+}
+
+/** Write a progress message in the same line, in the accent color, not red. */
+export function setStatus(message) {
+  const line = document.getElementById("error");
+  line.classList.add("status");
+  line.textContent = message;
 }
