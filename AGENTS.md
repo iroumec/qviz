@@ -141,11 +141,11 @@ El chat se vacía entre sesiones; el repositorio no. Por eso:
 
 ## 7. Fuera de alcance (no lo hagas)
 
-- Frontend de cualquier tipo.
+- Cambiar el aspecto o las funciones del frontend sin aprobación del equipo (ver "El visor y Qollab"). Los hooks y el empaquetado para Qollab sí son parte del trabajo.
 - Transpilar _hacia IonQ_ un circuito que viene de otro proveedor. La normalización es una **traducción estática** (`spec.md` M2).
 - Cambiar el contrato JSON sin acuerdo.
 - Optimizar o fusionar compuertas en el MVP.
-- Publicar en PyPI o configurar CI (son extras, para después del MVP).
+- Publicar en PyPI (es un extra, para después del MVP). El CI ya existe (`.github/workflows/ci.yml`).
 
 ## Documentation
 
