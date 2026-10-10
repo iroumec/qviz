@@ -1,0 +1,8 @@
+# Made in Blockbench 5.2.2
+newmtl m_65b565ff-6490-3997-666f-439021e23b00
+map_Kd mat_plastic.png
+newmtl m_190d18a2-8c6e-5198-99e3-9fdfb9d7cd5a
+map_Kd mat_metal.png
+newmtl m_fd0ce41d-4122-0bc2-e393-fa189e8a9f3a
+map_Kd mat_laser.png
+newmtl none
