@@ -319,6 +319,11 @@ def translate_circuit(
         qubits = tuple(circuit.find_bit(q).index for q in instr.qubits)
         emit(ops, instr.operation, qubits, entangler, source_index)
 
+    if layout is None:
+        # Without a layout the mapping is the identity, so the targets need no
+        # remapping and the whole pass is skipped.
+        return ops, num_qubits
+
     remapped = [
         replace(op, targets=tuple(mapping[q] for q in op.targets)) for op in ops
     ]

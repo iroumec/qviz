@@ -43,7 +43,12 @@ def _matrix(op: NativeOp) -> np.ndarray:
 def _apply(
     state: np.ndarray, matrix: np.ndarray, targets: tuple[int, ...]
 ) -> np.ndarray:
-    """Apply a k-qubit ``matrix`` to ``targets`` (in order) of ``state``."""
+    """Apply a k-qubit ``matrix`` to ``targets`` (in order) of ``state``.
+
+    The target axes are moved to the front, flattened to a contiguous buffer,
+    contracted with the matrix (BLAS), and moved back. Materialising the
+    contiguous buffer is what makes the contraction fast.
+    """
     n = state.ndim
     target_axes = [n - 1 - q for q in targets]
     other_axes = [axis for axis in range(n) if axis not in target_axes]

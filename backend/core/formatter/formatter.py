@@ -17,11 +17,16 @@ def _round(value: float) -> float:
 
 
 def _round_list(values: Iterable[float]) -> list[float]:
-    return [_round(value) for value in values]
+    decimals = config.JSON_DECIMALS
+    return [0.0 if (r := round(value, decimals)) == 0 else r for value in values]
 
 
 def _round_points(points: Iterable[Iterable[float]]) -> list[list[float]]:
-    return [[_round(component) for component in point] for point in points]
+    decimals = config.JSON_DECIMALS
+    return [
+        [0.0 if (r := round(component, decimals)) == 0 else r for component in point]
+        for point in points
+    ]
 
 
 def _step_entry(step: MeasuredStep) -> dict:
