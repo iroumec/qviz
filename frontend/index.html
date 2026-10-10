@@ -112,7 +112,7 @@
 
 <div class="controls">
   <select id="fileSelect" title="Archivos generados en out/"></select>
-  <label class="file-btn">Cargar JSON<input type="file" id="file" accept=".json,application/json" hidden /></label>
+  <label class="file-btn" title="Circuito en OpenQASM 2 o 3">Cargar circuito<input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
   <button id="prev">&larr;</button>
   <button id="play">Play</button>
   <button id="next">&rarr;</button>
@@ -137,8 +137,8 @@
   </section>
   <aside id="details">
     <h2>Detalle del paso</h2>
-    <p class="hint">Los archivos de <code>out/</code> se generan con
-      <code>make outputs</code>. Arrastrá un JSON o elegilo en la lista.</p>
+    <p class="hint">Elegí un circuito de la lista o cargá el tuyo en OpenQASM
+      (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.</p>
   </aside>
 </main>
 

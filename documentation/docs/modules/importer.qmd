@@ -33,7 +33,7 @@ standard text format for them, and the organizers of the hackathon recommended i
 | Exception | When |
 | --- | --- |
 | `CircuitParseError` | The text is empty, longer than `config.MAX_QASM_CHARS` (200 000 characters), has no valid header, uses a version other than 2 or 3, or has a syntax or semantic error. The message keeps the line and column of the parser. |
-| `UnsupportedOperationError` | The circuit has control flow (`if`, `for`, `while`, `switch`). A step-by-step view cannot show it, so the gates must be written one after another. |
+| `UnsupportedOperationError` | The circuit has control flow (`if`, `for`, `while`, `switch`), which a step-by-step view cannot show, or an `opaque` gate, which has no definition to translate. |
 
 The limits that depend on the machine are not checked here. `compile` rejects
 more qubits than the limit (`CircuitTooLargeError`), mid-circuit measurements and

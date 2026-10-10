@@ -183,7 +183,7 @@ adds it as step 0, so the user can see the starting point before the first gate.
 ┌──────────────────────────────────────────────────────────────┐
 │ header:  QViz · backend name · health bar · qubits/steps/fps  │
 ├──────────────────────────────────────────────────────────────┤
-│ controls: [file ▾] [Cargar JSON] [◀] [Play] [▶] [─slider─]    │
+│ controls: [file ▾] [Cargar circuito] [◀] [Play] [▶] [─slider─]    │
 ├───────────────────────────────────────────┬──────────────────┤
 │                                           │                  │
 │            stage (three.js)               │  detail panel    │

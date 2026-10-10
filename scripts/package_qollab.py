@@ -91,6 +91,19 @@ try {
       sources.set(data, text);
       return data;
     },
+    // Compiles a circuit written in OpenQASM 2 or 3. It is transpiled locally,
+    // so it never sends the IonQ job and any number of files can be loaded.
+    compileQasm: async (text) => {
+      let json;
+      try {
+        json = await api.run_qasm.callPromising(backend, text, 1024, "auto");
+      } catch (error) {
+        throw readable(error);
+      }
+      const data = JSON.parse(json);
+      sources.set(data, json);
+      return data;
+    },
     // Measures a step with the statevector of the backend; no job is sent.
     sample: async (data, step, shots) => {
       try {

@@ -56,13 +56,20 @@ standard convention that is used by the backend.
 
 ## How a file is loaded {.unnumbered}
 
-There are three ways to load a JSON file.
+The viewer does not load JSON files from the user: a circuit must go through
+the platform (transpilation, translation to native gates, simulation and
+metrics) before it can be shown. There are three ways to see a circuit.
 
-1. **Drag and drop.** A JSON file is dropped anywhere on the page.
-2. **The load button.** A JSON file is chosen with the file selector.
-3. **Automatic loading.** When the page is served over HTTP, the file
-   `../out/bell.json` is loaded automatically. If it is not found, a small
-   example that is stored inside the page is used.
+1. **The selector.** It lists the examples. Served over HTTP, they are the
+   files of `../out/manifest.json`; in Qollab, they are compiled by the backend.
+   If nothing is found, a small example that is stored inside the page is used.
+2. **The load button** (*Cargar circuito*). A circuit written in OpenQASM 2 or 3
+   (`.qasm`) is chosen, compiled by the backend and added to the selector.
+3. **Drag and drop.** The same file is dropped anywhere on the page.
+
+Loading a circuit needs Python to compile it, so it works in Qollab
+(`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Served alone, the viewer
+says so and only shows the examples.
 
 A JSON file can be produced with the generator, which also writes the manifest.
 
@@ -87,7 +94,7 @@ python -m http.server 8000
 
 | Control | Effect |
 | --- | --- |
-| Load JSON | Opens the file selector. |
+| Load circuit | Opens the file selector for an OpenQASM file (`.qasm`). |
 | Example | Loads the small example that is embedded in the page. |
 | Left arrow | Moves to the previous step. |
 | Play / Pause | Plays the steps automatically, or pauses. |

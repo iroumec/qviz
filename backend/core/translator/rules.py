@@ -220,11 +220,13 @@ def emit(
         return  # final measures are removed upstream; mid-circuit checked separately
     if name == "reset":
         raise UnsupportedOperationError(
-            f"reset at source index {source_index} is not supported"
+            f"reset at source index {source_index} is not supported: it is not a "
+            "unitary gate, so it cannot be translated to the native gates of IonQ"
         )
     if name == "if_else" or getattr(op, "condition", None) is not None:
         raise UnsupportedOperationError(
-            f"classical control flow at source index {source_index} is not supported"
+            f"classical control flow at source index {source_index} is not "
+            "supported: the visualizer shows one fixed sequence of gates"
         )
 
     if isinstance(op, GPIGate):
@@ -278,7 +280,8 @@ def _check_measure_position(circuit: QuantumCircuit) -> None:
             continue
         if seen_measure:
             raise UnsupportedOperationError(
-                f"measurement at source index {index} is mid-circuit and not supported"
+                f"measurement at source index {index} is mid-circuit and not "
+                "supported: only measurements at the end of the circuit are accepted"
             )
 
 

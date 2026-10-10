@@ -38,7 +38,7 @@ backend/          la biblioteca
 examples/         los circuitos de ejemplo
 ```
 
-`make qollab` arma el visor (50 archivos) y `make qollab-probe` la página de diagnóstico (49), que es la de las secciones 3 a 5.
+`make qollab` arma el visor (62 archivos) y `make qollab-probe` la página de diagnóstico (49), que es la de las secciones 3 a 5.
 
 Subí el **contenido** de `qollab/` (no la carpeta misma), de modo que `index.html` y `main.js` queden en la raíz del proyecto. Se puede subir una y otra vez sobre el mismo proyecto de Qollab: después de cambiar algo en el repositorio, `make qollab` y volver a subir.
 

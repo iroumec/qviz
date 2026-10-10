@@ -20,7 +20,9 @@ tomography stage.
 
 **Raises** `CircuitTooLargeError` if the circuit is wider than the effective
 limit, `UnsupportedOperationError` if the circuit has unbound parameters (they
-must be bound before compiling; the check is made before any job can be spent),
+must be bound before compiling) or a gate without a definition (for example an
+`opaque` gate of OpenQASM; the message names it). Both checks are made before any
+job can be spent,
 and `TranspilationError` if the circuit is empty or cannot be transpiled. The
 effective limit is the smaller of `MAX_QUBITS` and the number of qubits of the
 backend. It is described on the
@@ -35,6 +37,11 @@ These steps are always performed before the strategies are tried.
    smaller of `MAX_QUBITS` and the width of the backend.
 3. The circuit must have at least one qubit.
 4. The circuit must have no unbound parameters.
+5. Every gate must have a definition, also inside the definitions of other gates.
+   Qiskit decomposes any gate that has one into the native gates of the ion trap,
+   so a gate without a definition (a plain `Gate` or `Instruction`, such as an
+   `opaque` gate) is the one case that cannot be translated, and it is reported
+   by its name.
 
 A circuit with measurements at the end is therefore accepted. A measurement in
 the middle of the circuit is not removed, and it is rejected later by the

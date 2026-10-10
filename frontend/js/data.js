@@ -39,9 +39,32 @@ export function loadData(obj) {
   updatePerf();
 }
 
-export function loadFromText(text) {
+/** The circuits that the user loaded, by selector key, to show them again. */
+const userCircuits = new Map();
+
+/** Compile a circuit file (OpenQASM 2 or 3) with the host and show it. */
+export async function loadCircuitFile(file) {
+  if (!HOST.compileQasm) {
+    setError(
+      "Cargar un circuito necesita Python para compilarlo (Qollab). " +
+      "Sin Qollab solo se pueden ver los ejemplos de la lista."
+    );
+    return;
+  }
+  setError("Compilando " + file.name + "…");
   try {
-    loadData(JSON.parse(text));
+    const compiled = await HOST.compileQasm(await file.text());
+    const key = "file:" + file.name;
+    userCircuits.set(key, compiled);
+    const select = document.getElementById("fileSelect");
+    if (![...select.options].some((option) => option.value === key)) {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = file.name;
+      select.appendChild(option);
+    }
+    select.value = key;
+    loadData(compiled);
   } catch (error) {
     setError("Error: " + error.message);
   }
@@ -72,8 +95,12 @@ export function updateStep(index, instant = false) {
   updateHealth(step);
 }
 
-/** Load one file of the selector, from the host or over HTTP. */
+/** Load one entry of the selector: a circuit of the user, or from the host or HTTP. */
 export async function loadFile(name) {
+  if (userCircuits.has(name)) {
+    loadData(userCircuits.get(name));
+    return;
+  }
   if (HOST.load) {
     loadData(await HOST.load(name));
     return;

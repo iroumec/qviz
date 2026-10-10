@@ -106,6 +106,15 @@ def test_every_service_of_the_prelude_is_used_by_the_viewer(module):
     assert "shaders:" in prelude and "HOST.shaders" in viewer
 
 
+def test_every_python_function_of_the_prelude_exists_in_the_api(module):
+    import qollab_api
+
+    called = set(re.findall(r"api\.(\w+)\.callPromising", module._PRELUDE))
+    assert {"circuits", "run", "run_qasm", "sample_step"} <= called
+    for name in called:
+        assert callable(getattr(qollab_api, name)), name
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_generated_script_is_valid_javascript(packaged, tmp_path):
     _, out, _ = packaged

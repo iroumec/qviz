@@ -1,9 +1,9 @@
-// The controls of the viewer: the buttons, the slider, and the drag and drop of
-// a JSON file.
+// The controls of the viewer: the buttons, the slider, and the loading of a
+// circuit file (OpenQASM) with the button or by dropping it.
 
 import { state } from "./state.js";
 import { setError } from "./utils.js";
-import { loadFile, loadFromText, updateStep } from "./data.js";
+import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { runMeasurement } from "./panels.js";
 
 function startPlay() {
@@ -26,12 +26,15 @@ function stopPlay() {
 }
 
 function readFile(file) {
-  if (file) file.text().then(loadFromText);
+  if (!file) return;
+  stopPlay();
+  loadCircuitFile(file);
 }
 
 export function initControls() {
   document.getElementById("file").addEventListener("change", (event) => {
     readFile(event.target.files[0]);
+    event.target.value = "";
   });
   document.getElementById("fileSelect").addEventListener("change", (event) => {
     stopPlay();

@@ -18,6 +18,16 @@ from backend.core.errors import CircuitParseError, UnsupportedOperationError
 
 _COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
 _CONTROL_FLOW = re.compile(r"\b(if|for|while|switch)\b")
+_OPAQUE = re.compile(r"\bopaque\b")
+_UNDEFINED = re.compile(r"(?:gate )?'(\w+)' is not defined")
+_NODE = re.compile(r"node of type (\w+) is not supported")
+_CONSTRUCTS = {
+    "SubroutineDefinition": "subroutines (def)",
+    "CalibrationGrammarDeclaration": "pulse-level calibration (defcalgrammar)",
+    "CalibrationDefinition": "pulse-level calibration (defcal)",
+    "CalibrationStatement": "pulse-level calibration (cal)",
+    "ExternDeclaration": "external functions (extern)",
+}
 _HEADER = re.compile(r"\s*OPENQASM\s+(\d+)(?:\.\d+)?\s*;")
 
 
@@ -50,6 +60,32 @@ def _parse(text: str, version: int) -> QuantumCircuit:
         ) from exc
 
 
+def _explain(error: Exception) -> str:
+    """Return a message a person can act on for an error of the parsers."""
+    message = " ".join(str(error).split()).strip("\"'")
+    construct = _NODE.search(message)
+    if construct:
+        name = construct.group(1)
+        return (
+            f"{message.split(':')[0]}: {_CONSTRUCTS.get(name, name)} is not "
+            "supported by QViz; write the gates one after another"
+        )
+    undefined = _UNDEFINED.search(message)
+    if undefined:
+        return (
+            f"{message.rstrip('.')}. Only the gates of stdgates.inc (OpenQASM 3) or "
+            "qelib1.inc (OpenQASM 2) exist; define another with "
+            "`gate name qubits { ... }` using them, so it can be translated to "
+            "the native gates of IonQ"
+        )
+    if "out of range" in message:
+        return (
+            f"{message}: a qubit or bit index is outside its register; "
+            "check the sizes in the declarations"
+        )
+    return message or "syntax error; check that every statement ends with ';'"
+
+
 def load_circuit(text: str) -> QuantumCircuit:
     """Return the circuit written in ``text`` (OpenQASM 2 or 3).
 
@@ -75,13 +111,17 @@ def load_circuit(text: str) -> QuantumCircuit:
             f"control flow ({found.group(1)}) is not supported; "
             "write the gates one after another"
         )
+    if _OPAQUE.search(_COMMENTS.sub(" ", source)):
+        raise UnsupportedOperationError(
+            "opaque gates have no definition, so they cannot be translated to the "
+            "native gates of IonQ; define the gate with `gate name qubits { ... }`"
+        )
     try:
         circuit = _parse(source, version)
     except CircuitParseError:
         raise
     except Exception as exc:  # noqa: BLE001 - parsers raise their own types
-        message = str(exc).strip().splitlines()[0] if str(exc).strip() else "invalid"
-        raise CircuitParseError(f"invalid OpenQASM {version}: {message}") from exc
+        raise CircuitParseError(f"invalid OpenQASM {version}: {_explain(exc)}") from exc
     for instruction in circuit.data:
         if isinstance(instruction.operation, ControlFlowOp):
             raise UnsupportedOperationError(

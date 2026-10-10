@@ -8,6 +8,9 @@
 //   circuits [{file, label}]                   what the selector lists
 //   load     async (file) -> object            the JSON of a selector entry
 //   sample   async (data, step, shots) -> [[bitstring, count], ...]
+//   compileQasm async (text) -> object        compiles a circuit written in OpenQASM;
+//            it is how the user loads a circuit, so without it the viewer can only
+//            show the entries of the selector
 
 export const HOST = window.QVIZ_HOST || {};
 

@@ -12,6 +12,7 @@ from typing import Any
 
 from qiskit import QuantumCircuit
 from qiskit import transpile as qiskit_transpile
+from qiskit.circuit import Gate, Instruction
 
 from backend.core import config
 from backend.core.errors import (
@@ -25,6 +26,35 @@ logger = logging.getLogger(__name__)
 
 _FALLBACK_BASIS = ["rz", "sx", "x", "cz", "cx"]
 _JOB_SETTINGS = {"compilation": {"service_version": "v0.4"}}
+
+
+def _check_translatable(circuit: QuantumCircuit) -> None:
+    """Reject a gate that has no definition, before anything is sent.
+
+    Every gate that Qiskit knows how to decompose ends up as native ion-trap
+    gates (GPI, GPI2, MS or ZZ, and virtual Z). A plain ``Gate`` or
+    ``Instruction`` without a definition (an ``opaque`` gate of OpenQASM, or a
+    placeholder) cannot be decomposed, so it is reported by name.
+    """
+    seen: set[int] = set()
+
+    def visit(body: QuantumCircuit) -> None:
+        if id(body) in seen:
+            return
+        seen.add(id(body))
+        for instruction in body.data:
+            op = instruction.operation
+            definition = op.definition
+            if type(op) in (Gate, Instruction) and definition is None:
+                raise UnsupportedOperationError(
+                    f"{op.name!r} has no definition, so it cannot be translated "
+                    "to the native gates of the ion trap (GPI, GPI2, MS/ZZ and "
+                    "virtual Z); define it with the standard gates"
+                )
+            if definition is not None:
+                visit(definition)
+
+    visit(circuit)
 
 
 def transpile(
@@ -53,6 +83,8 @@ def transpile(
         raise UnsupportedOperationError(
             f"circuit has unbound parameters ({names}); bind them before compiling"
         )
+
+    _check_translatable(circuit)
 
     if info.provider == "ionq":
         return _transpile_ionq(info, backend, circuit, allow_remote=allow_remote)
