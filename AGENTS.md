@@ -5,6 +5,7 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 **Antes de tocar código leé:**
 - `spec.md`: arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
+- `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
 
 **Alcance actual: solo backend (Python).** No escribas nada de frontend (Astro, JS, HTML, CSS) hasta que el equipo lo pida.
 
