@@ -163,9 +163,6 @@ function buildScene(n) {
   while (world.children.length) world.remove(world.children[0]);
   qubits.length = 0;
 
-  const cols = Math.min(n, 4);
-  const rows = Math.ceil(n / cols);
-
   const geometry = new THREE.BoxGeometry(BOX, BOX, BOX);
   psiAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
   geometry.setAttribute("instancePsi", psiAttribute);
@@ -185,18 +182,16 @@ function buildScene(n) {
   instMesh = new THREE.InstancedMesh(geometry, material, n);
   instMesh.frustumCulled = false;
 
+  // A linear chain of ions, one behind another along the x axis.
   const dummy = new THREE.Object3D();
   for (let i = 0; i < n; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x = (col - (cols - 1) / 2) * SPACING;
-    const y = ((rows - 1) / 2 - row) * SPACING;
-    dummy.position.set(x, y, 0);
+    const x = (i - (n - 1) / 2) * SPACING;
+    dummy.position.set(x, 0, 0);
     dummy.updateMatrix();
     instMesh.setMatrixAt(i, dummy.matrix);
 
     const label = makeLabel("q" + i);
-    label.position.set(x, y + 1.75, 0);
+    label.position.set(x, 1.75, 0);
     world.add(label);
 
     qubits.push({
@@ -206,14 +201,25 @@ function buildScene(n) {
   instMesh.instanceMatrix.needsUpdate = true;
   world.add(instMesh);
 
-  const gridHalf = (Math.max(cols, rows) - 1) / 2 * SPACING;
-  orbit.radius = (gridHalf + 1.8) / Math.tan((45 / 2) * Math.PI / 180) + 2;
+  computeFitRadius();
+}
+
+function computeFitRadius() {
+  if (!camera || qubits.length === 0) return;
+  const halfX = ((qubits.length - 1) / 2) * SPACING + 1.8;
+  const halfY = 1.8;
+  const vFov = (camera.fov * Math.PI) / 180;
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+  orbit.fitRadius = Math.max(
+    halfX / Math.tan(hFov / 2), halfY / Math.tan(vFov / 2)
+  ) + 1;
   updateCamera();
 }
 
 function updateCamera() {
   if (!camera) return;
-  const { azimuth, elevation, radius } = orbit;
+  const { azimuth, elevation } = orbit;
+  const radius = orbit.fitRadius * orbit.zoom;
   camera.position.set(
     radius * Math.sin(azimuth) * Math.cos(elevation),
     radius * Math.sin(elevation),
@@ -265,7 +271,7 @@ async function initThree() {
   });
   renderer.domElement.addEventListener("wheel", (e) => {
     e.preventDefault();
-    orbit.radius = Math.max(4, Math.min(90, orbit.radius + e.deltaY * 0.02));
+    orbit.zoom = Math.max(0.25, Math.min(4, orbit.zoom * (1 + e.deltaY * 0.001)));
     updateCamera();
   }, { passive: false });
 
@@ -285,6 +291,7 @@ function onResize() {
   if (instMesh) {
     instMesh.material.uniforms.iResolution.value.set(w, h, 1);
   }
+  computeFitRadius();
 }
 
 function animate(time) {
@@ -295,9 +302,17 @@ function animate(time) {
   const array = psiAttribute.array;
   for (let i = 0; i < qubits.length; i++) {
     const q = qubits[i];
-    for (let k = 0; k < 3; k++) q.current[k] += (q.target[k] - q.current[k]) * 0.18;
+    let moving = false;
+    for (let k = 0; k < 3; k++) {
+      const diff = q.target[k] - q.current[k];
+      if (Math.abs(diff) > 1e-3) moving = true;
+      q.current[k] += diff * 0.18;
+    }
+    if (!moving) q.current = q.target.slice();
     const disp = q.current.slice();
-    if (q.vibration > 0) {
+    // The wobble is shown only while the ion is moving to a new state, so that
+    // the chain settles and does not keep dancing when a step is reached.
+    if (moving && q.vibration > 0) {
       const wobble = q.vibration * 0.25 * Math.sin(time * 0.006);
       disp[0] += wobble;
       disp[1] += wobble * 0.5;
@@ -368,7 +383,7 @@ function updateStep(index, instant) {
   const targets = step ? new Set(step.targets) : new Set();
 
   for (let q = 0; q < qubits.length; q++) {
-    const s = normalize(states[q] || [0, 0, 1]);
+    const s = (states[q] || [0, 0, 1]).slice();
     qubits[q].target = s;
     qubits[q].isTarget = targets.has(q);
     qubits[q].vibration = step && step.vibration ? step.vibration[q] || 0 : 0;

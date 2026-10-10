@@ -124,8 +124,12 @@ void main() {
         float yAx = sdCapsule(p, vec3(0, -LENGTH_AXIS, 0), vec3(0, LENGTH_AXIS, 0), THICKNESS_AXIS);
         float zAx = sdCapsule(p, vec3(0, 0, -LENGTH_AXIS), vec3(0, 0, LENGTH_AXIS), THICKNESS_AXIS);
         
-        float stateVec = sdCapsule(p, vec3(0), vPsi, RADIUS_STATE_VEC);
-        float stateTip = length(p - vPsi) - RADIUS_STATE_TIP;
+        float stateVec = psiLen > 1e-6
+            ? sdCapsule(p, vec3(0), vPsi, RADIUS_STATE_VEC)
+            : 1e9;
+        float stateTip = psiLen > 1e-6
+            ? length(p - vPsi) - RADIUS_STATE_TIP
+            : 1e9;
 
         float d = min(min(xAx, yAx), min(zAx, min(stateVec, stateTip)));
 

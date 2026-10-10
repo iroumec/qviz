@@ -68,6 +68,16 @@ def test_export_has_no_negative_zero(basic_backend):
     assert "-0.0" not in export(data)
 
 
+def test_export_inlines_simple_arrays(basic_backend):
+    text = export(compile(basic_backend, bell()))
+    # A simple array is written on one line.
+    assert '"states": [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]' in text
+    assert '"targets": [0]' in text
+    assert '"probabilities": [[1.0, 0.0], [1.0, 0.0]]' in text
+    # Objects stay indented.
+    assert '{\n      "step": 1,' in text
+
+
 def test_shots_scale_cost(basic_backend):
     cheap = compile(basic_backend, bell(), shots=100)
     pricey = compile(basic_backend, bell(), shots=1000)

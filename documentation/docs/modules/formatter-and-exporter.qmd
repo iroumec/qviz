@@ -45,8 +45,11 @@ The function is found in `backend/core/exporter/exporter.py`.
 **Returns** the JSON as a string.
 
 The dictionary is written with two-space indentation, so that a person can read
-it easily. The non-ASCII characters are kept as they are, so that an arrow `→`
-is not escaped.
+it easily. A **simple array** is kept on one line: a list of numbers, strings,
+booleans or nulls, or a list of such lists. For example, `states` is written as
+`[[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]`, and `targets` as `[0]`. Objects, and
+arrays that contain objects, stay indented. The non-ASCII characters are kept as
+they are, so that an arrow `→` is not escaped.
 
 ## Why the dictionary and the string are separated {.unnumbered}
 

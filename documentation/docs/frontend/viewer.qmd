@@ -16,10 +16,11 @@ the available files, and opens the default one. A new file appears in the
 selector as soon as it is generated.
 
 One three-dimensional Bloch sphere is drawn for every qubit, and the vector of
-each sphere is animated from one step to the next. The scene can be rotated by
-dragging, and the zoom is changed with the mouse wheel. The number of qubits and
-the number of steps are shown, together with a live frame-rate counter, so that
-the performance can be watched.
+each sphere is animated from one step to the next. The ions are placed in a
+single **chain**, one after another, so that the view resembles an ion trap; a
+grid is not used. The scene can be rotated by dragging, and the zoom is changed
+with the mouse wheel. The number of qubits and the number of steps are shown,
+together with a live frame-rate counter, so that the performance can be watched.
 
 The spheres are drawn with the **shaders in the `shaders/` folder**
 (`bloch.vert` and `bloch.frag`). The fragment shader is a volumetric
@@ -40,7 +41,9 @@ library, so it works when there is no connection to the CDN.
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
-  of that qubit at the current step.
+  of that qubit at the current step. Its length is the length `r` of the reduced
+  state: it is shorter than one when the qubit is entangled, and it is absent
+  when the qubit is fully entangled (`r` is zero).
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
 - The probability `p(|1⟩)` of each qubit is shown with a small bar.
