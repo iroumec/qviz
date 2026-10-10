@@ -23,9 +23,9 @@ qollab_context.md`), and they decide the design.
 | The project type is decided by the files of the root: `index.html` and `main.js` make a JS project. | The project that is uploaded needs `index.html` and `main.js` in its root. |
 | `index.html` is body content only, and its `<script>` tags do not run. | The script of the viewer goes to `main.js`. |
 | Only `main.css` is loaded as a style sheet. | The style of the viewer goes to `main.css`. |
-| JS cannot read the files of the project. | The shaders are embedded in `main.js`, and the circuits come from Python, not from `out/`. |
+| JS cannot read the files of the project. | The shaders and the laser model are embedded in `main.js`, and the circuits come from Python, not from `out/`. |
 | Python is called from JS with `callPromising`, and a `dict` arrives as a `Map`. | `qollab_api.py` returns text (JSON strings). |
-| `three` (0.186.1) is imported by name. | The viewer was written for r128, so a short prelude adapts it. |
+| `three` (0.186.1) is imported by name, and the import map of the viewer is not read. | The prelude imports `three` and the addons, and the `import` lines of the viewer are removed. |
 | At most 100 files per project, 2 MB each. | The repository (more than 100 files) is not uploaded as it is. |
 | IonQ backends accept one job per run. | Only the first compilation works on IonQ. Measuring sends no job. |
 | A JS project runs in a sandboxed iframe. | The viewer has its own `body`, so its CSS is copied as it is. |
@@ -58,10 +58,15 @@ Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
 
 The prelude does three things, and then the script of the viewer runs.
 
-1. **three.js.** `three` is imported as a module and exposed as the global `THREE`
-   that the viewer uses. The viewer was written for r128, which had no color
-   management and a linear output. To keep the colors, the prelude turns
-   `ColorManagement` off and makes the renderer output linear color.
+1. **three.js.** The viewer is an ES module that imports `three` and three
+   addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) through an
+   import map, which Qollab does not read. The packager removes those `import`
+   lines from the script and the prelude imports the same names (`THREE`,
+   `OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`). The addons are loaded
+   with a dynamic `import()`: if Qollab cannot resolve them, a warning goes to
+   the console and the viewer starts without the laser and without the
+   environment light, instead of not starting. The viewer targets three.js 0.160
+   with its default color management, so the prelude no longer changes it.
 2. **The host.** It defines `window.QVIZ_HOST` with the services below. If
    Python cannot be reached, the message is shown in the `error` line of the
    viewer, and the viewer falls back to its own behavior.
@@ -69,8 +74,8 @@ The prelude does three things, and then the script of the viewer runs.
    supported), the prelude keeps only its message and drops the traceback, so
    the `error` line shows a sentence a person can read. Any other error is shown
    as it is.
-3. **The shaders.** `shaders/bloch.vert` and `shaders/bloch.frag` are embedded as
-   strings, because the viewer cannot `fetch` them.
+3. **The files.** `shaders/` (`bloch` and `lens`) and `models/laser_lens.obj` and
+   `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
 
 ## The hooks of the viewer {.unnumbered}
 
@@ -79,7 +84,8 @@ a field is missing, the viewer does what it always did.
 
 | Field | Type | What the viewer does with it |
 | --- | --- | --- |
-| `shaders` | `{vert, frag}` | Uses these sources, instead of fetching `shaders/`. |
+| `shaders` | `{vert, frag, lensVert, lensFrag}` | Uses these sources, instead of fetching `shaders/`. |
+| `laser` | `{obj, mtl}` | Parses this text for the laser model, instead of fetching `models/`. |
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |
 | `sample` | `async (data, step, shots) -> [[bitstring, count], …]` | Measures with the backend. |
@@ -144,9 +150,10 @@ Locally, the generated `main.js` was run with the real Python and a simulated
 page (jsdom, with no WebGL), and the measurement panel gave the expected results
 with the backend, without a sampler in the host, and when the backend fails.
 
-**Not verified yet** (it needs Qollab): the 3D scene with the newer three.js
-(shaders, labels and colors), the size of the viewer inside the iframe, and the
-behavior on the IonQ simulators. Compare the colors with the standalone viewer.
+**Not verified yet** (it needs Qollab): that `three/addons/` resolves there, the 3D
+scene with the newer three.js (shaders, labels, laser, lens and colors), the size
+of the viewer inside the iframe, and the behavior on the IonQ simulators. Compare
+the scene with the standalone viewer.
 
 ## Rules for future changes {.unnumbered}
 

@@ -170,7 +170,8 @@ const MTL_URL = "../models/laser_lens.mtl";
 // (see scripts/package_qollab.py). Every field is optional. Without a host the
 // viewer reads the shaders and the files over HTTP and samples the measurements
 // itself, as it always did.
-//   shaders  {vert, frag}              shader sources, instead of fetching them
+//   shaders  {vert, frag, lensVert, lensFrag}  shader sources, instead of fetching them
+//   laser    {obj, mtl}                text of the laser model, instead of fetching it
 //   circuits [{file, label}]           what the selector lists, instead of out/
 //   load     async (file) -> object    the JSON of one entry of the selector
 //   sample   async (data, step, shots) -> [[bitstring, count], ...] from the backend
@@ -263,19 +264,20 @@ async function loadLaserModel() {
   metalMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffff, roughness: 0.3, metalness: 1.0, envMapIntensity: 2.0, flatShading: false 
   });
-  customLensMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-          uLightPos: { value: movingLight.position },
-          uLocalCenter: { value: new THREE.Vector3() }
-      },
-      vertexShader: lensVertShader,
-      fragmentShader: lensFragShader,
-      transparent: true,
-      depthWrite: false
-  });
 
   try {
-      const mtlText = await fetch(MTL_URL).then(r => r.text());
+      customLensMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+              uLightPos: { value: movingLight.position },
+              uLocalCenter: { value: new THREE.Vector3() }
+          },
+          vertexShader: lensVertShader,
+          fragmentShader: lensFragShader,
+          transparent: true,
+          depthWrite: false
+      });
+
+      const mtlText = HOST.laser ? HOST.laser.mtl : await fetch(MTL_URL).then(r => r.text());
       const materialDict = {};
       let currentUUID = "";
       
@@ -293,9 +295,11 @@ async function loadLaserModel() {
       }
 
       const loader = new OBJLoader();
-      laserTemplate = await new Promise((resolve, reject) => {
-          loader.load(OBJ_URL, resolve, undefined, reject);
-      });
+      laserTemplate = HOST.laser
+          ? loader.parse(HOST.laser.obj)
+          : await new Promise((resolve, reject) => {
+              loader.load(OBJ_URL, resolve, undefined, reject);
+          });
 
       laserTemplate.scale.set(0.25, 0.25, 0.25);
       laserTemplate.traverse((child) => {

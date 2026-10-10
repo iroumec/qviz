@@ -143,7 +143,7 @@ Subí el contenido de `qollab/` sobre el mismo proyecto, elegí Built-in y apret
 | 7 | Cambiar `shots` (por ejemplo 100 y 20000) y medir de nuevo | El histograma cambia con cada clic; la suma de los porcentajes es 100. |
 | 8 | Elegir otro circuito (`ghz16`, `layered16`) | Carga. Anotá cuánto tarda y si la página se congela. En IonQ, la segunda compilación falla con "only one job is allowed": el visor lo muestra en la línea de errores. |
 
-**Nota sobre la escena 3D.** El visor se escribió para three.js r128 y Qollab trae la 0.186.1. El paquete ajusta el manejo de color para que se vea igual, pero eso solo se puede confirmar a ojo: compará los colores de las esferas, de las etiquetas `q0`, `q1` y de los ejes con `python -m http.server` en local. Si algo se ve distinto, decime qué, y lo aprobamos antes de tocar nada.
+**Nota sobre la escena 3D.** El visor usa three.js 0.160 (import map) y Qollab trae la 0.186.1. El paquete importa `three` y los addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) en el preludio y embebe los shaders y el modelo del láser. Si Qollab no resuelve `three/addons/`, la consola muestra `QViz: a three.js addon could not be loaded` y el visor arranca sin láser ni luz de entorno. Se confirma a ojo: compará las esferas, el láser con su lente, las luces, las etiquetas `q0`, `q1` y los ejes con `python -m http.server` en local, y pegá la consola. Si algo se ve distinto, decime qué, y lo aprobamos antes de tocar nada.
 
 Si algo falla, corré `make qollab-probe`, subilo y apretá **3. Run checks**: dice si el problema es la conexión con Python o el visor.
 
