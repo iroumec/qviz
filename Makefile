@@ -4,7 +4,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint demo outputs render-puml install-plantuml
+.PHONY: venv install test lint demo outputs qollab render-puml install-plantuml
 
 venv:
 	python3 -m venv $(VENV)
@@ -28,6 +28,9 @@ endif
 
 outputs:
 	$(PY) scripts/generate_outputs.py
+
+qollab:
+	$(PY) scripts/package_qollab.py
 
 install-plantuml:
 	@sudo apt update && sudo apt install -y plantuml graphviz

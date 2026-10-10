@@ -1,15 +1,11 @@
-# Basic viewers {#sec-viewer}
+# Basic viewer {#sec-viewer}
 
-Three small viewers are included for the JSON file. They are basic tools, and
-they are not the final frontend. All of them are written in plain JavaScript.
+A basic viewer is included for the JSON file. It is a tool to see the output of
+the backend, and it is not the final frontend. It is written in plain
+JavaScript: `frontend/index.html` draws 3D Bloch spheres with shaders, and it
+loads three.js from a CDN.
 
-| File | Rendering | Connected to `out/` | Dependency |
-| --- | --- | --- | --- |
-| `frontend/index.html` | 3D Bloch spheres, shaders | yes | three.js, loaded from a CDN |
-| `frontend/viewer3d.html` | 3D Bloch spheres, shaders | no (demo) | three.js, loaded from a CDN |
-| `frontend/viewer.html` | 2D canvas | no (demo) | none |
-
-`frontend/index.html` is the main viewer. It is connected to the JSON files that
+The viewer is connected to the JSON files that
 the project generates. The files are listed in `out/manifest.json`, which is
 written by `make outputs`. The viewer reads the manifest, fills a selector with
 the available files, and opens the default one. A new file appears in the
@@ -34,9 +30,6 @@ a `ShaderMaterial`, is used to trace the rays.
 Because the shaders are separate files, and because the JSON files are read over
 HTTP, the 3D viewer must be served by a local server. The commands are given
 below.
-
-The 2D viewer (`frontend/viewer.html`) is kept as a fallback. It needs no
-library, so it works when there is no connection to the CDN.
 
 ## What is shown {.unnumbered}
 
@@ -83,9 +76,6 @@ make outputs
 python -m http.server 8000
 # then open http://localhost:8000/frontend/index.html
 ```
-
-`frontend/viewer3d.html` is a standalone demo that always loads `out/bell.json`.
-The 2D viewer also works when it is opened directly as a file.
 
 ## The controls {.unnumbered}
 

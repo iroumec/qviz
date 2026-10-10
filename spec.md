@@ -114,6 +114,7 @@ examples/                       # Circuitos de ejemplo (por ejemplo el sumador Q
 scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
   qollab_js_probe/              # index.html + main.js de prueba para un proyecto JS de Qollab (M9)
+  package_qollab.py             # `make qollab`: arma `qollab/`, el proyecto JS completo que se sube a Qollab (M9)
 documentation/
   schema/visualization.schema.json   # JSON Schema del contrato. M6
 ```

@@ -65,6 +65,18 @@ qubits, and the adder is run for three input pairs. One JSON file is written for
 each pair, for example `out/adder_n2_1_1.json`. The example is described on the
 [QFT adder](../examples/qft-adder.qmd) page.
 
+## `package_qollab.py` {.unnumbered}
+
+This script is run with `make qollab`. The whole repository has more files than
+Qollab accepts (100 per project), and Qollab looks only at the files of the root
+to decide the type of the project. The script therefore builds the folder
+`qollab/` (not committed) with a complete **JS project**: the test page
+(`scripts/qollab_js_probe/index.html` and `main.js`, with the buttons Compile,
+Measure and Run checks), `qollab_api.py`, `requirements.txt` and the libraries
+`backend/` and `examples/`. `main.py` is left out, because in a JS project it
+could compile a second time and spend a second IonQ job. The content of the
+folder is uploaded to Qollab. See `documentation/prompts/qollab_pruebas.md`.
+
 ## `generate_outputs.py` {.unnumbered}
 
 This script is run with `make outputs`, not with `make demo`. It compiles a

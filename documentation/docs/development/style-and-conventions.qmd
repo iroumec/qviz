@@ -31,7 +31,7 @@ backend/                    The library.
 tests/                      The pytest suite.
 examples/                   Worked circuits (for example the QFT adder).
 scripts/                    The demo scripts.
-frontend/                   The basic viewers (2D and 3D).
+frontend/                   The basic 3D viewer.
 documentation/              The specification, the schema and this book.
 ```
 

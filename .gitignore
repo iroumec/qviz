@@ -3,6 +3,7 @@
 __pycache__/
 .pytest_cache
 out/
+qollab/
 *.egg-info/
 _book/
 .quarto/

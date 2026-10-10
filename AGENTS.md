@@ -93,6 +93,7 @@ make venv          # crea .venv
 make install       # instala el paquete + extras de dev
 make test          # corre pytest
 make demo M=translator   # corre scripts/demo_translator.py
+make qollab        # arma qollab/, el proyecto JS que se sube a Qollab
 ```
 
 (Se crean en M0. Hasta entonces, `python -m pytest`.)
