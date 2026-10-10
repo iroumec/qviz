@@ -29,7 +29,7 @@ def normalize_zz(targets: tuple[int, ...], angle: float) -> list[NativeOp]:
     if abs(t) > 0.25:
         t -= 0.5 * math.copysign(1.0, t)
         for q in targets:
-            ops.append(NativeOp("virtualz", (q,), z_rotation=math.pi))
+            ops.append(NativeOp("virtual_z", (q,), z_rotation=math.pi))
 
     if math.isclose(t, 0.0, abs_tol=1e-15):
         return ops
@@ -63,9 +63,9 @@ def normalize_ms(
 
     if t < 0:
         t = -t
-        ops.append(NativeOp("virtualz", (a,), z_rotation=math.pi))
+        ops.append(NativeOp("virtual_z", (a,), z_rotation=math.pi))
         ops.append(NativeOp("ms", tuple(targets), phases=tuple(phases), angle=t))
-        ops.append(NativeOp("virtualz", (a,), z_rotation=math.pi))
+        ops.append(NativeOp("virtual_z", (a,), z_rotation=math.pi))
         return ops
 
     ops.append(NativeOp("ms", tuple(targets), phases=tuple(phases), angle=t))

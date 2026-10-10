@@ -1,28 +1,60 @@
-# Configuration and errors {#sec-config-errors}
+# Configuration, constants and errors {#sec-config-errors}
 
-This page documents two small modules that are used by every other module:
-`backend/core/config.py` and `backend/core/errors.py`.
+This page documents two small modules that are used by every other module, and
+the exception hierarchy: `backend/core/config.py`, `backend/core/constants.py`
+and `backend/core/errors.py`.
 
-## The configuration module {.unnumbered}
+## The two constant modules {.unnumbered}
 
-The file `backend/core/config.py` contains only constants. No function is
-defined there. The constants can be imported as `from backend.core import
-config`, and then used as `config.MAX_QUBITS`.
+The values are split into two files, because they have two different meanings.
+
+| File | Contents | May be changed? |
+| --- | --- | --- |
+| `constants.py` | Mathematical and structural constants. | **No.** They are part of the definition of the project. |
+| `config.py` | Policy parameters. | **Yes.** They describe a choice, not a law. |
+
+Both are imported as modules.
+
+```python
+from backend.core import config, constants
+
+limit = config.MAX_QUBITS
+turn = constants.TWO_PI
+```
+
+## The fixed constants (`constants.py`) {.unnumbered}
 
 | Constant | Value | Meaning |
 | --- | --- | --- |
-| `MAX_QUBITS` | `16` | The largest allowed number of qubits. A larger circuit is rejected. |
+| `TWO_PI` | `2 * pi` | One full turn, in radians. It is used for the turns-to-radians conversion. |
+| `NATIVE_OPS` | tuple | The names of the allowed native operations: `gpi`, `gpi2`, `ms`, `zz` and `virtual_z`. |
+
+These values never change. They are not configuration.
+
+## The tunable parameters (`config.py`) {.unnumbered}
+
+| Parameter | Value | Meaning |
+| --- | --- | --- |
+| `MAX_QUBITS` | `28` | The hard cap on the circuit width. |
 | `MAX_STEPS_WARNING` | `500` | If more steps than this are produced, a warning is logged. |
 | `VIBRATION_THRESHOLD` | `0.01` | The smallest per-qubit error that is reported as vibration. |
 | `JSON_DECIMALS` | `6` | The number of decimals used when a floating-point number is written. |
-| `TWO_PI` | `2 * pi` | One full turn, in radians. It is used for the turns-to-radians conversion. |
-| `NATIVE_OPS` | tuple | The names of the allowed native operations: `gpi`, `gpi2`, `ms`, `zz` and `virtualz`. |
 
-### Why the number of qubits is limited {.unnumbered}
+### How the width limit is used {.unnumbered}
 
-The statevector of 16 qubits occupies about one megabyte, which is acceptable in
-a browser. A chain of more than 16 ions is also of little educational value, so
-the limit is set at 16.
+The limit is not taken from `MAX_QUBITS` alone. The backend is also asked for
+its own number of qubits. The effective limit is the smaller of the two.
+
+- The cap is `MAX_QUBITS`, which is 28.
+- When the backend exposes a `num_qubits` attribute with a positive integer, the
+  effective limit is `min(MAX_QUBITS, backend.num_qubits)`.
+- When the backend does not expose it, the cap of 28 is used.
+
+In this way, a circuit is never sent to a backend that is too small for it. For
+example, a 26-qubit circuit is rejected by an Aria backend, which has 25 qubits.
+
+The check is made in `transpiler._effective_max_qubits`, at the start of the
+pipeline.
 
 ## The error module {.unnumbered}
 
@@ -41,12 +73,12 @@ QVizError
 | --- | --- |
 | `QVizError` | The base class. It is not raised directly. It is used to catch any QViz error. |
 | `UnsupportedOperationError` | The circuit contains an operation that cannot be shown, for example a mid-circuit measurement, a `reset`, or classical control flow. |
-| `CircuitTooLargeError` | The circuit has more qubits than `MAX_QUBITS`. |
+| `CircuitTooLargeError` | The circuit is wider than the effective limit that is described above. |
 | `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
 
 ### An unknown provider is not an error {.unnumbered}
 
 If the provider of a backend cannot be recognised, no error is raised. The
 backend is handled by a generic strategy instead. This behaviour is described on
-the [Provider](provider.qmd) page. An error is raised only when an
-operation has no meaning in a visualiser.
+the [Provider](provider.qmd) page. An error is raised only when an operation has
+no meaning in a visualiser.

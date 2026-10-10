@@ -18,14 +18,14 @@ schema is stored in `documentation/schema/visualization.schema.json`.
 | Key | Type | Present for | Meaning |
 | --- | --- | --- | --- |
 | `step` | integer | always | The index of the step. It starts at 1 and it is consecutive. |
-| `operation` | string | always | One of `gpi`, `gpi2`, `ms`, `zz`, `virtualz`. Lower case is always used. |
-| `targets` | array of integers | always | The qubits that the operation acts on. One qubit for `gpi`, `gpi2` and `virtualz`. Two qubits for `ms` and `zz`. |
+| `operation` | string | always | One of `gpi`, `gpi2`, `ms`, `zz`, `virtual_z`. Lower case is always used. |
+| `targets` | array of integers | always | The qubits that the operation acts on. One qubit for `gpi`, `gpi2` and `virtual_z`. Two qubits for `ms` and `zz`. |
 | `phases` | array of numbers | `gpi`, `gpi2`, `ms` | The logical phases, in radians. One value for `gpi` and `gpi2`. Two values for `ms`. |
 | `angle` | number | `ms`, `zz` | The entanglement angle, in turns, in the range [0, 0.25]. |
-| `acumulative_fidelity` | number | always | The global fidelity after the step, in percent. |
+| `cumulative_fidelity` | number | always | The global fidelity after the step, in percent. |
 | `states` | array of `[x, y, z]` | always | The reduced Bloch vector of every qubit, after the step. One entry per qubit. |
 | `vibration` | array of numbers | always | The vibration amplitude of every qubit, in [0, 1]. It is zero below the threshold. |
-| `acumulative_cost` | number | always | The estimated cost so far, in USD, for the given number of shots. |
+| `cumulative_cost` | number | always | The estimated cost so far, in USD, for the given number of shots. |
 | `probabilities` | array of `[p0, p1]` | always | `[p(|0⟩), p(|1⟩)]` for every qubit. |
 | `virtual_z` | array of numbers | always | The accumulated virtual Z rotation of every qubit, in radians, wrapped to [0, 2π). |
 | `inactivity` | array of integers | always | The accumulated number of steps in which the qubit was not a target. |
@@ -48,12 +48,12 @@ and `fidelities` are all equal to `total_qubits`.
   "steps": [
     {
       "step": 1,
-      "operation": "virtualz",
+      "operation": "virtual_z",
       "targets": [0],
-      "acumulative_fidelity": 99.5,
+      "cumulative_fidelity": 99.5,
       "states": [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]],
       "vibration": [0.0, 0.0],
-      "acumulative_cost": 0.0,
+      "cumulative_cost": 0.0,
       "probabilities": [[1.0, 0.0], [1.0, 0.0]],
       "virtual_z": [3.141593, 0.0],
       "inactivity": [0, 0],
@@ -64,10 +64,10 @@ and `fidelities` are all equal to `total_qubits`.
       "operation": "gpi2",
       "targets": [0],
       "phases": [1.570796],
-      "acumulative_fidelity": 99.48,
+      "cumulative_fidelity": 99.48,
       "states": [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
       "vibration": [0.0, 0.0],
-      "acumulative_cost": 0.0003,
+      "cumulative_cost": 0.0003,
       "probabilities": [[0.5, 0.5], [1.0, 0.0]],
       "virtual_z": [3.141593, 0.0],
       "inactivity": [0, 1],
@@ -77,15 +77,14 @@ and `fidelities` are all equal to `total_qubits`.
 }
 ```
 
-## Two spellings that are kept unchanged {.unnumbered}
+## Naming rules of the contract {.unnumbered}
 
-Two names in the contract are unusual, but they are kept, because they are part
-of the agreed format.
+The names in the contract follow two rules.
 
-- The prefix `acumulative_` is used, instead of `accumulative_` or `cumulative_`.
-- The operation is written `virtualz`, with a lower-case `z`, so that no capital
-  letter appears inside the enumeration.
+- The prefix `cumulative_` is used, as in `cumulative_fidelity` and
+  `cumulative_cost`.
+- The operation is written `virtual_z`, in snake case. It matches the
+  `virtual_z` field, and no capital letter appears inside the enumeration.
 
-If either spelling is changed, it must be changed in the backend, in this
-documentation and in the JSON schema at the same time, and before the frontend
-is written.
+If a name is changed, it must be changed in the backend, in this documentation
+and in the JSON schema at the same time, and before the frontend is written.

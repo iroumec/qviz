@@ -334,8 +334,8 @@ function renderDetails(step) {
   rows.push(["targets", "[" + step.targets.join(", ") + "]"]);
   if (step.phases) rows.push(["phases (rad)", step.phases.map((p) => p.toFixed(4)).join(", ")]);
   if (typeof step.angle === "number") rows.push(["angle (turnos)", step.angle.toFixed(4)]);
-  rows.push(["fid. acumulada", step.acumulative_fidelity.toFixed(4) + " %"]);
-  rows.push(["costo acum.", "$" + step.acumulative_cost.toFixed(6)]);
+  rows.push(["fid. acumulada", step.cumulative_fidelity.toFixed(4) + " %"]);
+  rows.push(["costo acum.", "$" + step.cumulative_cost.toFixed(6)]);
   rows.push(["virtual_z", "[" + step.virtual_z.map((v) => v.toFixed(3)).join(", ") + "]"]);
   rows.push(["inactividad", "[" + step.inactivity.join(", ") + "]"]);
   rows.push(["fidelidades", "[" + step.fidelities.map((f) => f.toFixed(2)).join(", ") + "]"]);
@@ -423,21 +423,21 @@ const DEMO = {
   initial_fidelity: 99.5,
   steps: [
     {
-      step: 1, operation: "virtualz", targets: [0], acumulative_fidelity: 99.5,
-      states: [[0, 0, 1], [0, 0, 1]], vibration: [0, 0], acumulative_cost: 0,
+      step: 1, operation: "virtual_z", targets: [0], cumulative_fidelity: 99.5,
+      states: [[0, 0, 1], [0, 0, 1]], vibration: [0, 0], cumulative_cost: 0,
       probabilities: [[1, 0], [1, 0]], virtual_z: [3.141593, 0],
       inactivity: [0, 0], fidelities: [100, 100],
     },
     {
       step: 2, operation: "gpi2", targets: [0], phases: [1.570796],
-      acumulative_fidelity: 99.47, states: [[1, 0, 0], [0, 0, 1]],
-      vibration: [0, 0], acumulative_cost: 0.0003, probabilities: [[0.5, 0.5], [1, 0]],
+      cumulative_fidelity: 99.47, states: [[1, 0, 0], [0, 0, 1]],
+      vibration: [0, 0], cumulative_cost: 0.0003, probabilities: [[0.5, 0.5], [1, 0]],
       virtual_z: [3.141593, 0], inactivity: [0, 1], fidelities: [99.98, 99.99],
     },
     {
       step: 3, operation: "ms", targets: [0, 1], phases: [0, 0], angle: 0.25,
-      acumulative_fidelity: 98.94, states: [[0, 0, 0], [0, 0, 0]],
-      vibration: [0, 0], acumulative_cost: 0.0018,
+      cumulative_fidelity: 98.94, states: [[0, 0, 0], [0, 0, 0]],
+      vibration: [0, 0], cumulative_cost: 0.0018,
       probabilities: [[0.5, 0.5], [0.5, 0.5]], virtual_z: [3.141593, 0],
       inactivity: [0, 1], fidelities: [99.46, 99.48],
     },

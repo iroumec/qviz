@@ -31,14 +31,14 @@ For each step, one fidelity factor `f` is chosen for the operation.
 
 | Operation | `f` | Price |
 | --- | --- | --- |
-| `virtualz` | 1 | 0 |
+| `virtual_z` | 1 | 0 |
 | `gpi`, `gpi2` | `fidelity_1q` | `price_1q` |
 | `ms`, `zz` | `fidelity_2q` | `price_2q` |
 
 The following updates are then made.
 
 - For every target qubit, the per-qubit fidelity is multiplied by `f`.
-- For every other qubit, when the step is not a `virtualz`, the per-qubit
+- For every other qubit, when the step is not a `virtual_z`, the per-qubit
   fidelity is multiplied by `1 - idle_error_per_step`, and the inactivity of the
   qubit is increased by one.
 - The global fidelity is multiplied by `f`, and then by `1 -
@@ -47,9 +47,9 @@ The following updates are then made.
 - The vibration of a qubit is `1 - fidelity / 100` when that error is at least
   `VIBRATION_THRESHOLD`, and zero otherwise.
 
-## What a `virtualz` does not change {.unnumbered}
+## What a `virtual_z` does not change {.unnumbered}
 
-A `virtualz` operation lasts no time. It therefore changes neither the
+A `virtual_z` operation lasts no time. It therefore changes neither the
 fidelities nor the inactivity. Its fidelity factor is 1, and its price is 0. The
 accumulated values are left unchanged.
 

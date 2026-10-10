@@ -14,7 +14,8 @@ backend/                    The library.
   core/
     model.py                The frozen dataclasses of the pipeline.
     errors.py               The exception hierarchy.
-    config.py               The constants.
+    constants.py            The fixed mathematical constants (never changed).
+    config.py               The tunable configuration parameters.
     provider/               Provider detection and noise profiles.
     compiler/               The pipeline orchestration.
     transpiler/             Transpilation for the backend.

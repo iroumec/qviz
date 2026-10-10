@@ -8,7 +8,7 @@ refreshed before the demo, and ``spec.md`` §10 marks the calibration route as
 
 Per-gate fidelities and the SPAM error are taken from the IonQ Aria and Forte
 spec sheets (2023-2024). Prices are illustrative USD per gate-shot chosen so
-that the example in ``spec.md`` §6 (``acumulative_cost`` = 0.0003 for one
+that the example in ``spec.md`` §6 (``cumulative_cost`` = 0.0003 for one
 single-qubit gate at 1024 shots) is reproduced.
 """
 

@@ -13,6 +13,8 @@ from backend.core.model import (
 
 
 def _cartesian(angles: QubitAngles) -> tuple[float, float, float]:
+    # ``r`` equals 1 only for a pure single-qubit state; it is smaller when the
+    # qubit is entangled. The clip is a guard against rounding making it > 1.
     r = min(angles.r, 1.0)
     sin_theta = math.sin(angles.theta)
     x = r * sin_theta * math.cos(angles.phi)

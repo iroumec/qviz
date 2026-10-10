@@ -18,16 +18,19 @@ tomography stage.
 
 **Returns** a `TranspiledCircuit`.
 
-**Raises** `CircuitTooLargeError` if the circuit has more than
-`MAX_QUBITS` qubits, and `TranspilationError` if the circuit is empty or cannot
-be transpiled.
+**Raises** `CircuitTooLargeError` if the circuit is wider than the effective
+limit, and `TranspilationError` if the circuit is empty or cannot be
+transpiled. The effective limit is the smaller of `MAX_QUBITS` and the number of
+qubits of the backend. It is described on the
+[configuration page](config-and-errors.qmd).
 
 ## What is done first {.unnumbered}
 
 Two operations are always performed before the strategies are tried.
 
 1. The final measurements are removed.
-2. The number of qubits is checked against `MAX_QUBITS`.
+2. The number of qubits is checked against the effective limit, which is the
+   smaller of `MAX_QUBITS` and the width of the backend.
 
 A circuit with measurements at the end is therefore accepted. A measurement in
 the middle of the circuit is not removed, and it is rejected later by the

@@ -91,7 +91,8 @@ backend/
     __init__.py
     model.py                    # Dataclasses inmutables de la representación intermedia (§5)
     errors.py                   # Jerarquía de excepciones
-    config.py                   # Constantes: MAX_QUBITS, umbrales, decimales
+    constants.py                # Constantes matemáticas fijas (TWO_PI, NATIVE_OPS)
+    config.py                   # Parámetros configurables: MAX_QUBITS, umbrales, decimales
     provider/   provider.py, profiles.py
     compiler/   compiler.py
     transpiler/ transpiler.py
@@ -170,7 +171,7 @@ Las matrices de cada compuerta nativa están en `documentation/references/ionq_n
 ```python
 Provider  = Literal["ionq", "ibm", "aws", "local", "unknown"]
 Entangler = Literal["ms", "zz"]
-OpName    = Literal["gpi", "gpi2", "ms", "zz", "virtualz"]
+OpName    = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
 
 BackendInfo(provider, name, display_name, entangler, is_hardware: bool, profile: NoiseProfile)
 NoiseProfile(spam_error, fidelity_1q, fidelity_2q, idle_error_per_step, price_1q, price_2q)  # §7 M5
@@ -181,7 +182,7 @@ TranspiledCircuit(circuit: QuantumCircuit | None, native_ops: list | None,
 NativeOp(name: OpName, targets: tuple[int, ...],
          phases: tuple[float, ...] = (),      # rad: gpi/gpi2 → (φ,), ms → (φ0, φ1)
          angle: float | None = None,          # turnos: ms/zz
-         z_rotation: float | None = None,     # rad: solo virtualz
+         z_rotation: float | None = None,     # rad: solo virtual_z
          source_index: int | None = None)     # índice de la instrucción de origen (trazabilidad / M8)
 NativeCircuit(backend: BackendInfo, num_qubits: int, ops: tuple[NativeOp, ...])
 
@@ -190,7 +191,7 @@ SimulatedStep(index: int, op: NativeOp, qubits: tuple[QubitAngles, ...], virtual
 SimulatedCircuit(native: NativeCircuit, steps: tuple[SimulatedStep, ...])
 
 VectorizedStep(..., states: tuple[tuple[float, float, float], ...], probabilities: tuple[tuple[float, float], ...])
-MeasuredStep(..., fidelities, acumulative_fidelity, inactivity, vibration, acumulative_cost)
+MeasuredStep(..., fidelities, cumulative_fidelity, inactivity, vibration, cumulative_cost)
 ```
 
 ### 5.3 Paso 0
@@ -199,7 +200,7 @@ El estado inicial (todos en |0⟩, `virtual_z` en 0, fidelidad `initial_fidelity
 
 ### 5.4 Límites
 
-- `MAX_QUBITS = 16` en `config.py`. Por encima se lanza `CircuitTooLargeError`. El statevector de 16 qubits ocupa 1 MB, aceptable en Pyodide, y una cadena de más de 16 iones no aporta pedagógicamente.
+- `MAX_QUBITS = 28` en `config.py`. Es el tope duro del ancho del circuito. Además, si el backend expone su propio número de qubits (`backend.num_qubits`), el límite efectivo es `min(MAX_QUBITS, backend.num_qubits)`, para no mandar un circuito a un backend demasiado chico. Por encima del límite efectivo se lanza `CircuitTooLargeError`.
 - Sin límite duro de pasos. Si hay más de 500, se loguea un warning.
 
 ---
@@ -216,17 +217,17 @@ Es el único punto de acoplamiento con el frontend. **No se cambia sin acuerdo d
   "steps": [
     {
       "step": 1,
-      "operation": "virtualz", // "gpi" | "gpi2" | "ms" | "zz" | "virtualz"
-      "targets": [0], // 1 qubit: gpi, gpi2, virtualz · 2 qubits: ms, zz
-      // "phases": ausente en virtualz y zz · [φ] en gpi/gpi2 · [φ0, φ1] en ms (radianes)
+      "operation": "virtual_z", // "gpi" | "gpi2" | "ms" | "zz" | "virtual_z"
+      "targets": [0], // 1 qubit: gpi, gpi2, virtual_z · 2 qubits: ms, zz
+      // "phases": ausente en virtual_z y zz · [φ] en gpi/gpi2 · [φ0, φ1] en ms (radianes)
       // "angle":  solo en ms y zz, turnos en [0, 0.25]
-      "acumulative_fidelity": 99.5,
+      "cumulative_fidelity": 99.5,
       "states": [
         [0.0, 0.0, 1.0],
         [0.0, 0.0, 1.0],
       ],
       "vibration": [0.0, 0.0],
-      "acumulative_cost": 0.0,
+      "cumulative_cost": 0.0,
       "probabilities": [
         [1.0, 0.0],
         [1.0, 0.0],
@@ -240,13 +241,13 @@ Es el único punto de acoplamiento con el frontend. **No se cambia sin acuerdo d
       "operation": "gpi2",
       "targets": [0],
       "phases": [1.570796],
-      "acumulative_fidelity": 99.48,
+      "cumulative_fidelity": 99.48,
       "states": [
         [1.0, 0.0, 0.0],
         [0.0, 0.0, 1.0],
       ],
       "vibration": [0.0, 0.0],
-      "acumulative_cost": 0.0003,
+      "cumulative_cost": 0.0003,
       "probabilities": [
         [0.5, 0.5],
         [1.0, 0.0],
@@ -269,22 +270,22 @@ Es el único punto de acoplamiento con el frontend. **No se cambia sin acuerdo d
 | `total_qubits`         | Qubits del circuito del usuario más ancillas reales, si las hubo (ver compactación, M2)                                                                                                                                                                                                           |
 | `initial_fidelity`     | `100 · (1 − spam_error)` del perfil de ruido                                                                                                                                                                                                                                                      |
 | `step`                 | Índice desde 1, consecutivo. La lista se ordena por `step`                                                                                                                                                                                                                                        |
-| `operation`            | En minúsculas. **[decisión]** `virtualz`, no `virtualZ`, para no mezclar mayúsculas en un enum                                                                                                                                                                                                    |
+| `operation`            | En minúsculas. **[decisión]** `virtual_z`, no `virtualZ`, para no mezclar mayúsculas en un enum                                                                                                                                                                                                    |
 | `phases`               | **Fases lógicas** (las del circuito con VirtualZ explícitos), no la fase física del láser. La fase del láser sería φ − `virtual_z[q]` y se puede mostrar como dato educativo. El signo **−** está verificado contra las matrices; el ejemplo de la doc de IonQ usa **+** (ver `ionq_native_gates.md` §2.3) |
 | `targets`              | Índices de qubit compactados (0 … total_qubits−1)                                                                                                                                                                                                                                                 |
 | `angle`                | θ en turnos, normalizado a [0, 0.25] (ver M2)                                                                                                                                                                                                                                                     |
-| `acumulative_fidelity` | Fidelidad global después del paso (§7 M5)                                                                                                                                                                                                                                                         |
+| `cumulative_fidelity` | Fidelidad global después del paso (§7 M5)                                                                                                                                                                                                                                                         |
 | `states`               | Vector de Bloch reducido por qubit, con \|v\| ≤ 1 (\|v\| < 1 si hay entrelazamiento)                                                                                                                                                                                                              |
 | `vibration`            | Amplitud de oscilación normalizada [0, 1] por qubit. Vale 0 si el error está por debajo de `VIBRATION_THRESHOLD`. El frontend la mapea a ángulo                                                                                                                                                   |
-| `acumulative_cost`     | Costo estimado acumulado en **USD** para `shots` shots en el hardware de referencia (§7 M5). **[decisión]** USD y no créditos de Qollab                                                                                                                                                           |
+| `cumulative_cost`     | Costo estimado acumulado en **USD** para `shots` shots en el hardware de referencia (§7 M5). **[decisión]** USD y no créditos de Qollab                                                                                                                                                           |
 | `probabilities`        | `[(1+z)/2, (1−z)/2]` por qubit                                                                                                                                                                                                                                                                    |
 | `virtual_z`            | Suma de rotaciones VirtualZ por qubit, normalizada a [0, 2π)                                                                                                                                                                                                                                      |
-| `inactivity`           | **[decisión]** Total acumulado (monotónico) de pasos en los que el qubit no fue target. Los pasos `virtualz` no suman inactividad a los demás (duran 0)                                                                                                                                           |
+| `inactivity`           | **[decisión]** Total acumulado (monotónico) de pasos en los que el qubit no fue target. Los pasos `virtual_z` no suman inactividad a los demás (duran 0)                                                                                                                                           |
 | `fidelities`           | Fidelidad por qubit en %, empieza en 100                                                                                                                                                                                                                                                          |
 
 Los campos que no aplican **se omiten** (no van como `null`). Los floats se redondean a `JSON_DECIMALS = 6` y `-0.0` se escribe como `0.0`.
 
-> El requerimiento escribe `acumulative_*`. En inglés sería `cumulative_*` o `accumulative_*`. Se mantiene tal cual porque es el contrato acordado. Si se quiere corregir, conviene hacerlo **antes** de que exista el frontend.
+> El requerimiento escribía `acumulative_*`. **[resuelto]** El contrato usa el prefijo `cumulative_*` (por ejemplo `cumulative_fidelity`, `cumulative_cost`) y la operación `virtual_z` en snake_case.
 
 ---
 
@@ -325,10 +326,13 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 | módulo `qiskit_ibm_runtime`, nombre `fake_*`/`ibm_*`, o `GenericBackendV2`            | `ibm`                       |
 | módulo `qiskit_braket_provider` o nombre con `braket`                                 | `aws`                       |
 | `BasicSimulator` / `basic_simulator` / `aer_simulator`                                | `local`                     |
+| fallback estructural: los `operation_names` del backend                               | `ionq`/`ibm`/`unknown`      |
 | cualquier otra cosa                                                                   | `unknown` (nunca excepción) |
 
-- Entrelazador automático: nombre con `forte` → `zz`, con `aria` → `ms`, y cualquier otro caso → `ms` **[decisión]**. El parámetro `entangler` de `compile` lo puede forzar.
-- `is_hardware`: true solo para QPUs de IonQ (las que gastan créditos).
+El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms`/`zz` → `ionq`; `ecr`, o `cz`+`sx`+`rz` juntos → `ibm`; `rxx`/`ryy` → `ionq`; si no, `unknown`. Así un backend con nombre raro pero gates claros queda bien clasificado.
+
+- Entrelazador automático **[actualizado]**: primero se mira la compuerta nativa de 2 qubits que anuncia el backend (si anuncia solo `zz`, o solo `ms`); si no, se usa `native_2q_gate` de `qiskit-ionq`; si no, el nombre: `forte` o `ideal` → `zz`, `aria` → `ms`; por defecto `ms`. El parámetro `entangler` de `compile` lo puede forzar.
+- `is_hardware`: true solo para QPUs de IonQ (las que gastan créditos). Se prefieren los atributos booleanos `_simulator`/`_is_simulator`/`is_simulator`/`simulator` que pone el SDK; buscar la palabra `simulator` en el nombre queda como último recurso, porque un nombre es una señal débil.
 - `profiles.py`: tabla de `NoiseProfile` por máquina de referencia (`aria`, `forte`, `ideal`). Con IonQ se usa el perfil de esa máquina. Con cualquier otro proveedor se usa el perfil de referencia del entrelazador (MS → Aria, ZZ → Forte) **[decisión]**, porque el visualizador muestra el circuito _como si_ corriera en iones. Los valores numéricos se completan en M5, con fuente y fecha.
 
 **1c. `transpiler.transpile(info, backend, qc) -> TranspiledCircuit`**
@@ -350,7 +354,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 
 ### M2 — Translator (normalizador)
 
-**Objetivo:** convertir cualquier `TranspiledCircuit` en un `NativeCircuit` equivalente formado solo por `gpi`, `gpi2`, `virtualz` y un único entrelazador (`ms` **o** `zz`, nunca los dos).
+**Objetivo:** convertir cualquier `TranspiledCircuit` en un `NativeCircuit` equivalente formado solo por `gpi`, `gpi2`, `virtual_z` y un único entrelazador (`ms` **o** `zz`, nunca los dos).
 
 **2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py`, `normalize.py` y `to_qiskit.py`.
 
@@ -363,10 +367,10 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 | `x`                                                                | `gpi(0)`                                                                            |
 | `y`                                                                | `gpi(π/2)`                                                                          |
 | `sx` / `sxdg`                                                      | `gpi2(0)` / `gpi2(π)`                                                               |
-| `rz(λ)`, `p(λ)`, `u1(λ)`                                           | `virtualz(λ)`                                                                       |
-| `z`, `s`, `sdg`, `t`, `tdg`                                        | `virtualz(π)`, `virtualz(π/2)`, `virtualz(−π/2)`, `virtualz(π/4)`, `virtualz(−π/4)` |
-| `h`                                                                | `virtualz(π)`, `gpi2(π/2)`                                                          |
-| `cz(a,b)`                                                          | `ZZ⁺(a,b)`, `virtualz(a,−π/2)`, `virtualz(b,−π/2)`                                  |
+| `rz(λ)`, `p(λ)`, `u1(λ)`                                           | `virtual_z(λ)`                                                                       |
+| `z`, `s`, `sdg`, `t`, `tdg`                                        | `virtual_z(π)`, `virtual_z(π/2)`, `virtual_z(−π/2)`, `virtual_z(π/4)`, `virtual_z(−π/4)` |
+| `h`                                                                | `virtual_z(π)`, `gpi2(π/2)`                                                          |
+| `cz(a,b)`                                                          | `ZZ⁺(a,b)`, `virtual_z(a,−π/2)`, `virtual_z(b,−π/2)`                                  |
 | `cx(c,t)`, entrelazador `ms`                                       | `gpi2(c,π/2)`, `ms(c,t; [0,0]; 0.25)`, `gpi2(c,π)`, `gpi2(t,π)`, `gpi2(c,−π/2)` (Maslov, 5 ops; `ionq_native_gates.md` §3) |
 | `cx(c,t)`, entrelazador `zz`                                       | `h(t)`, `cz(c,t)`, `h(t)` (expandido con las reglas de arriba)                      |
 | `rzz(θ)`                                                           | `zz(θ / 2π)` normalizado (2d)                                                       |
@@ -387,18 +391,18 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - GPI(φ) = σ_φ = cos φ·X + sin φ·Y. GPI2(φ) = exp(−iπ/4·σ_φ). GPI2(π/2) = RY(π/2).
 - MS(φ0, φ1, t) = exp(−iπt·σ_φ0⊗σ_φ1). ZZ(t) = exp(−iπt·Z⊗Z), con t en turnos.
 - CZ = RZ(−π/2)⊗RZ(−π/2) · ZZ(0.25), salvo fase global.
-- XX ↔ ZZ: conjugando con RY(±π/2) en ambos qubits. MS(φ0, φ1, t) = rotar con `virtualz(−φ0)`, `virtualz(−φ1)`, aplicar MS(0, 0, t) y deshacer con `virtualz(φ0)`, `virtualz(φ1)`.
+- XX ↔ ZZ: conjugando con RY(±π/2) en ambos qubits. MS(φ0, φ1, t) = rotar con `virtual_z(−φ0)`, `virtual_z(−φ1)`, aplicar MS(0, 0, t) y deshacer con `virtual_z(φ0)`, `virtual_z(φ1)`.
 
 **2d. Normalización del ángulo (`normalize.py`)** a t ∈ [0, 0.25] turnos, para ZZ(t) = exp(−iπt·ZZ):
 
 1. t ← t mod 1, llevado a (−0.5, 0.5] (±1 turno es fase global).
-2. Si |t| > 0.25: t ← t − 0.5·sign(t), y se agrega Z⊗Z = `virtualz(π)` en ambos qubits (para MS se agrega X⊗X = `gpi(φ0)`, `gpi(φ1)`).
-3. Si t < 0: se conjuga el primer qubit con X para ZZ (`gpi(0)` antes y después) o con Z para MS (`virtualz(π)` antes y después), y t ← −t.
+2. Si |t| > 0.25: t ← t − 0.5·sign(t), y se agrega Z⊗Z = `virtual_z(π)` en ambos qubits (para MS se agrega X⊗X = `gpi(φ0)`, `gpi(φ1)`).
+3. Si t < 0: se conjuga el primer qubit con X para ZZ (`gpi(0)` antes y después) o con Z para MS (`virtual_z(π)` antes y después), y t ← −t.
 4. Si t = 0 no se emite nada.
 
 **2e. Conmutación MS ↔ ZZ.** Si el circuito de IonQ trae el entrelazador que no corresponde (o el usuario forzó el otro con `entangler`), se reescribe con las identidades de 2c. Esto también cubre el extra "Conmutador de compuertas".
 
-**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`.** Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtualz. Se usa como oráculo en los tests y para la tomografía en M8.
+**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`.** Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtual_z. Se usa como oráculo en los tests y para la tomografía en M8.
 
 **Sin optimización** en el MVP: no se fusionan compuertas consecutivas. Un pase de fusión es opcional para después.
 
@@ -448,17 +452,17 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 ### M5 — Metrics
 
-**Objetivo:** calcular `initial_fidelity`, `fidelities`, `acumulative_fidelity`, `inactivity`, `vibration` y `acumulative_cost`. Es un modelo **didáctico y simple**, documentado acá, no una simulación de ruido.
+**Objetivo:** calcular `initial_fidelity`, `fidelities`, `cumulative_fidelity`, `inactivity`, `vibration` y `cumulative_cost`. Es un modelo **didáctico y simple**, documentado acá, no una simulación de ruido.
 
 - **Perfil de ruido** (`provider/profiles.py`): `spam_error`, `fidelity_1q`, `fidelity_2q`, `idle_error_per_step`, `price_1q`, `price_2q` (USD por compuerta-shot). Los valores se cargan para `aria` y `forte` **con la fuente y la fecha en un comentario** (doc de IonQ, Qollab o precios públicos de AWS Braket / Azure). **[a verificar]** si `backend.calibration()` de qiskit-ionq funciona en Qollab; si funciona, tiene prioridad sobre la tabla. Perfil `ideal`: todo en 1 y precio 0.
 - `initial_fidelity = 100·(1 − spam_error)`.
-- Por paso, con `f` = 1 para `virtualz`, `fidelity_1q` para gpi/gpi2 y `fidelity_2q` para ms/zz:
-  - `fidelities[q] *= f` si q es target. Si no lo es y el paso no es `virtualz`, `fidelities[q] *= (1 − idle_error_per_step)` y `inactivity[q] += 1`.
-  - `acumulative_fidelity = acumulative_fidelity_prev · f · Π_{q inactivo}(1 − idle_error_per_step)`.
-  - `acumulative_cost += shots · price(op)`, con price = 0 para virtualz.
+- Por paso, con `f` = 1 para `virtual_z`, `fidelity_1q` para gpi/gpi2 y `fidelity_2q` para ms/zz:
+  - `fidelities[q] *= f` si q es target. Si no lo es y el paso no es `virtual_z`, `fidelities[q] *= (1 − idle_error_per_step)` y `inactivity[q] += 1`.
+  - `cumulative_fidelity = cumulative_fidelity_prev · f · Π_{q inactivo}(1 − idle_error_per_step)`.
+  - `cumulative_cost += shots · price(op)`, con price = 0 para virtual_z.
   - `vibration[q] = e_q` si `e_q = 1 − fidelities[q]/100 ≥ VIBRATION_THRESHOLD` (config, por defecto 0.01); si no, 0.
 
-**Tests:** valores calculados a mano para un circuito de 3 ops; monotonía (la fidelidad nunca sube, costo e inactividad nunca bajan); `virtualz` no cambia ni la fidelidad ni la inactividad; el umbral se respeta en ambos sentidos; el perfil `ideal` da todo 100 y costo 0.
+**Tests:** valores calculados a mano para un circuito de 3 ops; monotonía (la fidelidad nunca sube, costo e inactividad nunca bajan); `virtual_z` no cambia ni la fidelidad ni la inactividad; el umbral se respeta en ambos sentidos; el perfil `ideal` da todo 100 y costo 0.
 
 ---
 
@@ -512,7 +516,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 | Extra                                    | Qué falta en el backend                                                                 |
 | ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| Salud del circuito                       | Nada: sale de `acumulative_fidelity`                                                    |
+| Salud del circuito                       | Nada: sale de `cumulative_fidelity`                                                    |
 | Costo en nube                            | Completar la tabla de precios de M5                                                     |
 | Oscilación del vector                    | Nada: sale de `vibration` con el umbral                                                 |
 | Mapa de calor de decoherencia            | Nada: sale de `inactivity` y `fidelities`                                               |
@@ -576,6 +580,6 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 
 1. **Nombre del paquete.** `backend` choca con la variable `backend` que inyecta Qollab (cualquier `import backend` la pisa) y no sirve para PyPI. Propuesta: renombrar a `qviz` en M0. Mientras no se decida, rige la regla "nunca `import backend`".
 2. **Licencias:** confirmar con el hackathon si alcanza con "permisivas" (§2).
-3. **`acumulative_*`:** ¿se corrige la ortografía del contrato antes del frontend?
+3. **`cumulative_*` y `virtualz`: [resuelto].** El contrato usa `cumulative_*` y el op `virtual_z`. Actualizado en backend, schema y documentación.
 4. **Perfil de ruido para backends no IonQ:** ¿referencia de iones (actual) o `ideal` para los simuladores locales ideales?
 5. **Unidad de costo:** USD estimados (actual) o créditos de Qollab.

@@ -3,6 +3,7 @@
 QViz es un visualizador educativo de iones atrapados para un hackathon que corre en **Qollab**. A partir de un circuito de Qiskit y el `backend` elegido, el backend Python genera un JSON con la secuencia de compuertas nativas de iones (GPI, GPI2, MS|ZZ, VirtualZ) y el estado de Bloch de cada qubit en cada paso.
 
 **Antes de tocar código leé:**
+
 - `spec.md`: arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
@@ -110,7 +111,11 @@ Entorno local: Python 3.14 (igual que Qollab) y Qiskit `>=2.5.2,<3`.
 ## 7. Fuera de alcance (no lo hagas)
 
 - Frontend de cualquier tipo.
-- Transpilar *hacia IonQ* un circuito que viene de otro proveedor. La normalización es una **traducción estática** (`spec.md` M2).
+- Transpilar _hacia IonQ_ un circuito que viene de otro proveedor. La normalización es una **traducción estática** (`spec.md` M2).
 - Cambiar el contrato JSON sin acuerdo.
 - Optimizar o fusionar compuertas en el MVP.
 - Publicar en PyPI o configurar CI (son extras, para después del MVP).
+
+## Documentation
+
+- Quarto documentaation must be updated after each prompt. It can be found in documentation/docs/.

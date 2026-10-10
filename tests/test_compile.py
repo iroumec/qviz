@@ -70,8 +70,8 @@ def test_shots_scale_cost(basic_backend):
     cheap = compile(basic_backend, bell(), shots=100)
     pricey = compile(basic_backend, bell(), shots=1000)
     assert (
-        pricey["steps"][-1]["acumulative_cost"]
-        > cheap["steps"][-1]["acumulative_cost"]
+        pricey["steps"][-1]["cumulative_cost"]
+        > cheap["steps"][-1]["cumulative_cost"]
     )
 
 

@@ -11,7 +11,7 @@ import math
 
 import numpy as np
 
-from backend.core import config
+from backend.core import config, constants
 from backend.core.model import (
     NativeCircuit,
     NativeOp,
@@ -35,7 +35,7 @@ def _matrix(op: NativeOp) -> np.ndarray:
         return ms.matrix(op.phases[0], op.phases[1], op.angle)
     if op.name == "zz":
         return zz.matrix(op.angle)
-    if op.name == "virtualz":
+    if op.name == "virtual_z":
         return virtualz.matrix(op.z_rotation)
     raise ValueError(f"unknown native operation {op.name!r}")
 
@@ -75,8 +75,8 @@ def _angles(state: np.ndarray, qubit: int, n: int) -> QubitAngles:
     theta = math.acos(cos_theta)
     phi = math.atan2(y, x)
     if phi < 0.0:
-        phi += config.TWO_PI
-    if phi >= config.TWO_PI:
+        phi += constants.TWO_PI
+    if phi >= constants.TWO_PI:
         phi = 0.0
     if math.isclose(math.sin(theta), 0.0, abs_tol=1e-12):
         phi = 0.0
@@ -98,9 +98,9 @@ def simulate(native: NativeCircuit, strategy: str = "statevector") -> SimulatedC
     for index, op in enumerate(native.ops, start=1):
         state = _apply(state, _matrix(op), op.targets)
 
-        if op.name == "virtualz":
+        if op.name == "virtual_z":
             qubit = op.targets[0]
-            virtual_z[qubit] = (virtual_z[qubit] + op.z_rotation) % config.TWO_PI
+            virtual_z[qubit] = (virtual_z[qubit] + op.z_rotation) % constants.TWO_PI
 
         qubits = tuple(_angles(state, q, n) for q in range(n))
         steps.append(

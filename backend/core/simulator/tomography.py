@@ -14,7 +14,7 @@ from typing import Any
 from qiskit import QuantumCircuit
 from qiskit import transpile as qiskit_transpile
 
-from backend.core import config
+from backend.core import constants
 from backend.core.errors import QVizError
 from backend.core.model import (
     BackendInfo,
@@ -64,7 +64,7 @@ def _angles(x: float, y: float, z: float) -> QubitAngles:
     theta = math.acos(max(-1.0, min(1.0, z / r)))
     phi = math.atan2(y, x)
     if phi < 0:
-        phi += config.TWO_PI
+        phi += constants.TWO_PI
     if math.isclose(math.sin(theta), 0.0, abs_tol=1e-12):
         phi = 0.0
     return QubitAngles(r, theta, phi)
@@ -73,9 +73,9 @@ def _angles(x: float, y: float, z: float) -> QubitAngles:
 def _cumulative_virtual_z(ops, upto: int, num_qubits: int) -> tuple[float, ...]:
     accumulator = [0.0] * num_qubits
     for op in ops[:upto]:
-        if op.name == "virtualz":
+        if op.name == "virtual_z":
             qubit = op.targets[0]
-            accumulator[qubit] = (accumulator[qubit] + op.z_rotation) % config.TWO_PI
+            accumulator[qubit] = (accumulator[qubit] + op.z_rotation) % constants.TWO_PI
     return tuple(accumulator)
 
 

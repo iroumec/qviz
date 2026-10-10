@@ -108,7 +108,7 @@ def test_full_circuit_equivalence(factory, entangler):
 def test_invariants(factory, entangler):
     native = _translate(factory(), entangler)
     names = {op.name for op in native.ops}
-    assert names <= {"gpi", "gpi2", "ms", "zz", "virtualz"}
+    assert names <= {"gpi", "gpi2", "ms", "zz", "virtual_z"}
     assert not ({"ms", "zz"} <= names)
     for op in native.ops:
         assert all(0 <= q < native.num_qubits for q in op.targets)

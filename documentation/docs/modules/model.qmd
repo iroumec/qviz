@@ -11,7 +11,7 @@ easy to keep pure.
 | --- | --- | --- |
 | `Provider` | `"ionq"`, `"ibm"`, `"aws"`, `"local"`, `"unknown"` | The family of the backend. |
 | `Entangler` | `"ms"`, `"zz"` | The two-qubit native gate that is used for entanglement. |
-| `OpName` | `"gpi"`, `"gpi2"`, `"ms"`, `"zz"`, `"virtualz"` | The name of a native operation. |
+| `OpName` | `"gpi"`, `"gpi2"`, `"ms"`, `"zz"`, `"virtual_z"` | The name of a native operation. |
 | `Source` | `"ionq-native"`, `"qiskit"` | How a transpiled circuit was produced. |
 
 ## `NoiseProfile` {.unnumbered}
@@ -65,7 +65,7 @@ A single native operation of the intermediate representation.
 | `targets` | tuple of int | required | The qubits the gate acts on. |
 | `phases` | tuple of float | `()` | Phases in radians. One value for `gpi` and `gpi2`, two for `ms`. |
 | `angle` | float or `None` | `None` | The entanglement angle in turns, for `ms` and `zz`. |
-| `z_rotation` | float or `None` | `None` | The rotation in radians, for `virtualz` only. |
+| `z_rotation` | float or `None` | `None` | The rotation in radians, for `virtual_z` only. |
 | `source_index` | int or `None` | `None` | The index of the original instruction, used for traceability. |
 
 ## `NativeCircuit` {.unnumbered}
@@ -138,10 +138,10 @@ The vectorized step is decorated with the didactic metrics.
 | `probabilities` | tuple of `(p0, p1)` | The probabilities for every qubit. |
 | `virtual_z` | tuple of float | The accumulated virtual Z rotation of every qubit. |
 | `fidelities` | tuple of float | The per-qubit fidelity, in percent. |
-| `acumulative_fidelity` | float | The global fidelity, in percent. |
+| `cumulative_fidelity` | float | The global fidelity, in percent. |
 | `inactivity` | tuple of int | The accumulated inactivity of every qubit. |
 | `vibration` | tuple of float | The vibration amplitude of every qubit. |
-| `acumulative_cost` | float | The accumulated cost, in USD. |
+| `cumulative_cost` | float | The accumulated cost, in USD. |
 
 `MeasuredCircuit` holds the native circuit together with the measured steps.
 

@@ -28,11 +28,11 @@ def main() -> None:
     for step in measured.steps:
         print(
             f"step {step.index:2d} {step.op.name:8s}"
-            f" acum_fid={step.acumulative_fidelity:8.4f}"
+            f" acum_fid={step.cumulative_fidelity:8.4f}"
             f" fid={[round(v, 3) for v in step.fidelities]}"
             f" inact={list(step.inactivity)}"
             f" vib={[round(v, 4) for v in step.vibration]}"
-            f" cost={step.acumulative_cost:.6f} USD"
+            f" cost={step.cumulative_cost:.6f} USD"
         )
 
 

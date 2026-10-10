@@ -26,7 +26,7 @@ convenience: `from backend import compile`.
 
 | Exception | When |
 | --- | --- |
-| `CircuitTooLargeError` | The circuit has more than `MAX_QUBITS` qubits. |
+| `CircuitTooLargeError` | The circuit is wider than the effective limit (see the [configuration page](config-and-errors.qmd)). |
 | `UnsupportedOperationError` | The circuit contains an operation that cannot be shown. |
 | `TranspilationError` | The circuit cannot be transpiled. |
 | `QVizError` | An unknown strategy is requested, or tomography is requested on hardware without `allow_paid`. |

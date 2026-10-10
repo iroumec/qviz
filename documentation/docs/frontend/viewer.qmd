@@ -62,8 +62,8 @@ so that a noisy qubit appears to shake.
 
 The viewer reads only the fields of the contract. The fields that are used are
 `backend`, `total_qubits`, `initial_fidelity`, and, for each step, `step`,
-`operation`, `targets`, `phases`, `angle`, `acumulative_fidelity`,
-`acumulative_cost`, `states`, `probabilities`, `virtual_z`, `inactivity`,
+`operation`, `targets`, `phases`, `angle`, `cumulative_fidelity`,
+`cumulative_cost`, `states`, `probabilities`, `virtual_z`, `inactivity`,
 `fidelities` and `vibration`.
 
 ## A note on the files of the frontend {.unnumbered}

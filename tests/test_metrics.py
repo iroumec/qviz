@@ -55,7 +55,7 @@ _HAND_PROFILE = NoiseProfile(
 def test_hand_computed_values():
     info = _info(_HAND_PROFILE)
     ops = [
-        NativeOp("virtualz", (0,), z_rotation=1.0),
+        NativeOp("virtual_z", (0,), z_rotation=1.0),
         NativeOp("gpi", (0,), phases=(0.0,)),
         NativeOp("ms", (0, 1), phases=(0.0, 0.0), angle=0.25),
     ]
@@ -64,33 +64,33 @@ def test_hand_computed_values():
     first, second, third = measured.steps
     assert first.fidelities == pytest.approx((100.0, 100.0))
     assert first.inactivity == (0, 0)
-    assert first.acumulative_fidelity == pytest.approx(99.0)
-    assert first.acumulative_cost == pytest.approx(0.0)
+    assert first.cumulative_fidelity == pytest.approx(99.0)
+    assert first.cumulative_cost == pytest.approx(0.0)
 
     assert second.fidelities == pytest.approx((90.0, 90.0))
     assert second.inactivity == (0, 1)
-    assert second.acumulative_fidelity == pytest.approx(99.0 * 0.9 * 0.9)
-    assert second.acumulative_cost == pytest.approx(1000 * 0.001)
+    assert second.cumulative_fidelity == pytest.approx(99.0 * 0.9 * 0.9)
+    assert second.cumulative_cost == pytest.approx(1000 * 0.001)
     assert second.vibration == pytest.approx((0.1, 0.1))
 
     assert third.fidelities == pytest.approx((72.0, 72.0))
     assert third.inactivity == (0, 1)
-    assert third.acumulative_fidelity == pytest.approx(99.0 * 0.9 * 0.9 * 0.8)
-    assert third.acumulative_cost == pytest.approx(1000 * 0.003)
+    assert third.cumulative_fidelity == pytest.approx(99.0 * 0.9 * 0.9 * 0.8)
+    assert third.cumulative_cost == pytest.approx(1000 * 0.003)
 
 
 def test_virtualz_does_not_change_fidelity_or_inactivity():
     info = _info(_HAND_PROFILE)
     ops = [
-        NativeOp("virtualz", (0,), z_rotation=1.0),
-        NativeOp("virtualz", (1,), z_rotation=2.0),
+        NativeOp("virtual_z", (0,), z_rotation=1.0),
+        NativeOp("virtual_z", (1,), z_rotation=2.0),
     ]
     measured = metrics.measure(_vectorized(ops, 2, info), info, shots=1000)
     for step in measured.steps:
         assert step.fidelities == pytest.approx((100.0, 100.0))
         assert step.inactivity == (0, 0)
-        assert step.acumulative_fidelity == pytest.approx(99.0)
-        assert step.acumulative_cost == pytest.approx(0.0)
+        assert step.cumulative_fidelity == pytest.approx(99.0)
+        assert step.cumulative_cost == pytest.approx(0.0)
 
 
 def test_metrics_are_monotonic():
@@ -105,11 +105,11 @@ def test_metrics_are_monotonic():
     previous_cost = -1.0
     previous_inactivity = (0, 0)
     for step in measured.steps:
-        assert step.acumulative_fidelity <= previous_fidelity
-        assert step.acumulative_cost >= previous_cost
+        assert step.cumulative_fidelity <= previous_fidelity
+        assert step.cumulative_cost >= previous_cost
         assert min(step.inactivity) >= min(previous_inactivity)
-        previous_fidelity = step.acumulative_fidelity
-        previous_cost = step.acumulative_cost
+        previous_fidelity = step.cumulative_fidelity
+        previous_cost = step.cumulative_cost
         previous_inactivity = step.inactivity
 
 
@@ -135,6 +135,6 @@ def test_ideal_profile():
     measured = metrics.measure(_vectorized(ops, 2, info), info, shots=1000)
     for step in measured.steps:
         assert step.fidelities == pytest.approx((100.0, 100.0))
-        assert step.acumulative_fidelity == pytest.approx(100.0)
-        assert step.acumulative_cost == pytest.approx(0.0)
+        assert step.cumulative_fidelity == pytest.approx(100.0)
+        assert step.cumulative_cost == pytest.approx(0.0)
         assert step.vibration == (0.0, 0.0)

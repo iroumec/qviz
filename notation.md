@@ -1,1 +1,0 @@
-- The number of max qubits must be 28. If possible, it should be obtained from the backend.

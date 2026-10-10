@@ -40,7 +40,7 @@ QuantumCircuit + backend
 | --- | --- | --- | --- |
 | provider | a backend object | `BackendInfo` | The provider, the entangler and the noise profile are found. |
 | transpiler | circuit and backend | `TranspiledCircuit` | The circuit is changed into the gates of the backend. |
-| translator | `TranspiledCircuit` | `NativeCircuit` | Only `gpi`, `gpi2`, `ms` or `zz`, and `virtualz` are kept. |
+| translator | `TranspiledCircuit` | `NativeCircuit` | Only `gpi`, `gpi2`, `ms` or `zz`, and `virtual_z` are kept. |
 | simulator | `NativeCircuit` | `SimulatedCircuit` | The state of each qubit is computed after each gate. |
 | vectorizer | `SimulatedCircuit` | `VectorizedCircuit` | Angles are changed into `(x, y, z)` vectors. |
 | metrics | `VectorizedCircuit` | `MeasuredCircuit` | Fidelities, inactivity, vibration and cost are added. |

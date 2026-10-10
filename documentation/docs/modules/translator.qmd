@@ -1,7 +1,7 @@
 # Translator {#sec-translator}
 
 The translator is found in `backend/core/translator/`. It changes any transpiled
-circuit into a sequence of native ion gates. Only `gpi`, `gpi2`, `virtualz` and
+circuit into a sequence of native ion gates. Only `gpi`, `gpi2`, `virtual_z` and
 **one** entangler, either `ms` or `zz`, appear in the result. The two entanglers
 are never mixed.
 
@@ -58,10 +58,10 @@ phase, and a global phase does not change a Bloch vector.
 | `x` | `gpi(0)` |
 | `y` | `gpi(π/2)` |
 | `sx`, `sxdg` | `gpi2(0)`, `gpi2(π)` |
-| `rz(λ)`, `p(λ)`, `u1(λ)` | `virtualz(λ)` |
-| `z`, `s`, `sdg`, `t`, `tdg` | `virtualz` with `π`, `π/2`, `-π/2`, `π/4`, `-π/4` |
-| `h` | `virtualz(π)`, `gpi2(π/2)` |
-| `cz(a,b)` | a `zz` operation, or the equivalent MS form, followed by `virtualz(-π/2)` on both qubits |
+| `rz(λ)`, `p(λ)`, `u1(λ)` | `virtual_z(λ)` |
+| `z`, `s`, `sdg`, `t`, `tdg` | `virtual_z` with `π`, `π/2`, `-π/2`, `π/4`, `-π/4` |
+| `h` | `virtual_z(π)`, `gpi2(π/2)` |
+| `cz(a,b)` | a `zz` operation, or the equivalent MS form, followed by `virtual_z(-π/2)` on both qubits |
 | `cx(c,t)` with the MS entangler | `gpi2(c,π/2)`, `ms(c,t)`, `gpi2(c,π)`, `gpi2(t,π)`, `gpi2(c,-π/2)` |
 | `cx(c,t)` with the ZZ entangler | `h(t)`, `cz(c,t)`, `h(t)` |
 | `rzz(θ)` | `zz(θ / 2π)`, then normalized |
@@ -190,7 +190,7 @@ returned and nothing is emitted.
 
 A Qiskit circuit is rebuilt from a `NativeCircuit`. The native gates of
 `qiskit-ionq` are used, and the phases are changed back from radians to turns. A
-`virtualz` operation becomes an `RZ` gate.
+`virtual_z` operation becomes an `RZ` gate.
 
 This function is used as the oracle in the tests. It is also used by the
 tomography strategy.

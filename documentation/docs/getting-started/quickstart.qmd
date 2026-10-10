@@ -56,9 +56,9 @@ rotation, followed by a `gpi2` rotation.
   "steps": [
     {
       "step": 1,
-      "operation": "virtualz",
+      "operation": "virtual_z",
       "targets": [0],
-      "acumulative_fidelity": 99.5,
+      "cumulative_fidelity": 99.5,
       "states": [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]],
       "probabilities": [[1.0, 0.0], [1.0, 0.0]]
     }

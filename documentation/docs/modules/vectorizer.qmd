@@ -24,8 +24,11 @@ y = r \sin\theta \sin\phi, \qquad
 z = r \cos\theta
 $$
 
-The length `r` is clipped to 1 before the conversion, in order to remove a small
-numerical error. The two probabilities are then computed from `z`.
+The length `r` is not always 1. For a single qubit in a pure state, `r` is
+exactly 1. When the qubit is entangled with another qubit, the reduced state is
+mixed, and `r` is smaller than 1. The value `r` is therefore clipped to 1 before
+the conversion, only as a guard against a tiny rounding error that could make it
+slightly larger than 1. The two probabilities are then computed from `z`.
 
 $$
 p(|0\rangle) = \frac{1 + z}{2}, \qquad p(|1\rangle) = \frac{1 - z}{2}

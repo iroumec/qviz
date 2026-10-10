@@ -10,7 +10,7 @@ from qiskit import QuantumCircuit
 from qiskit.circuit.library import RZGate
 from qiskit_ionq import GPI2Gate, GPIGate, MSGate, ZZGate
 
-from backend.core.config import TWO_PI
+from backend.core.constants import TWO_PI
 from backend.core.model import NativeCircuit
 
 
@@ -39,7 +39,7 @@ def to_qiskit(native: NativeCircuit, upto: int | None = None) -> QuantumCircuit:
             )
         elif op.name == "zz":
             qc.append(ZZGate(op.angle), targets)
-        elif op.name == "virtualz":
+        elif op.name == "virtual_z":
             qc.append(RZGate(op.z_rotation), targets)
         else:  # pragma: no cover - guarded by the OpName type
             raise ValueError(f"unknown native operation {op.name!r}")

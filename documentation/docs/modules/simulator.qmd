@@ -47,9 +47,9 @@ z)`. The angle `phi` is wrapped to the range [0, 2π). When `r` is close to zero
 both angles are set to zero. When `theta` is close to 0 or to π, `phi` is set to
 zero.
 
-## `virtualz` and inactivity {.unnumbered}
+## `virtual_z` and inactivity {.unnumbered}
 
-A `virtualz` operation is applied to the state as a real `RZ` rotation, so that
+A `virtual_z` operation is applied to the state as a real `RZ` rotation, so that
 the vector turns around the Z axis. This is the visible click of a virtual Z
 gate. The accumulated rotation of each qubit is stored, and it is wrapped to the
 range [0, 2π).

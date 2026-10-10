@@ -5,11 +5,11 @@
  "steps": [
   {
    "step": 1,
-   "operation": "virtualz",
+   "operation": "virtual_z",
    "targets": [
     0
    ],
-   "acumulative_fidelity": 99.5,
+   "cumulative_fidelity": 99.5,
    "states": [
     [
      0.0,
@@ -26,7 +26,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0,
+   "cumulative_cost": 0.0,
    "probabilities": [
     [
      1.0,
@@ -59,7 +59,7 @@
    "phases": [
     1.570796
    ],
-   "acumulative_fidelity": 99.470152,
+   "cumulative_fidelity": 99.470152,
    "states": [
     [
      1.0,
@@ -76,7 +76,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0003,
+   "cumulative_cost": 0.0003,
    "probabilities": [
     [
      0.5,
@@ -109,7 +109,7 @@
    "phases": [
     1.570796
    ],
-   "acumulative_fidelity": 99.440313,
+   "cumulative_fidelity": 99.440313,
    "states": [
     [
      0.0,
@@ -126,7 +126,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0006,
+   "cumulative_cost": 0.0006,
    "probabilities": [
     [
      0.0,
@@ -162,7 +162,7 @@
     0.0
    ],
    "angle": 0.25,
-   "acumulative_fidelity": 98.943111,
+   "cumulative_fidelity": 98.943111,
    "states": [
     [
      0.0,
@@ -179,7 +179,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0018,
+   "cumulative_cost": 0.0018,
    "probabilities": [
     [
      0.5,
@@ -212,7 +212,7 @@
    "phases": [
     3.141593
    ],
-   "acumulative_fidelity": 98.91343,
+   "cumulative_fidelity": 98.91343,
    "states": [
     [
      0.0,
@@ -229,7 +229,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0021,
+   "cumulative_cost": 0.0021,
    "probabilities": [
     [
      0.5,
@@ -262,7 +262,7 @@
    "phases": [
     3.141593
    ],
-   "acumulative_fidelity": 98.883758,
+   "cumulative_fidelity": 98.883758,
    "states": [
     [
      0.0,
@@ -279,7 +279,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0024,
+   "cumulative_cost": 0.0024,
    "probabilities": [
     [
      0.5,
@@ -312,7 +312,7 @@
    "phases": [
     -1.570796
    ],
-   "acumulative_fidelity": 98.854095,
+   "cumulative_fidelity": 98.854095,
    "states": [
     [
      0.0,
@@ -329,7 +329,7 @@
     0.0,
     0.0
    ],
-   "acumulative_cost": 0.0027,
+   "cumulative_cost": 0.0027,
    "probabilities": [
     [
      0.5,

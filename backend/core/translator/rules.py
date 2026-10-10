@@ -18,7 +18,7 @@ from qiskit_ionq import GPI2Gate, GPIGate
 from qiskit_ionq import MSGate as IonQMSGate
 from qiskit_ionq import ZZGate as IonQZZGate
 
-from backend.core import config
+from backend.core import constants
 from backend.core.errors import UnsupportedOperationError
 from backend.core.model import Entangler, NativeOp
 from backend.core.translator import normalize
@@ -42,7 +42,7 @@ def _gpi2(q: int, phase: float = 0.0) -> NativeOp:
 
 
 def _vz(q: int, rotation: float) -> NativeOp:
-    return NativeOp("virtualz", (q,), z_rotation=rotation)
+    return NativeOp("virtual_z", (q,), z_rotation=rotation)
 
 
 def _h(q: int) -> list[NativeOp]:
@@ -199,13 +199,17 @@ def emit(ops, op, qubits, entangler, source_index=None):  # type: ignore[no-unty
         )
 
     if isinstance(op, GPIGate):
-        _add(ops, _gpi(qubits[0], config.TWO_PI * float(op.params[0])), source_index)
+        _add(ops, _gpi(qubits[0], constants.TWO_PI * float(op.params[0])), source_index)
     elif isinstance(op, GPI2Gate):
-        _add(ops, _gpi2(qubits[0], config.TWO_PI * float(op.params[0])), source_index)
+        _add(
+            ops,
+            _gpi2(qubits[0], constants.TWO_PI * float(op.params[0])),
+            source_index,
+        )
     elif isinstance(op, IonQMSGate):
         phases = (
-            config.TWO_PI * float(op.params[0]),
-            config.TWO_PI * float(op.params[1]),
+            constants.TWO_PI * float(op.params[0]),
+            constants.TWO_PI * float(op.params[1]),
         )
         emit_ms(
             ops, tuple(qubits), phases, float(op.params[2]), entangler, source_index
@@ -243,7 +247,7 @@ def emit(ops, op, qubits, entangler, source_index=None):  # type: ignore[no-unty
         emit_zz(
             ops,
             tuple(qubits),
-            float(op.params[0]) / config.TWO_PI,
+            float(op.params[0]) / constants.TWO_PI,
             entangler,
             source_index,
         )
@@ -331,13 +335,13 @@ def translate_native_ops(native_ops, num_qubits: int, entangler: Entangler):
         if gate == "gpi":
             _add(
                 ops,
-                _gpi(targets[0], config.TWO_PI * float(raw["phase"])),
+                _gpi(targets[0], constants.TWO_PI * float(raw["phase"])),
                 source_index,
             )
         elif gate == "gpi2":
             _add(
                 ops,
-                _gpi2(targets[0], config.TWO_PI * float(raw["phase"])),
+                _gpi2(targets[0], constants.TWO_PI * float(raw["phase"])),
                 source_index,
             )
         elif gate == "ms":
@@ -345,8 +349,8 @@ def translate_native_ops(native_ops, num_qubits: int, entangler: Entangler):
             if not isinstance(raw_phases, (list, tuple)):
                 raw_phases = [raw_phases, raw_phases]
             phases = (
-                config.TWO_PI * float(raw_phases[0]),
-                config.TWO_PI * float(raw_phases[1]),
+                constants.TWO_PI * float(raw_phases[0]),
+                constants.TWO_PI * float(raw_phases[1]),
             )
             angle = float(raw.get("angle", 0.25))
             emit_ms(ops, targets, phases, angle, entangler, source_index)

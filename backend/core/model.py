@@ -9,7 +9,7 @@ from qiskit import QuantumCircuit
 
 Provider = Literal["ionq", "ibm", "aws", "local", "unknown"]
 Entangler = Literal["ms", "zz"]
-OpName = Literal["gpi", "gpi2", "ms", "zz", "virtualz"]
+OpName = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
 Source = Literal["ionq-native", "qiskit"]
 
 
@@ -61,7 +61,7 @@ class NativeOp:
 
     - ``phases`` are in radians (gpi/gpi2: one phase; ms: two phases).
     - ``angle`` is in turns and only used by ms/zz.
-    - ``z_rotation`` is in radians and only used by virtualz.
+    - ``z_rotation`` is in radians and only used by virtual_z.
     """
 
     name: OpName
@@ -140,10 +140,10 @@ class MeasuredStep:
     probabilities: tuple[tuple[float, float], ...]
     virtual_z: tuple[float, ...]
     fidelities: tuple[float, ...]
-    acumulative_fidelity: float
+    cumulative_fidelity: float
     inactivity: tuple[int, ...]
     vibration: tuple[float, ...]
-    acumulative_cost: float
+    cumulative_cost: float
 
 
 @dataclass(frozen=True)

@@ -9,11 +9,11 @@ page, because a wrong unit is the most common source of error.
 | --- | --- | --- |
 | Phase of `gpi`, `gpi2` and `ms` | radians | In `qiskit-ionq` a phase is given in turns. The conversion is `radians = 2 * pi * turns`. |
 | `angle` of `ms` and `zz` | turns, in the range [0, 0.25] | `0.25` is the maximum entanglement. |
-| Rotation of `virtualz` | radians | It is kept only in the intermediate representation. It is not written in the JSON for each step; the accumulated value is written instead. |
+| Rotation of `virtual_z` | radians | It is kept only in the intermediate representation. It is not written in the JSON for each step; the accumulated value is written instead. |
 
 The conversion from turns to radians is always made at the border of the
 library. Inside the backend, radians are used for the phases. A turn is equal to
-`2 * pi` radians. The constant `TWO_PI` is defined in `config.py`.
+`2 * pi` radians. The constant `TWO_PI` is defined in `constants.py`.
 
 ## The order of the qubits {.unnumbered}
 
@@ -85,5 +85,5 @@ default. The negative zero `-0.0` is written as `0.0`.
 ## Omitted fields {.unnumbered}
 
 A field that does not apply to an operation is **left out** of the JSON. It is
-not written as `null`. For example, a `virtualz` step has no `phases` field, and
+not written as `null`. For example, a `virtual_z` step has no `phases` field, and
 a `zz` step has no `phases` field either.

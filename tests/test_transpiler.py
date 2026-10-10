@@ -105,7 +105,7 @@ def test_ionq_falls_back_when_remote_fails():
 
 
 def test_circuit_too_large_raises():
-    qc = QuantumCircuit(17)
+    qc = QuantumCircuit(29)
     qc.x(0)
     with pytest.raises(CircuitTooLargeError):
         transpiler.transpile(_ionq_info(), MagicMock(), qc)

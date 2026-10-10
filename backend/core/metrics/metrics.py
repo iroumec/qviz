@@ -18,7 +18,7 @@ _ONE_QUBIT = ("gpi", "gpi2")
 
 def _fidelity_and_price(op_name: str, info: BackendInfo) -> tuple[float, float]:
     profile = info.profile
-    if op_name == "virtualz":
+    if op_name == "virtual_z":
         return 1.0, 0.0
     if op_name in _ONE_QUBIT:
         return profile.fidelity_1q, profile.price_1q
@@ -35,8 +35,8 @@ def measure(
     initial_fidelity = 100.0 * (1.0 - profile.spam_error)
     fidelities = [100.0] * n
     inactivity = [0] * n
-    acumulative_fidelity = initial_fidelity
-    acumulative_cost = 0.0
+    cumulative_fidelity = initial_fidelity
+    cumulative_cost = 0.0
 
     steps: list[MeasuredStep] = []
 
@@ -49,15 +49,15 @@ def measure(
         for qubit in range(n):
             if qubit in targets:
                 fidelities[qubit] *= fidelity
-            elif op.name != "virtualz":
+            elif op.name != "virtual_z":
                 fidelities[qubit] *= 1.0 - profile.idle_error_per_step
                 inactivity[qubit] += 1
                 inactive_qubits.append(qubit)
 
-        acumulative_fidelity *= fidelity
+        cumulative_fidelity *= fidelity
         for _ in inactive_qubits:
-            acumulative_fidelity *= 1.0 - profile.idle_error_per_step
-        acumulative_cost += shots * price
+            cumulative_fidelity *= 1.0 - profile.idle_error_per_step
+        cumulative_cost += shots * price
 
         vibration = tuple(
             error if error >= config.VIBRATION_THRESHOLD else 0.0
@@ -72,10 +72,10 @@ def measure(
                 probabilities=step.probabilities,
                 virtual_z=step.virtual_z,
                 fidelities=tuple(fidelities),
-                acumulative_fidelity=acumulative_fidelity,
+                cumulative_fidelity=cumulative_fidelity,
                 inactivity=tuple(inactivity),
                 vibration=vibration,
-                acumulative_cost=acumulative_cost,
+                cumulative_cost=cumulative_cost,
             )
         )
 

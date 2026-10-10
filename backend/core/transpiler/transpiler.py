@@ -37,9 +37,10 @@ def transpile(
     """
     circuit = qc.remove_final_measurements(inplace=False)
 
-    if circuit.num_qubits > config.MAX_QUBITS:
+    limit = _effective_max_qubits(backend)
+    if circuit.num_qubits > limit:
         raise CircuitTooLargeError(
-            f"circuit has {circuit.num_qubits} qubits, maximum is {config.MAX_QUBITS}"
+            f"circuit has {circuit.num_qubits} qubits, maximum is {limit}"
         )
     if circuit.num_qubits == 0:
         raise TranspilationError("circuit has no qubits")
@@ -47,6 +48,19 @@ def transpile(
     if info.provider == "ionq":
         return _transpile_ionq(info, backend, circuit, allow_remote=allow_remote)
     return _transpile_generic(info, backend, circuit)
+
+
+def _effective_max_qubits(backend: Any) -> int:
+    """Return the allowed width: the smaller of the cap and the backend width.
+
+    The cap is ``config.MAX_QUBITS``. When the backend exposes its own number of
+    qubits, that value is also respected, so that a circuit is never sent to a
+    backend that is too small for it.
+    """
+    backend_qubits = getattr(backend, "num_qubits", None)
+    if isinstance(backend_qubits, int) and backend_qubits > 0:
+        return min(config.MAX_QUBITS, backend_qubits)
+    return config.MAX_QUBITS
 
 
 def _layout_of(circuit: QuantumCircuit) -> tuple[int, ...] | None:

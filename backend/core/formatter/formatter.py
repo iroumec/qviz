@@ -34,10 +34,10 @@ def _step_entry(step: MeasuredStep) -> dict:
     if op.name in _ANGLED:
         entry["angle"] = _round(op.angle)
 
-    entry["acumulative_fidelity"] = _round(step.acumulative_fidelity)
+    entry["cumulative_fidelity"] = _round(step.cumulative_fidelity)
     entry["states"] = _round_points(step.states)
     entry["vibration"] = _round_list(step.vibration)
-    entry["acumulative_cost"] = _round(step.acumulative_cost)
+    entry["cumulative_cost"] = _round(step.cumulative_cost)
     entry["probabilities"] = _round_points(step.probabilities)
     entry["virtual_z"] = _round_list(step.virtual_z)
     entry["inactivity"] = list(step.inactivity)
