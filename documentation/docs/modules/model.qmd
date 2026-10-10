@@ -13,6 +13,7 @@ easy to keep pure.
 | `Entangler` | `"ms"`, `"zz"` | The two-qubit native gate that is used for entanglement. |
 | `OpName` | `"gpi"`, `"gpi2"`, `"ms"`, `"zz"`, `"virtual_z"` | The name of a native operation. |
 | `Source` | `"ionq-native"`, `"qiskit"` | How a transpiled circuit was produced. |
+| `Strategy` | `"statevector"`, `"tomography"` | How the state of the qubits is found. |
 
 ## `NoiseProfile` {.unnumbered}
 

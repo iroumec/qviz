@@ -69,6 +69,21 @@ rotation, followed by a `gpi2` rotation.
 Only a few fields are shown above. The full list of fields is given in the
 [JSON contract](../concepts/json-contract.qmd) page.
 
+## The entry point for Qollab {.unnumbered}
+
+The file `main.py` in the project root is the entry point on Qollab. It builds a
+Bell circuit and prints the JSON. Its signature is strict, so Qollab shows a form
+in the *Select QPU* dialog with two fields.
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `shots` | `1024` | The number of shots, used for the cost. It must be positive. |
+| `entangler` | `auto` | `auto` lets the backend choose: ZZ for a Forte machine, and MS for every other backend. `ms` and `zz` force the entangler. The case is ignored. |
+
+The field is free text, because the form has no drop-down list. Any other text is
+rejected with an error that names the valid values, so that a typing mistake is
+never silently ignored.
+
 ## What happens behind the two calls {.unnumbered}
 
 When `compile` is called, the following steps are performed, in this order.

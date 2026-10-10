@@ -1,0 +1,29 @@
+# The `to_qiskit` bridge {#sec-to-qiskit}
+
+The file `backend/core/to_qiskit.py` rebuilds a Qiskit circuit from a
+`NativeCircuit`. It is the opposite of the translator, which goes from Qiskit to
+native gates, and it is not a pipeline stage.
+
+## Why it is not inside the translator {.unnumbered}
+
+Two parts of the project need this function: the tomography strategy and the
+tests. The pipeline modules must not import each other, so the tomography could
+not import it from the `translator` package. The function is therefore placed
+directly in `core/`, next to `model.py`, `errors.py` and `config.py`. It only
+depends on the model, the constants and `qiskit-ionq`, so any module may use it.
+
+## `to_qiskit(native, upto=None)` {.unnumbered}
+
+A Qiskit circuit is rebuilt from a `NativeCircuit`. The native gates of
+`qiskit-ionq` are used, and the phases are changed back from radians to turns. A
+`virtual_z` operation becomes an `RZ` gate.
+
+This function is used as the oracle in the tests. It is also used by the
+tomography strategy, to build the prefix circuits.
+
+| Parameter | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `native` | `NativeCircuit` | required | The circuit to rebuild. |
+| `upto` | int or `None` | `None` | When it is given, only the first `upto` operations are used. `upto=0` gives an empty circuit. |
+
+**Returns** a `QuantumCircuit`.

@@ -19,7 +19,7 @@ from backend.core.errors import (
     TranspilationError,
     UnsupportedOperationError,
 )
-from backend.core.model import BackendInfo, TranspiledCircuit
+from backend.core.model import BackendInfo, Source, TranspiledCircuit
 
 logger = logging.getLogger(__name__)
 
@@ -82,9 +82,9 @@ def _layout_of(circuit: QuantumCircuit) -> tuple[int, ...] | None:
     return tuple(int(q) for q in initial)
 
 
-def _as_transpiled(circuit: QuantumCircuit, source: str) -> TranspiledCircuit:
+def _as_transpiled(circuit: QuantumCircuit, source: Source) -> TranspiledCircuit:
     return TranspiledCircuit(
-        source=source,  # type: ignore[arg-type]
+        source=source,
         num_qubits=circuit.num_qubits,
         circuit=circuit,
         layout=_layout_of(circuit),

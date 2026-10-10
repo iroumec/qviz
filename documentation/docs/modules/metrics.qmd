@@ -47,6 +47,9 @@ The following updates are then made.
 - The vibration of a qubit is `1 - fidelity / 100` when that error is at least
   `VIBRATION_THRESHOLD`, and zero otherwise.
 
+The fidelities that are reported are percentages (0 to 100), as in the JSON. The
+noise profiles store fractions (0 to 1), so the module converts between the two.
+
 ## What a `virtual_z` does not change {.unnumbered}
 
 A `virtual_z` operation lasts no time. It therefore changes neither the

@@ -51,6 +51,10 @@ booleans or nulls, or a list of such lists. For example, `states` is written as
 arrays that contain objects, stay indented. The non-ASCII characters are kept as
 they are, so that an arrow `→` is not escaped.
 
+**Raises** `ValueError` if the dictionary contains `NaN` or an infinity. They are
+not valid JSON, and `JSON.parse` would reject the whole string, so it is better
+to fail here.
+
 ## Why the dictionary and the string are separated {.unnumbered}
 
 The `compile` function returns a dictionary, not a string. A dictionary is easy

@@ -96,7 +96,8 @@ backend/
     provider/   provider.py, profiles.py
     compiler/   compiler.py
     transpiler/ transpiler.py
-    translator/ translator.py, rules.py, normalize.py, to_qiskit.py
+    translator/ translator.py, rules.py, normalize.py
+    to_qiskit.py                # Puente NativeCircuit -> QuantumCircuit (lo usan la tomografía y los tests)
     simulator/  simulator.py, gpi.py, gpi2.py, ms.py, zz.py, virtualz.py, tomography.py (M8)
     vectorizer/ vectorizer.py
     metrics/    metrics.py
@@ -116,7 +117,7 @@ documentation/
 
 ### 3.3 Reglas de dependencias entre módulos
 
-- Cada módulo importa solo `core.model`, `core.errors`, `core.config` y, si lo necesita, `core.provider`. **Ningún módulo del pipeline importa a otro del pipeline.** Solo `compiler` los conoce a todos.
+- Cada módulo importa solo `core.model`, `core.errors`, `core.config` y, si lo necesita, `core.provider` y `core.to_qiskit` (2f). **Ningún módulo del pipeline importa a otro del pipeline.** Solo `compiler` los conoce a todos.
 - Imports absolutos desde la raíz del paquete: `from backend.core.transpiler import transpiler`. El estilo actual (`from core...`) no funciona en Qollab, donde la raíz del proyecto es la que está en `sys.path`.
 - Las funciones públicas son puras: reciben objetos de `model.py` y devuelven objetos nuevos. Sin estado global y sin `print` (se usa `logging`).
 - **Excepción a la pureza:** `transpiler` (y `tomography` en M8) pueden llamar a `backend.run`, siempre respetando la regla de un job (§2.3).
@@ -134,7 +135,8 @@ data: dict = compile(
     *,
     entangler=None,          # None = automático según backend; "ms" | "zz" para forzar
     strategy="statevector",  # "statevector" (M3) | "tomography" (M8)
-    shots=1024,              # se usa en costo (M5) y tomografía (M8)
+    shots=1024,              # se usa en costo (M5) y tomografía (M8); debe ser > 0
+    allow_paid=False,        # guarda de costo de la tomografía en hardware (M8)
 )
 text: str = export(data, path=None)   # JSON string; si hay path, además lo escribe
 ```
@@ -144,7 +146,7 @@ text: str = export(data, path=None)   # JSON string; si hay path, además lo esc
 
 ### 4.1 Errores
 
-`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError` y `TranspilationError`. Un **proveedor desconocido nunca es error**: cae en la estrategia genérica (§7, M1). Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, o más de `MAX_QUBITS`.
+`core/errors.py`: `QVizError` (base) y, debajo, `UnsupportedOperationError`, `CircuitTooLargeError` y `TranspilationError`. Un **proveedor desconocido nunca es error**: cae en la estrategia genérica (§7, M1). Solo se aborta con un mensaje claro ante operaciones que no tienen sentido en el visualizador: medición a mitad de circuito, `reset`, control clásico, parámetros sin ligar (`UnsupportedOperationError`) o más qubits que el límite efectivo (`CircuitTooLargeError`). También se lanza `QVizError` directamente ante un argumento inválido (`strategy` desconocida, `shots <= 0`) o una tomografía en hardware sin `allow_paid`; `compile` valida `strategy` y `shots` antes de tocar el backend, para no gastar el único job de IonQ por un error de tipeo.
 
 ---
 
@@ -174,12 +176,13 @@ Las matrices de cada compuerta nativa están en `documentation/references/ionq_n
 Provider  = Literal["ionq", "ibm", "aws", "local", "unknown"]
 Entangler = Literal["ms", "zz"]
 OpName    = Literal["gpi", "gpi2", "ms", "zz", "virtual_z"]
+Strategy  = Literal["statevector", "tomography"]
 
 BackendInfo(provider, name, display_name, entangler, is_hardware: bool, profile: NoiseProfile)
 NoiseProfile(spam_error, fidelity_1q, fidelity_2q, idle_error_per_step, price_1q, price_2q)  # §7 M5
 
-TranspiledCircuit(circuit: QuantumCircuit | None, native_ops: list | None,
-                  source: Literal["ionq-native", "qiskit"], num_qubits: int, layout: list[int] | None)
+TranspiledCircuit(circuit: QuantumCircuit | None, native_ops: tuple[dict, ...] | None,
+                  source: Literal["ionq-native", "qiskit"], num_qubits: int, layout: tuple[int, ...] | None)
 
 NativeOp(name: OpName, targets: tuple[int, ...],
          phases: tuple[float, ...] = (),      # rad: gpi/gpi2 → (φ,), ms → (φ0, φ1)
@@ -269,7 +272,7 @@ Es el único punto de acoplamiento con el frontend. **No se cambia sin acuerdo d
 | Campo                  | Definición                                                                                                                                                                                                                                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `backend`              | `BackendInfo.display_name`                                                                                                                                                                                                                                                                        |
-| `total_qubits`         | Qubits del circuito del usuario más ancillas reales, si las hubo (ver compactación, M2)                                                                                                                                                                                                           |
+| `total_qubits`         | Qubits del circuito del usuario más ancillas reales, si las hubo (ver compactación, M2). Entre 1 y `MAX_QUBITS` (16); el schema tiene el mismo tope, y un test comprueba que coincidan                                                                                                          |
 | `initial_fidelity`     | `100 · (1 − spam_error)` del perfil de ruido                                                                                                                                                                                                                                                      |
 | `step`                 | Índice desde 1, consecutivo. La lista se ordena por `step`                                                                                                                                                                                                                                        |
 | `operation`            | En minúsculas. **[decisión]** `virtual_z`, no `virtualZ`, para no mezclar mayúsculas en un enum                                                                                                                                                                                                    |
@@ -303,7 +306,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 
 **Objetivo:** dejar un proyecto que se instala y testea, con la estructura de §3.2 vacía y bien cableada.
 
-- `pyproject.toml`: `requires-python = ">=3.12"`, dependencias `qiskit>=2.5.2,<3` (alineado con Qollab), `qiskit-ionq` y `numpy`, y extras `dev` = `pytest`, `jsonschema`.
+- `pyproject.toml`: `requires-python = ">=3.12"`, dependencias `qiskit>=2.5.2,<3` (alineado con Qollab), `qiskit-ionq` y `numpy`, y extras `dev` = `pytest`, `jsonschema`, `flake8`, `pydocstyle` (`make lint`).
 - `__init__.py` en cada paquete. Imports absolutos `backend.core...` (§3.3). Arreglar `backend/__init__.py`: hoy importa `from core.compiler import compile` y `from exporter import export`, que no resuelven, y tiene un `__main__` que no se ejecuta nunca. `show` se saca de `__all__` hasta que exista el frontend.
 - `core/model.py` (todos los dataclasses de §5.2), `core/errors.py` y `core/config.py`.
 - `tests/circuits.py` y `tests/conftest.py`.
@@ -331,7 +334,7 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 | fallback estructural: los `operation_names` del backend                               | `ionq`/`ibm`/`unknown`      |
 | cualquier otra cosa                                                                   | `unknown` (nunca excepción) |
 
-El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms`/`zz` → `ionq`; `ecr`, o `cz`+`sx`+`rz` juntos → `ibm`; `rxx`/`ryy` → `ionq`; si no, `unknown`. Así un backend con nombre raro pero gates claros queda bien clasificado.
+El fallback estructural mira `target.operation_names` (o `operation_names`, o `configuration().basis_gates`): `gpi`/`gpi2`/`ms` → `ionq` (`zz` y `rxx` no cuentan: también existen como compuertas comunes de Qiskit y darían falsos positivos); `ecr`, o `cz`+`sx`+`rz` juntos → `ibm`; si no, `unknown`. Así un backend con nombre raro pero gates claros queda bien clasificado.
 
 - Entrelazador automático **[actualizado]**: primero se mira la compuerta nativa de 2 qubits que anuncia el backend (si anuncia solo `zz`, o solo `ms`); si no, se usa `native_2q_gate` de `qiskit-ionq`; si no, el nombre: `forte` o `ideal` → `zz`, `aria` → `ms`; por defecto `ms`. El parámetro `entangler` de `compile` lo puede forzar.
 - `is_hardware`: true solo para QPUs de IonQ (las que gastan créditos). Se prefieren los atributos booleanos `_simulator`/`_is_simulator`/`is_simulator`/`simulator` que pone el SDK; buscar la palabra `simulator` en el nombre queda como último recurso, porque un nombre es una señal débil.
@@ -339,9 +342,9 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 
 **1c. `transpiler.transpile(info, backend, qc) -> TranspiledCircuit`**
 
-- Primero quita las mediciones finales (`remove_final_measurements`) y valida `num_qubits ≤ MAX_QUBITS`.
+- Primero quita las mediciones finales (`remove_final_measurements`) y valida el ancho contra el límite efectivo (`min(MAX_QUBITS, backend.num_qubits)`, §5.4), que el circuito no esté vacío y que no tenga parámetros sin ligar (`UnsupportedOperationError`). Las tres validaciones ocurren antes de cualquier job.
 - **IonQ, estrategia `native-local`** (candidata, la más deseable): con qiskit-ionq ≥ 1.0.0, `transpile(qc, backend=<backend con gateset="native">)` transpila a GPI/GPI2/MS|ZZ **en local, sin mandar ningún job** (`ionq_native_gates.md` §4.2). Esto evita la duda sobre `dry_run` y no gasta el único job de la corrida. **[a verificar]** si en Qollab se puede obtener la variante nativa del `backend` inyectado (qollab_context §8.4). Ojo: es el transpilador de qiskit-ionq, no el compilador propietario de IonQ, así que el resultado puede diferir del que IonQ ejecutaría.
-- **IonQ, estrategia `remote`** (la del código actual): `backend.run(qc, dry_run=True, job_settings=...)` + `job.compiled_circuit(lang="native")`. **[a verificar]** que la versión de qiskit-ionq en Qollab soporte `dry_run` y `compiled_circuit`, qué devuelve (¿`QuantumCircuit` con `GPIGate`? ¿dict JSON de IonQ?) y si el dry-run cuenta como el único job de la corrida.
+- **IonQ, estrategia `remote`** (la del código actual): `backend.run(qc, dry_run=True, job_settings=...)` + `job.compiled_circuit(lang="native")`. La espera del job tiene un tope (`config.REMOTE_JOB_TIMEOUT_S`, 60 s): si se agota, se pasa a `local`. **[a verificar]** que la versión de qiskit-ionq en Qollab soporte `dry_run` y `compiled_circuit`, qué devuelve (¿`QuantumCircuit` con `GPIGate`? ¿dict JSON de IonQ?) y si el dry-run cuenta como el único job de la corrida.
 - **IonQ, estrategia `local` (fallback)**: si `remote` lanza una excepción, se usa `qiskit.transpile(qc, backend=backend, optimization_level=1)` (el backend precreado usa el gateset estándar) y se deja un warning en el log. El translator lo trata igual que a un proveedor no-IonQ.
 - **No IonQ**: `qiskit.transpile(qc, backend=backend, optimization_level=1)`. Si falla (proveedor raro), se reintenta con `transpile(qc, basis_gates=["rz", "sx", "x", "cz", "cx"], optimization_level=1)`, sin mapa de acoplamiento.
 - Se guarda el layout inicial (`circuit.layout.initial_index_layout(filter_ancillas=True)`) si existe, para la compactación en M2.
@@ -358,7 +361,7 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 
 **Objetivo:** convertir cualquier `TranspiledCircuit` en un `NativeCircuit` equivalente formado solo por `gpi`, `gpi2`, `virtual_z` y un único entrelazador (`ms` **o** `zz`, nunca los dos).
 
-**2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py`, `normalize.py` y `to_qiskit.py`.
+**2a. Clases por proveedor (`translator.py`).** La interfaz es la base abstracta `Translator`, que expone un único método `translate(transpiled) -> NativeCircuit`; recibe el `TranspiledCircuit` que devuelve `transpiler.transpile()`. Hay una subclase por proveedor detectado en §M1b — `IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator` y `GenericTranslator` (proveedor `unknown`) — y `compiler` elige la subclase a partir de `BackendInfo.provider`. La regla de traducción es la misma para todos (2c); lo que cambia entre subclases es el entrelazador objetivo (`ms`/`zz` de `BackendInfo.entangler`) y los casos especiales del proveedor. Cada subclase delega en los helpers `rules.py` y `normalize.py`.
 
 **2b. Compactación de qubits.** Los qubits de salida son los del circuito del usuario, en su orden (vía layout inicial). Los qubits físicos que no se tocan se descartan: un IBM de 156 qubits queda en 2 si el circuito es un Bell. Si el routing usó ancillas físicas, se agregan al final. Un qubit del usuario que nunca se usa se conserva (es un ion quieto en |0⟩). Limitación aceptada: las permutaciones finales por routing no se deshacen.
 
@@ -397,14 +400,14 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 **2d. Normalización del ángulo (`normalize.py`)** a t ∈ [0, 0.25] turnos, para ZZ(t) = exp(−iπt·ZZ):
 
-1. t ← t mod 1, llevado a (−0.5, 0.5] (±1 turno es fase global).
+1. t ← t mod 1, llevado a [−0.5, 0.5) (±1 turno es fase global).
 2. Si |t| > 0.25: t ← t − 0.5·sign(t), y se agrega Z⊗Z = `virtual_z(π)` en ambos qubits (para MS se agrega X⊗X = `gpi(φ0)`, `gpi(φ1)`).
 3. Si t < 0: se conjuga el primer qubit con X para ZZ (`gpi(0)` antes y después) o con Z para MS (`virtual_z(π)` antes y después), y t ← −t.
 4. Si t = 0 no se emite nada.
 
 **2e. Conmutación MS ↔ ZZ.** Si el circuito de IonQ trae el entrelazador que no corresponde (o el usuario forzó el otro con `entangler`), se reescribe con las identidades de 2c. Esto también cubre el extra "Conmutador de compuertas".
 
-**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`.** Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtual_z. Se usa como oráculo en los tests y para la tomografía en M8.
+**2f. `to_qiskit(native, upto=None) -> QuantumCircuit`** (`core/to_qiskit.py`, fuera del paquete `translator` porque va en el sentido inverso a la traducción y lo usan también la tomografía y los tests, sin que ningún módulo del pipeline importe a otro). Reconstruye el circuito con `GPIGate`, `GPI2Gate`, `MSGate`, `ZZGate` (de qiskit-ionq, fases en turnos) y `RZGate` para virtual_z. Se usa como oráculo en los tests y para la tomografía en M8.
 
 **Sin optimización** en el MVP: no se fusionan compuertas consecutivas. Un pase de fusión es opcional para después.
 
@@ -424,8 +427,8 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 **Objetivo:** calcular, después de cada op, el estado reducido de cada qubit como (r, θ, φ), y el VirtualZ acumulado.
 
 - Un archivo por compuerta (ya existen `gpi.py` y `gpi2.py`), cada uno con `matrix(...) -> np.ndarray` en convención de radianes y turnos (§5.1), según las matrices de `ionq_native_gates.md` §2. La doc escribe las matrices de 2 qubits en big-endian; acá se trabaja en little-endian, así que hay que cuidar el orden de los targets: `gpi.py`, `gpi2.py`, `ms.py`, `zz.py`, `virtualz.py` (= RZ(λ)).
-- `simulate(native) -> SimulatedCircuit`: statevector de NumPy con forma `(2,)*n`, inicializado en |0…0⟩. Cada op se aplica con `np.tensordot` sobre los ejes de sus targets. Con el orden little-endian, el qubit q corresponde al eje `n−1−q`.
-- Después de cada op, para cada qubit: la matriz densidad reducida ρ_q (traza parcial) da x = 2·Re ρ01, y = −2·Im ρ01, z = ρ00 − ρ11, y de ahí se calculan r, θ y φ. El vectorizer convierte de vuelta a cartesianas. Se pasa por ángulos porque así lo pide el diagrama de actividad y porque la UI muestra θ y φ.
+- `simulate(native) -> SimulatedCircuit`: statevector de NumPy con forma `(2,)*n`, inicializado en |0…0⟩. Cada op se aplica contrayendo su matriz con los ejes de sus targets (se transpone el estado para ponerlos primero y se multiplica). Con el orden little-endian, el qubit q corresponde al eje `n−1−q`.
+- Después de cada op, para cada qubit **target** (los demás conservan su descripción anterior: una unitaria sobre unos qubits no cambia el estado reducido del resto, y así cada paso cuesta el trabajo de uno o dos qubits): la matriz densidad reducida ρ_q (traza parcial) da x = 2·Re ρ01, y = −2·Im ρ01, z = ρ00 − ρ11, y de ahí se calculan r, θ y φ. El vectorizer convierte de vuelta a cartesianas. Se pasa por ángulos porque así lo pide el diagrama de actividad y porque la UI muestra θ y φ.
 - VirtualZ se aplica como RZ real sobre el estado, así el vector gira en Z (es el "click" del VirtualZ). `virtual_z[q]` acumula λ módulo 2π.
 - `simulate` solo calcula el statevector exacto; la tomografía (M8) se elige en `compiler`, antes de llamarla.
 
@@ -473,7 +476,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 **Objetivo:** cerrar el pipeline: `compile(backend, qc)` devuelve el dict del contrato §6 y `export` lo serializa.
 
 - `formatter.format(measured) -> dict`: arma exactamente las claves de §6, omite los campos que no aplican y redondea a `JSON_DECIMALS`.
-- `exporter.export(data, path=None) -> str`: `json.dumps(data, ensure_ascii=False)`, y si hay `path` lo escribe (en Qollab el archivo dura solo lo que dura la corrida).
+- `exporter.export(data, path=None) -> str`: `json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False)` (un `NaN` o infinito no es JSON válido y lanza `ValueError`), y si hay `path` lo escribe (en Qollab el archivo dura solo lo que dura la corrida).
 - `compiler.compile(...)`: descomenta y completa el pipeline de §3.1.
 - `documentation/schema/visualization.schema.json` (JSON Schema draft 2020-12) con los tipos, rangos, campos condicionales por `operation` y largos de listas iguales a `total_qubits`.
 
@@ -489,7 +492,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 - `main.py` en la raíz (proyecto Python, porque todavía no hay frontend): arma un circuito de ejemplo, llama a `compile(backend, qc)` y hace `print(export(data))`. **Nunca `import backend`**: pisaría la variable `backend` que inyecta Qollab. Se usa `from backend import compile, export`.
 - `requirements.txt` con las mismas dependencias que `pyproject.toml` (sin opciones de pip ni marcadores de entorno).
-- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5).
+- Si `main()` lleva parámetros con anotaciones estrictas (`shots: int`, `entangler: str`), Qollab genera un formulario (qollab_context §5). El campo `entangler` es texto libre (el formulario no tiene desplegables) y vale `"auto"` por defecto: `parse_entangler` lo convierte en `None` (el backend decide: Forte → ZZ, el resto → MS), o en `"ms"`/`"zz"` para forzarlo, sin distinguir mayúsculas. Cualquier otro texto lanza `QVizError`; antes caía en silencio al modo automático y el valor por defecto `"ms"` forzaba MS también en Forte. **[a verificar]** en Qollab si el formulario precarga el valor por defecto y cómo llega un campo vacío (`""` o `None`; ambos se tratan como `"auto"`).
 
 **Validación (manual, la hace el equipo):** correr en Built-in, AWS local, un IBM con ruido, IonQ Aria 1 (simulador) e IonQ Forte 1 (simulador). Ninguno puede fallar, el JSON tiene que validar contra el schema y no puede aparecer "only one job is allowed". Los resultados se anotan en §10.
 
@@ -594,3 +597,4 @@ Pendientes de verificar en Qollab (el agente no puede ejecutarlos):
 3. **`cumulative_*` y `virtualz`: [resuelto].** El contrato usa `cumulative_*` y el op `virtual_z`. Actualizado en backend, schema y documentación.
 4. **Perfil de ruido para backends no IonQ:** ¿referencia de iones (actual) o `ideal` para los simuladores locales ideales?
 5. **Unidad de costo:** USD estimados (actual) o créditos de Qollab.
+6. **Transpilación de los backends que no son IonQ [urgente]:** con el mapa de conexiones de un chip de IBM, el enrutamiento puede cambiar las etiquetas de los qubits y la secuencia de pasos varía entre corridas. Explicación, evidencia, opciones y sonda para Qollab en `documentation/prompts/decision_transpilacion_no_ionq.md`.

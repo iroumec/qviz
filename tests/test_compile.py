@@ -10,6 +10,7 @@ import jsonschema
 import pytest
 
 from backend import compile, export
+from backend.core import config
 from backend.core.errors import QVizError
 from tests.circuits import ALL_CIRCUITS, bell
 
@@ -51,6 +52,10 @@ def test_compile_validates_against_schema(factory, basic_backend):
     jsonschema.validate(data, _SCHEMA)
     _assert_lengths(data)
     _assert_no_null(data)
+
+
+def test_schema_width_matches_the_qubit_cap():
+    assert _SCHEMA["properties"]["total_qubits"]["maximum"] == config.MAX_QUBITS
 
 
 def test_bell_golden(basic_backend):

@@ -10,6 +10,8 @@ package "backend" {
         [model.py]
         [errors.py]
         [config.py]
+        [constants.py]
+        [to_qiskit.py]
 
         package "provider" {
             [provider.py]
@@ -25,7 +27,6 @@ package "backend" {
             [translator.py]
             [rules.py]
             [normalize.py]
-            [to_qiskit.py]
         }
         package "simulator" {
             [simulator.py]
@@ -34,6 +35,7 @@ package "backend" {
             [ms.py]
             [zz.py]
             [virtualz.py]
+            [tomography.py]
         }
         package "vectorizer" {
             [vectorizer.py]

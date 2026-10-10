@@ -8,7 +8,7 @@
   "required": ["backend", "total_qubits", "initial_fidelity", "steps"],
   "properties": {
     "backend": { "type": "string" },
-    "total_qubits": { "type": "integer", "minimum": 1, "maximum": 28 },
+    "total_qubits": { "type": "integer", "minimum": 1, "maximum": 16 },
     "initial_fidelity": { "type": "number", "minimum": 0, "maximum": 100 },
     "steps": {
       "type": "array",

@@ -32,7 +32,10 @@ def measure(
     profile = info.profile
     n = vectorized.native.num_qubits
 
+    # Fidelities are percentages (0-100) as in the JSON; the profiles hold
+    # fractions (0-1), hence the ``100.0 *`` and ``/ 100.0`` conversions.
     initial_fidelity = 100.0 * (1.0 - profile.spam_error)
+    idle_factor = 1.0 - profile.idle_error_per_step
     fidelities = [100.0] * n
     inactivity = [0] * n
     cumulative_fidelity = initial_fidelity
@@ -44,24 +47,22 @@ def measure(
         op = step.op
         fidelity, price = _fidelity_and_price(op.name, info)
         targets = set(op.targets)
-        inactive_qubits = []
+        idle_count = 0
 
         for qubit in range(n):
             if qubit in targets:
                 fidelities[qubit] *= fidelity
             elif op.name != "virtual_z":
-                fidelities[qubit] *= 1.0 - profile.idle_error_per_step
+                fidelities[qubit] *= idle_factor
                 inactivity[qubit] += 1
-                inactive_qubits.append(qubit)
+                idle_count += 1
 
-        cumulative_fidelity *= fidelity
-        for _ in inactive_qubits:
-            cumulative_fidelity *= 1.0 - profile.idle_error_per_step
+        cumulative_fidelity *= fidelity * idle_factor**idle_count
         cumulative_cost += shots * price
 
+        errors = (1.0 - qubit_fidelity / 100.0 for qubit_fidelity in fidelities)
         vibration = tuple(
-            error if error >= config.VIBRATION_THRESHOLD else 0.0
-            for error in (1.0 - fidelities[q] / 100.0 for q in range(n))
+            error if error >= config.VIBRATION_THRESHOLD else 0.0 for error in errors
         )
 
         steps.append(

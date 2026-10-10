@@ -62,6 +62,10 @@ step goes through all of them; memory and time grow exponentially. Second, this
 is a visualizer: with more than about 16 Bloch spheres the picture is no longer
 readable.
 
+The JSON schema follows the same cap: the maximum of `total_qubits` in
+`documentation/schema/visualization.schema.json` is 16, and a test checks that it
+equals `MAX_QUBITS`. If the cap is changed, the schema must be changed with it.
+
 ## The error module {.unnumbered}
 
 The file `backend/core/errors.py` defines a small hierarchy of exceptions. Only
@@ -77,8 +81,8 @@ QVizError
 
 | Exception | Raised when |
 | --- | --- |
-| `QVizError` | The base class. It is not raised directly. It is used to catch any QViz error. |
-| `UnsupportedOperationError` | The circuit contains an operation that cannot be shown, for example a mid-circuit measurement, a `reset`, or classical control flow. |
+| `QVizError` | The base class, which is used to catch any QViz error. It is also raised directly for a wrong argument or a refused action: an unknown `strategy`, `shots` that is not positive, or tomography on hardware without `allow_paid`. |
+| `UnsupportedOperationError` | The circuit contains something that cannot be shown, for example a mid-circuit measurement, a `reset`, classical control flow, an unbound parameter, or a malformed entry in a native gate list. |
 | `CircuitTooLargeError` | The circuit is wider than the effective limit that is described above. |
 | `TranspilationError` | The circuit could not be transpiled for the chosen backend. |
 

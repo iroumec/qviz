@@ -16,11 +16,12 @@ backend/                    The library.
     errors.py               The exception hierarchy.
     constants.py            The fixed mathematical constants (never changed).
     config.py               The tunable configuration parameters.
+    to_qiskit.py            The bridge from a native circuit to a Qiskit circuit.
     provider/               Provider detection and noise profiles.
     compiler/               The pipeline orchestration.
     transpiler/             Transpilation for the backend.
     translator/             Translation into the native gate set.
-    simulator/              The statevector and the gate matrices.
+    simulator/              The statevector, the gate matrices and the tomography.
     vectorizer/             The Bloch vectors.
     metrics/                The didactic metrics.
     formatter/              The JSON contract.
@@ -41,12 +42,14 @@ module, and it is a verb.
 | Module | Function |
 | --- | --- |
 | `transpiler` | `transpile` |
+| `translator` | `translate_circuit`, `translate_native_ops` (and `Translator.translate`) |
 | `simulator` | `simulate` |
 | `vectorizer` | `vectorize` |
 | `metrics` | `measure` |
 | `formatter` | `format` |
 | `exporter` | `export` |
 | `provider` | `detect` |
+| `compiler` | `compile` |
 
 ## Imports {.unnumbered}
 

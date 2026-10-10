@@ -43,7 +43,7 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 ```
 
 - **Un paquete por módulo:** `backend/core/<modulo>/<modulo>.py`, con una función pública cuyo verbo nombra al módulo (`transpile`, `translate`, `simulate`, `vectorize`, `measure`, `format`, `export`). Los helpers van en archivos hermanos dentro del mismo paquete.
-- **`compiler.py` solo orquesta.** Los módulos del pipeline **no se importan entre sí**; solo usan `core.model`, `core.errors`, `core.config` y `core.provider`.
+- **`compiler.py` solo orquesta.** Los módulos del pipeline **no se importan entre sí**; solo usan `core.model`, `core.errors`, `core.config`, `core.provider` y `core.to_qiskit` (puente neutral de `NativeCircuit` a `QuantumCircuit`, que usan la tomografía y los tests).
 - **Imports absolutos desde el paquete:** `from backend.core.translator import translator`. El estilo `from core...` no funciona en Qollab.
 - **Datos:** dataclasses `frozen=True` definidos en `core/model.py`. Las funciones son puras: devuelven objetos nuevos y no mutan la entrada.
 - **Sin estado global y sin `print` en `backend/core`.** Se usa `logging.getLogger(__name__)`. Los `print` van solo en `scripts/` y `main.py`.

@@ -23,6 +23,7 @@ from backend.core.model import (
     SimulatedCircuit,
     SimulatedStep,
 )
+from backend.core.to_qiskit import to_qiskit
 
 logger = logging.getLogger(__name__)
 
@@ -88,10 +89,6 @@ def measure(
     allow_paid: bool = False,
 ) -> SimulatedCircuit:
     """Measure every prefix of ``native`` and return the estimated Bloch states."""
-    # Imported lazily to avoid an import cycle; the spec assigns to_qiskit to
-    # the translator but allows tomography to use it.
-    from backend.core.translator.to_qiskit import to_qiskit
-
     if info.is_hardware and not allow_paid:
         raise QVizError(
             "tomography sends many circuits, so a paid backend may spend "

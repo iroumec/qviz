@@ -5,14 +5,17 @@ circuit into a sequence of native ion gates. Only `gpi`, `gpi2`, `virtual_z` and
 **one** entangler, either `ms` or `zz`, appear in the result. The two entanglers
 are never mixed.
 
-Four files are used.
+Three files are used.
 
 | File | Responsibility |
 | --- | --- |
 | `translator.py` | The abstract base class and the provider subclasses. |
 | `rules.py` | The translation table, one rule per gate. |
 | `normalize.py` | The entangling angle is reduced to the range [0, 0.25] turns. |
-| `to_qiskit.py` | A Qiskit circuit is rebuilt from a native circuit. |
+
+The opposite direction, rebuilding a Qiskit circuit from a native circuit, is not
+part of the translator. It lives in its own module, described on the
+[`to_qiskit` page](to-qiskit.qmd).
 
 ## The translator classes {.unnumbered}
 
@@ -199,24 +202,6 @@ returned and nothing is emitted.
 | `angle` | float | The angle in turns. |
 
 **Returns** a list of `NativeOp`.
-
-## Rebuilding a Qiskit circuit {.unnumbered}
-
-### `to_qiskit(native, upto=None)` {.unnumbered}
-
-A Qiskit circuit is rebuilt from a `NativeCircuit`. The native gates of
-`qiskit-ionq` are used, and the phases are changed back from radians to turns. A
-`virtual_z` operation becomes an `RZ` gate.
-
-This function is used as the oracle in the tests. It is also used by the
-tomography strategy.
-
-| Parameter | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `native` | `NativeCircuit` | required | The circuit to rebuild. |
-| `upto` | int or `None` | `None` | When it is given, only the first `upto` operations are used. `upto=0` gives an empty circuit. |
-
-**Returns** a `QuantumCircuit`.
 
 ## A note on global phases {.unnumbered}
 

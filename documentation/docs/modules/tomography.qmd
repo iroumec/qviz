@@ -44,7 +44,8 @@ The solution is to build a **prefix circuit** for every `k`. A prefix contains
 the first `k` operations, and it is measured. In this way, the state after each
 operation is obtained, one measurement at a time.
 
-A prefix is built with `to_qiskit(native, upto=k)`. The first operations are the
+A prefix is built with `to_qiskit(native, upto=k)` (see the [`to_qiskit`
+page](to-qiskit.qmd)). The first operations are the
 same as in the full circuit, so the measured state is the state that the full
 circuit would have at that point.
 

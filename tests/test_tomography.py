@@ -29,8 +29,10 @@ def _native(entangler: str = "ms"):
 
 
 def test_tomography_matches_statevector():
-    ideal = compile(BasicSimulator(), bell(), strategy="statevector")
-    measured = compile(BasicSimulator(), bell(), strategy="tomography", shots=_SHOTS)
+    backend = BasicSimulator()
+    backend.set_options(seed_simulator=20261010)
+    ideal = compile(backend, bell(), strategy="statevector")
+    measured = compile(backend, bell(), strategy="tomography", shots=_SHOTS)
 
     for ideal_step, measured_step in zip(ideal["steps"], measured["steps"]):
         for ideal_state, measured_state in zip(
