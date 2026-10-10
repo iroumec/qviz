@@ -9,7 +9,7 @@ schema is stored in `documentation/schema/visualization.schema.json`.
 | Key | Type | Meaning |
 | --- | --- | --- |
 | `backend` | string | The readable name of the backend. For a non-IonQ backend, the name of the reference ion machine is added. |
-| `total_qubits` | integer | The number of qubits after compaction. Unused physical qubits are removed. |
+| `total_qubits` | integer | The number of qubits after compaction, from 1 to 16 (`MAX_QUBITS`). Unused physical qubits are removed. |
 | `initial_fidelity` | number | `100 * (1 - spam_error)`, in percent. |
 | `steps` | array | One object per native operation, ordered by `step`. |
 

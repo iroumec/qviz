@@ -10,7 +10,7 @@ Two parts of the project need this function: the tomography strategy and the
 tests. The pipeline modules must not import each other, so the tomography could
 not import it from the `translator` package. The function is therefore placed
 directly in `core/`, next to `model.py`, `errors.py` and `config.py`. It only
-depends on the model and on `qiskit-ionq`, so any module may use it.
+depends on the model, the constants and `qiskit-ionq`, so any module may use it.
 
 ## `to_qiskit(native, upto=None)` {.unnumbered}
 

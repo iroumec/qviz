@@ -396,9 +396,7 @@ def translate_native_ops(
             raise _malformed(source_index, "not a dictionary", raw)
         gate = str(raw.get("gate") or raw.get("name") or "").lower()
         if gate not in _NATIVE_ARITY:
-            raise UnsupportedOperationError(
-                f"unknown native gate {gate!r} in input list"
-            )
+            raise _malformed(source_index, f"unknown native gate {gate!r}", raw)
         targets = _native_targets(raw, num_qubits, source_index)
         if len(targets) != _NATIVE_ARITY[gate]:
             raise _malformed(

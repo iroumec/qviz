@@ -193,5 +193,5 @@ def test_native_ops_input_is_equivalent_to_ionq_gates(entangler):
     ],
 )
 def test_malformed_native_ops_raise_unsupported(payload):
-    with pytest.raises(UnsupportedOperationError):
+    with pytest.raises(UnsupportedOperationError, match="source index 0"):
         _native_payload_translation(payload)

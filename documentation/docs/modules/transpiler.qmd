@@ -33,7 +33,8 @@ These steps are always performed before the strategies are tried.
 1. The final measurements are removed.
 2. The number of qubits is checked against the effective limit, which is the
    smaller of `MAX_QUBITS` and the width of the backend.
-3. The circuit must have no unbound parameters.
+3. The circuit must have at least one qubit.
+4. The circuit must have no unbound parameters.
 
 A circuit with measurements at the end is therefore accepted. A measurement in
 the middle of the circuit is not removed, and it is rejected later by the

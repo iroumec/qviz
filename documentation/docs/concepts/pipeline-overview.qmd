@@ -52,7 +52,9 @@ QuantumCircuit + backend
 Two rules are respected by all the modules of the pipeline.
 
 1. **No module imports another pipeline module.** A module may import only
-   `core.model`, `core.errors`, `core.config` and, when needed, `core.provider`.
+   `core.model`, `core.errors`, `core.config` and, when needed, `core.provider`
+   and `core.to_qiskit` (the neutral bridge from a native circuit to a Qiskit
+   circuit, used by the tomography and by the tests).
    Only `compiler` knows all the other modules. This keeps the modules easy to
    test and to change.
 2. **The public functions are pure.** An object is received, and a new object is

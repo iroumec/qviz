@@ -13,6 +13,7 @@ make demo M=simulator
 make demo M=vectorizer
 make demo M=metrics
 make demo M=compile
+make demo M=adder
 ```
 
 ## The shared helpers {.unnumbered}
