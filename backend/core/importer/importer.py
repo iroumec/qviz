@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, qasm2
 from qiskit.circuit import ControlFlowOp
 
 from backend.core import config
@@ -49,8 +49,6 @@ def _version(code: str) -> int:
 
 def _parse(text: str, version: int) -> QuantumCircuit:
     if version == 2:
-        from qiskit import qasm2
-
         return qasm2.loads(text)
     try:
         from qiskit import qasm3

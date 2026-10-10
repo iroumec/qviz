@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, qasm3
 from qiskit.circuit import Gate
 from qiskit.quantum_info import Operator
 
@@ -32,6 +32,15 @@ def test_openqasm3_is_read():
 def test_openqasm2_is_read():
     text = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[2]; h q[0]; cx q[0],q[1];'
     assert Operator(load_circuit(text)).equiv(Operator(bell()))
+
+
+def test_openqasm3_without_its_package_says_what_to_install(monkeypatch):
+    def missing(_text):
+        raise ImportError("No module named 'qiskit_qasm3_import'")
+
+    monkeypatch.setattr(qasm3, "loads", missing)
+    with pytest.raises(CircuitParseError, match="qiskit-qasm3-import"):
+        load_circuit(_HEAD3 + "qubit[1] q; h q[0];")
 
 
 def test_comments_before_the_header_are_ignored():
