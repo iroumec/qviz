@@ -170,8 +170,10 @@ def _transpile_ionq(
                     num_qubits=circuit.num_qubits,
                     native_ops=ops,
                 )
-            raise TranspilationError(
-                f"unexpected native payload: {type(result).__name__}"
+            logger.warning(
+                "IonQ remote native transpile returned an unexpected payload (%s); "
+                "falling back to local transpile",
+                type(result).__name__,
             )
         except Exception as exc:  # noqa: BLE001 - fall back to local transpile
             logger.warning(

@@ -128,6 +128,17 @@ def test_ionq_falls_back_when_remote_fails():
     assert transpiled.circuit is not None
 
 
+def test_ionq_falls_back_when_remote_payload_is_unexpected():
+    job = MagicMock()
+    job.compiled_circuit.return_value = "not a circuit"
+    backend = MagicMock()
+    backend.run.return_value = job
+
+    transpiled = transpiler.transpile(_ionq_info(), backend, bell())
+    assert transpiled.source == "qiskit"
+    backend.run.assert_called_once()
+
+
 def test_circuit_too_large_raises():
     qc = QuantumCircuit(config.MAX_QUBITS + 1)
     qc.x(0)
