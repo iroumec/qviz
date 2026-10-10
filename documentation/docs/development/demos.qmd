@@ -67,15 +67,13 @@ each pair, for example `out/adder_n2_1_1.json`. The example is described on the
 
 ## `package_qollab.py` {.unnumbered}
 
-This script is run with `make qollab` (the viewer) or `make qollab-probe` (the
-diagnostic page). The viewer, the way it is built and the rules for changing it
+This script is run with `make qollab`. The viewer, the way it is built and the rules for changing it
 are on the [viewer on Qollab](../frontend/qollab.qmd) page.
 
 The whole repository has more files than Qollab accepts (100 per project), and
 Qollab looks only at the files of the root to decide the type of the project. The
 script therefore builds the folder `qollab/` (not committed) with a complete **JS
-project**: `index.html`, `main.css` and `main.js` made from the viewer (or, for
-the diagnostic page, the files of `scripts/qollab_js_probe`), `qollab_api.py`,
+project**: `index.html`, `main.css` and `main.js` made from the viewer, `qollab_api.py`,
 `requirements.txt` and the libraries `backend/` and `examples/`. `main.py` is left
 out, because in a JS project it could compile a second time and spend a second
 IonQ job. The content of the folder is uploaded to Qollab. See

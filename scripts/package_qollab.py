@@ -5,23 +5,18 @@ upload over the limit is rejected completely), and Qollab only looks at the
 files of the root to decide the type of the project. Qollab also runs no
 ``<script>`` of the HTML, loads a single style sheet (``main.css``) and cannot
 read the files of the project from JS. This script builds the project from the
-repository:
-
-- ``viewer`` (default): the real viewer, ``frontend/index.html``. Its markup
-  becomes ``index.html``, its style ``main.css``, and the modules of
-  ``frontend/js`` are copied as they are. ``main.js`` is generated: a short
-  prelude that gives the viewer the Qollab services (``window.QVIZ_HOST``) and
-  then imports the entry module ``js/main.js``.
-- ``probe``: the test page of ``scripts/qollab_js_probe`` (Compile, Measure and
-  Run checks), to diagnose the connection with Python.
-
-Both include ``qollab_api.py``, ``requirements.txt`` and the libraries
-``backend/`` and ``examples/``. ``main.py`` is left out on purpose: in a JS
-project it could compile a second time and spend a second IonQ job.
+repository: the real viewer, ``frontend/index.html``. Its markup becomes
+``index.html``, its style ``main.css``, and the modules of ``frontend/js`` are
+copied as they are. ``main.js`` is generated: a short prelude that gives the
+viewer the Qollab services (``window.QVIZ_HOST``) and then imports the entry
+module ``js/main.js``. The project also has ``qollab_api.py``,
+``requirements.txt`` and the libraries ``backend/`` and ``examples/``.
+``main.py`` is left out on purpose: in a JS project it could compile a second
+time and spend a second IonQ job.
 
 Upload the **content** of ``qollab/``. See ``documentation/prompts/qollab_pruebas.md``.
 
-Run with: python scripts/package_qollab.py [viewer|probe]   (or: make qollab)
+Run with: python scripts/package_qollab.py   (or: make qollab)
 """
 
 from __future__ import annotations
@@ -29,7 +24,6 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -39,13 +33,11 @@ MAX_BYTES = 2_000_000
 
 _LIBRARY = ("backend", "examples")
 _SHARED = ("qollab_api.py", "requirements.txt")
-_PROBE = Path("scripts") / "qollab_js_probe"
 _VIEWER = Path("frontend") / "index.html"
 _VIEWER_MODULES = Path("frontend") / "js"
 _ENTRY_IMPORT = "./js/main.js"
 _SHADERS = Path("shaders")
 _MODELS = Path("models")
-PAGES = ("viewer", "probe")
 
 # The prelude runs before the modules, so that `window.QVIZ_HOST` is ready when
 # the modules read it. It provides the shaders, the laser model, the circuits,
@@ -193,10 +185,8 @@ def _library_files() -> list[Path]:
     return files
 
 
-def package(out_dir: Path = OUT, page: str = "viewer") -> list[Path]:
+def package(out_dir: Path = OUT) -> list[Path]:
     """Write the project folder and return its files, as paths inside it."""
-    if page not in PAGES:
-        raise SystemExit(f"page must be one of {', '.join(PAGES)}, got {page!r}")
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
@@ -208,16 +198,11 @@ def package(out_dir: Path = OUT, page: str = "viewer") -> list[Path]:
         shutil.copyfile(ROOT / source, destination)
         written.append(source)
 
-    if page == "viewer":
-        for name, content in viewer_files().items():
-            destination = out_dir / name
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(content, encoding="utf-8")
-            written.append(Path(name))
-    else:
-        for name in ("index.html", "main.js"):
-            shutil.copyfile(ROOT / _PROBE / name, out_dir / name)
-            written.append(Path(name))
+    for name, content in viewer_files().items():
+        destination = out_dir / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(content, encoding="utf-8")
+        written.append(Path(name))
 
     too_big = [str(p) for p in written if (out_dir / p).stat().st_size > MAX_BYTES]
     if len(written) > MAX_FILES or too_big:
@@ -227,9 +212,8 @@ def package(out_dir: Path = OUT, page: str = "viewer") -> list[Path]:
 
 def main() -> None:
     """Build the folder and print what to upload."""
-    page = sys.argv[1] if len(sys.argv) > 1 else "viewer"
-    files = package(page=page)
-    print(f"qollab/ ({page}): {len(files)} files (limit {MAX_FILES})")
+    files = package()
+    print(f"qollab/: {len(files)} files (limit {MAX_FILES})")
     print("Upload the content of qollab/ (not the folder itself) as a JS project.")
 
 

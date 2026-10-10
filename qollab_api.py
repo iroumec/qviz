@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from importlib import metadata
 from typing import Any
 
 from qiskit import QuantumCircuit
@@ -78,28 +77,6 @@ def circuits() -> str:
     The viewer lists them in its selector, in the place of the files of ``out/``.
     """
     return json.dumps([{"file": name, "label": _LABELS[name]} for name in CIRCUITS])
-
-
-def versions() -> str:
-    """Return the versions of the main libraries, as JSON text.
-
-    Qollab ships its own versions, which may differ from the ones used for
-    development; the test page prints this at the start.
-    """
-    found = {}
-    for name in (
-        "qiskit",
-        "qiskit-ionq",
-        "numpy",
-        "qiskit-qasm3-import",
-        "openqasm3",
-        "antlr4-python3-runtime",
-    ):
-        try:
-            found[name] = metadata.version(name)
-        except metadata.PackageNotFoundError:
-            found[name] = "not found"
-    return json.dumps(found)
 
 
 def run(

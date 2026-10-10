@@ -114,8 +114,7 @@ examples/                       # Circuitos de ejemplo (por ejemplo el sumador Q
   qft.py
 scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
-  qollab_js_probe/              # index.html + main.js de prueba para un proyecto JS de Qollab (M9)
-  package_qollab.py             # `make qollab` / `make qollab-probe`: arma `qollab/`, el proyecto JS que se sube a Qollab: el visor real o la página de diagnóstico (M9)
+  package_qollab.py             # `make qollab`: arma `qollab/`, el proyecto JS que se sube a Qollab (el visor real) (M9)
 documentation/
   schema/visualization.schema.json   # JSON Schema del contrato. M6
 ```
@@ -562,7 +561,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - Los límites que dependen de la máquina siguen en `compile`: más de 16 qubits, `reset`, medición a mitad de circuito y parámetros sin valor (`input`). Las mediciones finales se aceptan y se quitan.
 - **[decisión] Sin job de IonQ para los circuitos cargados.** `compile` recibe `allow_remote=True` (por omisión, sin cambios); `qollab_api.run_qasm` pasa `False`, así que se transpila en local y se pueden cargar todos los archivos que se quiera en una corrida. El modelo de error (`metrics`) no usa ningún job: sale del perfil fijo de la máquina; el único job de la transpilación es el que pide a IonQ su propia compilación. Costo: el circuito no pasa por el compilador de IonQ, así que su cantidad de pasos puede diferir de la del ejemplo compilado en remoto.
 - **Puente para Qollab:** `qollab_api.run_qasm(backend, qasm, shots, entangler) -> str`; el preludio del paquete lo expone como `HOST.compileQasm`. El visor, con ese hook, muestra "Cargar circuito" (acepta `.qasm`, `.qasm3` y `.txt`, también arrastrando) y agrega el circuito al selector; sin el hook el visor llama a `POST /api/compile` del servidor local (`make server`, `scripts/server.py`: sirve el repo y compila con `qollab_api.run_qasm` sobre el simulador integrado, siempre en `127.0.0.1`); con un `http.server` común avisa que ese servidor no compila. **[decisión del usuario, 2026-10-10]** El botón Medir funciona igual en Qollab y en local: sin `HOST.sample` llama a `POST /api/sample` del mismo servidor (`qollab_api.sample_step`). Se eliminó del visor el muestreo independiente por marginales, porque no modela el entrelazamiento; sin Python el visor muestra un error. **[decisión del usuario, 2026-10-10]** Solo archivos y arrastrar; pegar texto queda fuera.
-- Ejemplos en `examples/qasm/` (`bell`, `ghz4`, `qft3` y `bell_qasm2`); los tests los compilan todos. La página de diagnóstico tiene el botón "4. Load OpenQASM 2 and 3".
+- Ejemplos en `examples/qasm/` (`bell`, `ghz4`, `qft3` y `bell_qasm2`); los tests los compilan todos.
 - **Licencia:** las dependencias nuevas son Apache-2.0/BSD-3 (§9). Falta agregar el `LICENSE` MIT al repositorio y al paquete de Qollab (pendiente, lo decide el equipo).
 
 **Tests:** `tests/test_server.py` (el servidor local: compila, errores 400/404/413, redirección y archivos), `tests/test_importer.py` (versiones 2 y 3, encabezado, comentarios, errores con posición, control de flujo, tope de texto, ejemplos que compilan, límites de `compile`) y las pruebas de `run_qasm` en `tests/test_qollab_api.py` (JSON de salida, sin job de IonQ, error como `QVizError`).
@@ -630,7 +629,7 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 | 2026-10-10 | IBM Berlin (ruido) | — | `fake_berlin` | Igual que Boston. |
 | 2026-10-10 | IonQ Aria 2 (sim) | — | `ionq_simulator` | `options.noise_model = "aria-2"` → entrelazador **MS**. |
 | 2026-10-10 | IonQ Forte 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-1` → entrelazador **ZZ**. |
-| 2026-10-10 | Built-in, página de diagnóstico | — | `basic_simulator` | Versiones de Qollab: qiskit 2.5.2, **qiskit-ionq 1.0.2**, numpy 2.4.6 (Pyodide v314.0.7). `Object.keys(api)` devuelve vacío pero `api.run`, `api.sample_step` y `api.versions` se llaman bien con `callPromising`. Compile de un Bell: 78 ms; cada paso de los checks: 4–9 ms. `ALL CHECKS PASS` (correlaciones: 1.9 % de resultados que no son 00 ni 11, esperado 1.6 %). 8 mediciones seguidas sin error. |
+| 2026-10-10 | Built-in, página de diagnóstico (retirada el 2026-10-10) | — | `basic_simulator` | Versiones de Qollab: qiskit 2.5.2, **qiskit-ionq 1.0.2**, numpy 2.4.6 (Pyodide v314.0.7). `Object.keys(api)` devuelve vacío pero `api.run`, `api.sample_step` y `api.versions` se llaman bien con `callPromising`. Compile de un Bell: 78 ms; cada paso de los checks: 4–9 ms. `ALL CHECKS PASS` (correlaciones: 1.9 % de resultados que no son 00 ni 11, esperado 1.6 %). 8 mediciones seguidas sin error. |
 | 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.1.0 y 1.1.1 (y NumPy 2.0.2). Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ no se puede transpilar (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición; `tomography.measure` lo convierte en un `TranspilationError` que lo explica. |
 | 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
 

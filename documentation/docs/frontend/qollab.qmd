@@ -33,8 +33,7 @@ qollab_context.md`), and they decide the design.
 ## How it is built {.unnumbered}
 
 ```bash
-make qollab          # the viewer (the default)
-make qollab-probe    # the diagnostic page, see below
+make qollab
 ```
 
 The command runs `scripts/package_qollab.py`, which writes the folder `qollab/`
@@ -129,22 +128,11 @@ values or text.
 | `run(backend, circuit, shots, entangler)` | Compiles an example circuit and returns the JSON text. |
 | `run_qasm(backend, qasm, shots, entangler)` | Compiles a circuit written in OpenQASM 2 or 3, locally (no IonQ job), and returns the JSON text. |
 | `sample_step(visualization, step, shots)` | Measures a step and returns the counts as a JSON list of pairs. |
-| `versions()` | The versions of Qiskit, qiskit-ionq and NumPy that Qollab has. |
-
-## The diagnostic page {.unnumbered}
-
-`make qollab-probe` builds the same project with the page of
-`scripts/qollab_js_probe` instead of the viewer. It has the buttons Compile,
-Measure and Run checks. Run checks measures four steps through `callPromising`
-and compares them with the probabilities of the JSON and with the expected
-correlations. Use it when something fails, to know whether the problem is the
-connection with Python or the viewer. Its output is in
-`documentation/prompts/qollab_pruebas.md`.
 
 ## How it was verified {.unnumbered}
 
 On Qollab (Built-in simulator, qiskit 2.5.2, qiskit-ionq 1.0.2, NumPy 2.4.6, with
-Pyodide v314.0.7) the diagnostic page passed all the checks: the call from a
+Pyodide v314.0.7) a diagnostic page (since removed; it is in the git history) passed all the checks: the call from a
 click works after the first run, and compilation of a Bell pair and each
 measurement took a few milliseconds.
 

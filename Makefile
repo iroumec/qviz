@@ -4,7 +4,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint demo outputs qollab qollab-probe server resume render-puml install-plantuml
+.PHONY: venv install test lint demo outputs qollab server resume render-puml install-plantuml
 
 venv:
 	python3 -m venv $(VENV)
@@ -31,9 +31,6 @@ outputs:
 
 qollab:
 	$(PY) scripts/package_qollab.py viewer
-
-qollab-probe:
-	$(PY) scripts/package_qollab.py probe
 
 resume:
 	@git fetch -q 2>/dev/null; git status -sb; echo; git log --oneline -5
