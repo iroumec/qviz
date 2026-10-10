@@ -3,7 +3,15 @@
 
 import * as THREE from "three";
 import { BufferGeometryUtils, OBJLoader } from "./three-addons.js";
-import { HOST, MTL_URL, OBJ_URL } from "./config.js";
+import {
+  HOST,
+  MTL_URL,
+  OBJ_URL,
+  LASER_BOX,
+  LASER_MIN_Y,
+  LASER_MAX_Y,
+  LASER_PULSE_SPEED,
+} from "./config.js";
 import { state } from "./state.js";
 
 /** Map every material name of the MTL file to plastic, metal or laser. */
@@ -91,4 +99,62 @@ export async function loadLaserModel() {
       error
     );
   }
+}
+
+/**
+ * The colour of the laser, from the trapped-ion species of the backend.
+ *
+ * Ytterbium (Aria, Harmony) is simulated as neon magenta, barium (Forte) as
+ * green, and anything else (unknown, or a backend without a species) as an
+ * ultraviolet violet.
+ */
+export function laserColorFor(backend) {
+  const name = String(backend || "").toLowerCase();
+  if (name.includes("forte")) return new THREE.Color(0.1, 1.0, 0.2);
+  if (name.includes("aria") || name.includes("harmony")) {
+    return new THREE.Color(0.8, 0.1, 1.0);
+  }
+  return new THREE.Color(0.5, 0.0, 0.8);
+}
+
+/**
+ * Build the volumetric laser beams as one instanced mesh, one box per ion.
+ *
+ * The box spans the segment between the ion (``LASER_MIN_Y``) and the lens
+ * (``LASER_MAX_Y``); the instances are placed by the caller, with the same
+ * ``dummy.matrix`` that places the Bloch spheres. Each instance carries its own
+ * intensity in the ``instanceActive`` attribute, so a beam is shown only while
+ * its ion is fired (see ``scene.js``). ``null`` is returned when the host did
+ * not provide the laser shaders, so the viewer still runs.
+ */
+export function createLaserBeams(n) {
+  if (!state.shaders.laserVert || !state.shaders.laserFrag) return null;
+
+  const height = LASER_MAX_Y - LASER_MIN_Y;
+  const geometry = new THREE.BoxGeometry(LASER_BOX, height, LASER_BOX);
+  geometry.translate(0, LASER_MIN_Y + height / 2, 0);
+  geometry.setAttribute(
+    "instanceActive",
+    new THREE.InstancedBufferAttribute(new Float32Array(n), 1)
+  );
+
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      iTime: { value: 0 },
+      uLaserColor: { value: laserColorFor(state.data ? state.data.backend : "") },
+      uPulseSpeed: { value: LASER_PULSE_SPEED },
+      uLaserMinY: { value: LASER_MIN_Y },
+      uLaserMaxY: { value: LASER_MAX_Y },
+      uLaserActive: { value: 1.0 },
+    },
+    vertexShader: state.shaders.laserVert,
+    fragmentShader: state.shaders.laserFrag,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const mesh = new THREE.InstancedMesh(geometry, material, n);
+  mesh.frustumCulled = false;
+  return mesh;
 }

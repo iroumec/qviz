@@ -232,6 +232,8 @@ def viewer_files() -> dict[str, str]:
         "frag": _read(_SHADERS / "bloch.frag"),
         "lensVert": _read(_SHADERS / "lens.vert"),
         "lensFrag": _read(_SHADERS / "lens.frag"),
+        "laserVert": _read(_SHADERS / "laser.vert"),
+        "laserFrag": _read(_SHADERS / "laser.frag"),
     }
     laser = {
         "obj": _read(_MODELS / "laser_lens.obj"),

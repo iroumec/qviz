@@ -100,8 +100,8 @@ the host is ready when the modules read it.
    supported), the prelude keeps only its message and drops the traceback, so
    the `error` line shows a sentence a person can read. Any other error is shown
    as it is.
-2. **The files.** `shaders/` (`bloch` and `lens`) and `models/laser_lens.obj` and
-   `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
+2. **The files.** `shaders/` (`bloch`, `lens` and `laser`) and `models/laser_lens.obj`
+   and `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
 3. **The modules.** Each module of `frontend/js` becomes an `async` function with
    its own scope, in the order of their imports, and returns what it exports; the
    modules that import it destructure that object. Two modules may therefore
@@ -119,7 +119,7 @@ a field is missing, the viewer does what it always did.
 
 | Field | Type | What the viewer does with it |
 | --- | --- | --- |
-| `shaders` | `{vert, frag, lensVert, lensFrag}` | Uses these sources, instead of fetching `shaders/`. |
+| `shaders` | `{vert, frag, lensVert, lensFrag, laserVert, laserFrag}` | Uses these sources, instead of fetching `shaders/`. |
 | `laser` | `{obj, mtl}` | Parses this text for the laser model, instead of fetching `models/`. |
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |

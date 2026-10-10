@@ -33,6 +33,25 @@ Because the shaders are separate files, and because the JSON files are read over
 HTTP, the 3D viewer must be served by a local server. The commands are given
 below.
 
+The **laser beams** are drawn as well. Every ion has a lens above it, and a
+volumetric beam connects the lens to the ion. The beam is a second instanced
+mesh, with its own shaders (`laser.vert` and `laser.frag`): a box that bounds the
+segment is raymarched, and the glow is computed from the distance to the beam
+axis. One box is placed per ion, with the same instance matrix as its sphere, so
+the beam is centred on its own ion. The colour follows the species of the
+backend: magenta for ytterbium (Aria, Harmony), green for barium (Forte), and
+violet when the species is unknown. The beam is cut by the two uniforms
+`uLaserMinY` and `uLaserMaxY`, which are set from `frontend/js/config.js`
+(`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly.
+
+A beam is **dark by default**. It is fired only for the target ions of a GPI or
+GPI2 step, and only while the step is applied: the pulse rises and falls in
+`LASER_PULSE_MS` (650 ms, in `frontend/js/config.js`), so the gate is seen as a
+laser pulse and no beam is left on. The two-qubit entanglers (MS and ZZ) and the
+virtual Z do not fire it. Each instance carries its own intensity in the
+`instanceActive` attribute, and moving to a step that does not fire the laser
+cancels a pulse that is still fading.
+
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
@@ -41,6 +60,9 @@ below.
   when the qubit is fully entangled (`r` is zero).
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
+- A volumetric **laser beam** above each ion, from the lens down to the ion. It
+  is dark by default and fires only for the target ions of a GPI or GPI2 step.
+  Its colour is the one of the species of the backend (see above).
 - The probability `p(|1⟩)` of each qubit is shown with a small bar.
 - A **health bar** in the header shows the health of the circuit: the
   accumulated fidelity of the current step, as a percentage. It is green above
@@ -176,9 +198,9 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/state.js` | The mutable state of the viewer, in one place. |
 | `js/utils.js` | Small helpers (`showStageMessage`, `escapeHtml`, `setError`). |
 | `js/demo.js` | The small example embedded in the page. |
-| `js/shaders.js` | Loads the four shader sources. |
+| `js/shaders.js` | Loads the six shader sources (the spheres, the lens and the laser). |
 | `js/three-addons.js` | Loads the three.js addons, with a fallback. |
-| `js/laser.js` | Loads the laser model and its materials. |
+| `js/laser.js` | Loads the laser model, and builds the volumetric beams and their colour. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The readouts, the detail of the step, the health bar and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |

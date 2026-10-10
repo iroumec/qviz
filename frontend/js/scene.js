@@ -7,7 +7,7 @@ import { BOX, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
-import { loadLaserModel } from "./laser.js";
+import { createLaserBeams, loadLaserModel } from "./laser.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -59,12 +59,20 @@ export function buildScene(n) {
   state.three.instMesh = new THREE.InstancedMesh(geometry, material, n);
   state.three.instMesh.frustumCulled = false;
 
+  // One volumetric beam per ion, placed with the same instance matrix as the
+  // spheres. `null` when the host gave no laser shaders.
+  state.three.laserMesh = createLaserBeams(n);
+  state.three.laserActive = state.three.laserMesh
+    ? state.three.laserMesh.geometry.getAttribute("instanceActive")
+    : null;
+
   const dummy = new THREE.Object3D();
   for (let i = 0; i < n; i++) {
     const x = (i - (n - 1) / 2) * SPACING;
     dummy.position.set(x, 0, 0);
     dummy.updateMatrix();
     state.three.instMesh.setMatrixAt(i, dummy.matrix);
+    if (state.three.laserMesh) state.three.laserMesh.setMatrixAt(i, dummy.matrix);
 
     const label = makeLabel("q" + i);
     label.position.set(x, 3.5, 0);
@@ -83,10 +91,16 @@ export function buildScene(n) {
 
     state.qubits.push({
       label, current: [0, 0, 1], target: [0, 0, 1], vibration: 0, isTarget: false,
+      laserStart: 0, laserEnd: 0,
     });
   }
   state.three.instMesh.instanceMatrix.needsUpdate = true;
   state.three.world.add(state.three.instMesh);
+
+  if (state.three.laserMesh) {
+    state.three.laserMesh.instanceMatrix.needsUpdate = true;
+    state.three.world.add(state.three.laserMesh);
+  }
 
   computeFitRadius();
 }
@@ -206,6 +220,18 @@ function onResize() {
   computeFitRadius();
 }
 
+/**
+ * The intensity of the laser of one ion at this time: a sine bump that starts
+ * when the step fired it (``laserStart``) and returns to zero at ``laserEnd``.
+ * It is zero when the ion was not fired, so the beam is dark at rest.
+ */
+function laserIntensity(qubit, time) {
+  const span = qubit.laserEnd - qubit.laserStart;
+  if (span <= 0 || time >= qubit.laserEnd) return 0;
+  const progress = Math.min(1, Math.max(0, (time - qubit.laserStart) / span));
+  return Math.sin(Math.PI * progress);
+}
+
 export function animate(time) {
   requestAnimationFrame(animate);
   if (!state.three.renderer || !state.three.psiAttribute) return;
@@ -240,9 +266,16 @@ export function animate(time) {
     array[i * 3 + 1] = vector[2];
     array[i * 3 + 2] = -vector[1];
     qubit.label.material.color.setHex(qubit.isTarget ? 0xffd166 : 0xe6ecff);
+    if (state.three.laserActive) {
+      state.three.laserActive.array[i] = laserIntensity(qubit, time);
+    }
   }
   state.three.psiAttribute.needsUpdate = true;
+  if (state.three.laserActive) state.three.laserActive.needsUpdate = true;
   state.three.instMesh.material.uniforms.iTime.value = time * 0.001;
+  if (state.three.laserMesh) {
+    state.three.laserMesh.material.uniforms.iTime.value = time * 0.001;
+  }
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

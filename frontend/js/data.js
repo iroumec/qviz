@@ -1,7 +1,7 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { HOST, MANIFEST_URL, OUT_URL, LASER_PULSE_MS } from "./config.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
@@ -77,12 +77,27 @@ export function updateStep(index, instant = false) {
   const states = step ? step.states : initialState(state.data.total_qubits);
   const targets = step ? new Set(step.targets) : new Set();
 
+  // A GPI or GPI2 gate fires the laser on its target ions for a short pulse;
+  // the animation turns it off at rest (see `laserIntensity` in scene.js).
+  const firesLaser = step && (step.operation === "gpi" || step.operation === "gpi2");
+  const now = performance.now();
+
   for (let q = 0; q < state.qubits.length; q++) {
+    const qubit = state.qubits[q];
     const vector = (states[q] || [0, 0, 1]).slice();
-    state.qubits[q].target = vector;
-    state.qubits[q].isTarget = targets.has(q);
-    state.qubits[q].vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
-    if (instant) state.qubits[q].current = vector.slice();
+    qubit.target = vector;
+    qubit.isTarget = targets.has(q);
+    qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
+    // The laser is off unless this step fires it on this ion, so moving to a
+    // step that does not fire it cancels a pulse that is still fading.
+    if (firesLaser && qubit.isTarget) {
+      qubit.laserStart = now;
+      qubit.laserEnd = now + LASER_PULSE_MS;
+    } else {
+      qubit.laserStart = 0;
+      qubit.laserEnd = 0;
+    }
+    if (instant) qubit.current = vector.slice();
   }
   updateReadouts(step);
   renderDetails(step);

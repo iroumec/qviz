@@ -14,8 +14,11 @@ export const state = {
   // One entry per ion: the animated vector and its target.
   qubits: [],
 
-  // The four shader sources, loaded once.
-  shaders: { vert: null, frag: null, lensVert: null, lensFrag: null },
+  // The shader sources, loaded once.
+  shaders: {
+    vert: null, frag: null, lensVert: null, lensFrag: null,
+    laserVert: null, laserFrag: null,
+  },
 
   // The three.js objects.
   three: {
@@ -25,6 +28,8 @@ export const state = {
     world: null,
     instMesh: null,
     psiAttribute: null,
+    laserMesh: null,
+    laserActive: null,
   },
 
   // The laser model and its materials.

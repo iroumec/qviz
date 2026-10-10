@@ -2,7 +2,7 @@
 
 > Lo leen los agentes al empezar (`CLAUDE.md` lo importa y `AGENTS.md` lo exige) y **lo actualizan al terminar cada cambio** (regla en `AGENTS.md`, sección "Memoria"). Es el traspaso entre sesiones: el diseño y el contrato mandan en `spec.md`; acá solo el estado, lo decidido, lo pendiente y cómo seguir. Mantenelo corto (máx. ~150 líneas): al agregar algo nuevo, borrá lo que ya no vale.
 
-Última actualización: 2026-10-10 (estética de la documentación: tema monocromático claro/oscuro). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
+Última actualización: 2026-10-10 (láser volumétrico: haces raymarched instanciados en el visor). Rama `development`; el último commit y los cambios sin subir los muestra `make resume`.
 
 ## Cómo retomar
 
@@ -23,6 +23,7 @@ make server            # el visor en local, con compilar y medir en Python (scri
 - Contrato JSON en `spec.md` §6 y `documentation/schema/` (`total_qubits` ≤ 16).
 - M10 `importer.load_circuit` (OpenQASM 2/3) + `qollab_api.run_qasm` + hook `HOST.compileQasm`: el visor carga `.qasm` (botón y arrastrar) sin gastar el job de IonQ (`compile(..., allow_remote=False)`); sin Qollab sigue cargando JSON. Ejemplos en `examples/qasm/`.
 - Qollab: `main.py` (proyecto Python), `qollab_api.py` (lo que llaman las páginas JS), `scripts/package_qollab.py` (`make qollab`).
+- Visor: esferas de Bloch instanciadas (`shaders/bloch.*`) y **haces láser volumétricos** instanciados (`shaders/laser.*`): un `InstancedMesh` de cajas raymarcheadas, una por ion, con el color según la especie del backend (magenta Yb/Aria/Harmony, verde Ba/Forte, violeta si se desconoce). Los haces están **apagados por defecto**: se disparan solo en los iones target de un paso GPI/GPI2, como un pulso (`LASER_PULSE_MS`), con el atributo `instanceActive` (el usuario lo pidió así). Falta calibrar `LASER_MIN_Y`/`LASER_MAX_Y` y las constantes del `.frag`.
 - Documentación: `spec.md` (español), Quarto en `documentation/docs/` (inglés, con tema monocromático claro/oscuro: `documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`), guías en `documentation/prompts/`.
 - CI en GitHub Actions (`.github/workflows/ci.yml`): job de lint (flake8 + pydocstyle, igual que `make lint`) y tests en Python 3.12 y 3.13 (igual que `make test`).
 
@@ -34,6 +35,7 @@ make server            # el visor en local, con compilar y medir en Python (scri
 - Ruido de la medición: la fidelidad por qubit es un error de lectura `(1−f)/2`, más el SPAM (`1 − initial_fidelity`).
 - Compatibilidad: `qiskit-ionq >= 1.0.0` (Qollab trae la 1.0.2); `requirements.txt` igual a `pyproject.toml` (lo comprueba un test).
 - **El aspecto y las funciones del visor (`frontend/index.html`) no se cambian sin aprobación.** Lo de Qollab entra como hooks opcionales (`window.QVIZ_HOST`) y como código generado. El usuario aprobó (2026-10-10) ocultar la nota de "qubits entrelazados" cuando mide el backend.
+- Láser volumétrico (aprobado por el usuario, 2026-10-10): `LASER_MIN_Y`/`LASER_MAX_Y` y `LASER_BOX` en `frontend/js/config.js`; `LASER_RADIUS`/`ENERGY_AMPLITUDE` en `shaders/laser.frag` son los valores a calibrar a mano. `uLaserActive` (maestro) queda en 1.0; cada haz lleva su intensidad en `instanceActive` y se dispara solo en los iones target de GPI/GPI2, durante `LASER_PULSE_MS`.
 - Los módulos del pipeline no se importan entre sí; `compiler` solo orquesta.
 
 ## Qollab (medido el 2026-10-10)
@@ -68,7 +70,8 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
-- 2026-10-10 · Estética de la documentación: tema monocromático claro/oscuro (`documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`, cargados tras `cosmo`/`darkly`), `highlight-style: monochrome` en `_quarto.yml` y color de enlaces/cabeceras del PDF Typst. Documentado en `style-and-conventions.qmd`. Sin commitear.
+- 2026-10-10 · Láser volumétrico en el visor: `shaders/laser.vert`/`laser.frag` (raymarching instanciado, con `vInstancePos` para centrar cada haz en su ion), `createLaserBeams`/`laserColorFor` en `frontend/js/laser.js`, constantes `LASER_*` y URLs en `config.js`, carga de shaders en `shaders.js`/`state.js`, montaje en `scene.js` (mismo `dummy.matrix` que las esferas), shaders embebidos en `package_qollab.py` (+ test). Luego, a pedido del usuario, los haces pasaron a estar apagados por defecto: se disparan solo en los iones target de GPI/GPI2 (`instanceActive` + pulso `LASER_PULSE_MS` en `data.js`/`scene.js`). Ojo: **`active` es palabra reservada de GLSL**; el `.frag` usa `intensity` (con `active` la compilación fallaba y los haces no se veían). Docs (`viewer.qmd`, `qollab.qmd`) al día; `make test`/`lint`/`qollab` en verde. Sin commitear.
+- 2026-10-10 · Estética de la documentación: tema monocromático claro/oscuro (`documentation/theme-light.scss`, `theme-dark.scss`, `theme-rules.scss`, cargados tras `cosmo`/`darkly`), `highlight-style: monochrome` en `_quarto.yml` y color de enlaces/cabeceras del PDF Typst. Documentado en `style-and-conventions.qmd`. Subido en el commit de esta sesión.
 - 2026-10-10 · Cierre de sesión. Se quitaron las menciones de FastAPI y Astro (README, AGENTS, spec, memory) y se actualizó "Fuera de alcance" de `AGENTS.md`. Se revisó la desaparición de vectores: es el comportamiento normal descrito arriba.
 - 2026-10-11 · Arreglo en Qollab: `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`. Qollab no sirve los archivos de `js/`, así que el `import("./js/main.js")` del preludio fallaba. `package_qollab.py` ahora arma un solo `main.js` (preludio + los módulos de `frontend/js` empaquetados con `bundle_modules`, cada uno en su ámbito); el paquete pasó a 51 archivos. Probado el JS con `node --check` y un arnés con stubs; falta probar en Qollab.
 - 2026-10-10 · Licencia MIT: `LICENSE` (titular "Qubit Overflow", 2026; cambiarlo si el equipo prefiere otro), `license` en `pyproject.toml`, sección en el README y copia en el paquete de Qollab (64 archivos). `spec.md` §2 recoge la respuesta de los organizadores.

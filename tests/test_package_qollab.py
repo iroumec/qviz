@@ -83,6 +83,7 @@ def test_the_viewer_gets_its_shaders_and_the_qollab_services(packaged):
     assert 'from "qollab_api"' in js
     assert "gl_FragColor" in js and "instancePsi" in js, "shaders are embedded"
     assert "uLocalCenter" in js, "the lens shaders are embedded"
+    assert "uLaserActive" in js, "the laser beam shaders are embedded"
     assert "newmtl" in js and "\\nv " in js, "the laser model is embedded"
     assert "window.QVIZ_HOST" in js
 
