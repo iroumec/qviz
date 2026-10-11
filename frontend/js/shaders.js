@@ -11,6 +11,8 @@ import {
   LASER_FRAG_URL,
   BUS_VERT_URL,
   BUS_FRAG_URL,
+  RAIL_VERT_URL,
+  RAIL_FRAG_URL,
 } from "./config.js";
 import { state } from "./state.js";
 
@@ -31,19 +33,26 @@ export async function loadShaders() {
       laserFrag: HOST.shaders.laserFrag,
       busVert: HOST.shaders.busVert,
       busFrag: HOST.shaders.busFrag,
+      railVert: HOST.shaders.railVert,
+      railFrag: HOST.shaders.railFrag,
     };
     return;
   }
-  const [vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag] =
-    await Promise.all([
-      fetchText(VERT_URL),
-      fetchText(FRAG_URL),
-      fetchText(LENS_VERT_URL),
-      fetchText(LENS_FRAG_URL),
-      fetchText(LASER_VERT_URL),
-      fetchText(LASER_FRAG_URL),
-      fetchText(BUS_VERT_URL),
-      fetchText(BUS_FRAG_URL),
-    ]);
-  state.shaders = { vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag };
+  const sources = await Promise.all([
+    fetchText(VERT_URL),
+    fetchText(FRAG_URL),
+    fetchText(LENS_VERT_URL),
+    fetchText(LENS_FRAG_URL),
+    fetchText(LASER_VERT_URL),
+    fetchText(LASER_FRAG_URL),
+    fetchText(BUS_VERT_URL),
+    fetchText(BUS_FRAG_URL),
+    fetchText(RAIL_VERT_URL),
+    fetchText(RAIL_FRAG_URL),
+  ]);
+  const [vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag, railVert, railFrag] =
+    sources;
+  state.shaders = {
+    vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag, railVert, railFrag,
+  };
 }

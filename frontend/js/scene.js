@@ -10,6 +10,7 @@ import { loadShaders } from "./shaders.js";
 import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
 import { createIonTrap, updateTrap } from "./trap.js";
+import { createHorizontalLayer, updateHorizontal } from "./horizontal.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -114,13 +115,17 @@ export function buildScene(n) {
   // The surface-trap chip under the chain, with a field ring per ion.
   state.three.world.add(createIonTrap(n));
 
+  // The horizontal optical layer: the global beam sheet, the phonon guide rail
+  // and the side optics at the ends of the chain.
+  state.three.world.add(createHorizontalLayer(n));
+
   computeFitRadius();
 }
 
 /** Fit the camera distance to the length of the chain. */
 function computeFitRadius() {
   if (!state.three.camera || state.qubits.length === 0) return;
-  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 2.6;
+  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 4.5;
   const halfY = 2.9;
   const vFov = (state.three.camera.fov * Math.PI) / 180;
   const hFov = 2 * Math.atan(Math.tan(vFov / 2) * state.three.camera.aspect);
@@ -370,6 +375,7 @@ export function animate(time) {
   }
   updatePhonon(time);
   updateTrap(time);
+  updateHorizontal(time);
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

@@ -119,6 +119,21 @@ The ions are held by a microfabricated **surface-trap chip** below the chain
 The chain runs along X at `y = 0`, so the top of the substrate sits below it and
 the ions float above the chip.
 
+## The horizontal layer {.unnumbered}
+
+At the height of the chain there is a second layer of optics
+(`frontend/js/horizontal.js`):
+
+- A broad **global Raman beam sheet** crosses the whole chain. It is invisible at
+  rest and flashes with every gate (single- or two-qubit), in step with the
+  vertical lasers.
+- A thin **phonon guide rail** threads the ion centres: it is the confinement
+  axis, and the vibrational continuum. It is a faint blue thread at rest; between
+  the two ions of a two-qubit gate it glows amber and pulses, with wave rings
+  travelling along the segment.
+- The **side optics** close the layer: a readout objective lens at one end of the
+  chain and a mirror mount at the other.
+
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
@@ -287,6 +302,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/laser.js` | Loads the laser model, and builds the volumetric beams and their colour. |
 | `js/phonon.js` | Builds the phonon bus, and runs the jiggle and the synchronized halo of a two-qubit gate. |
 | `js/trap.js` | Builds the surface-trap chip (substrate, gold pads and field rings) and lights the active electrodes. |
+| `js/horizontal.js` | Builds the horizontal layer (global beam sheet, guide rail, side optics) and animates it. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The readouts, the detail of the step, the fidelity panel and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |

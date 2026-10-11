@@ -85,6 +85,7 @@ def test_the_viewer_gets_its_shaders_and_the_qollab_services(packaged):
     assert "uLocalCenter" in js, "the lens shaders are embedded"
     assert "uLaserActive" in js, "the laser beam shaders are embedded"
     assert "vLocalPos" in js, "the phonon bus shaders are embedded"
+    assert "uActiveHalf" in js, "the phonon guide rail shaders are embedded"
     assert "newmtl" in js and "\\nv " in js, "the laser model is embedded"
     assert "window.QVIZ_HOST" in js
 

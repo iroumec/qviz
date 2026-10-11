@@ -26,6 +26,7 @@ export const state = {
   shaders: {
     vert: null, frag: null, lensVert: null, lensFrag: null,
     laserVert: null, laserFrag: null, busVert: null, busFrag: null,
+    railVert: null, railFrag: null,
   },
 
   // The three.js objects.
@@ -42,6 +43,7 @@ export const state = {
     entangledAttribute: null,
     trapRings: [],
     trapGlow: [],
+    horizontal: null,
   },
 
   // The laser model and its materials.

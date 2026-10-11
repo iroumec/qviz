@@ -37,6 +37,17 @@ export const TRAP_PAD_Z = 1.45;
 export const TRAP_RING_RADIUS = 1.3;
 export const TRAP_RING_TUBE = 0.025;
 
+// The horizontal optical layer: the global Raman beam sheet and the phonon
+// guide rail that run along the chain, and the side optics at its ends.
+export const GLOBAL_BEAM_DEPTH = 4.5;
+export const GLOBAL_BEAM_OPACITY = 0.18;
+export const RAIL_RADIUS = 0.03;
+export const RAIL_EXTRA = 4.0;
+export const WAVE_RING_COUNT = 5;
+export const WAVE_RING_RADIUS = 0.45;
+export const WAVE_RING_TUBE = 0.02;
+export const OPTICS_MARGIN = 2.5;
+
 export const VERT_URL = "../shaders/bloch.vert";
 export const FRAG_URL = "../shaders/bloch.frag";
 export const LENS_VERT_URL = "../shaders/lens.vert";
@@ -45,6 +56,8 @@ export const LASER_VERT_URL = "../shaders/laser.vert";
 export const LASER_FRAG_URL = "../shaders/laser.frag";
 export const BUS_VERT_URL = "../shaders/bus.vert";
 export const BUS_FRAG_URL = "../shaders/bus.frag";
+export const RAIL_VERT_URL = "../shaders/rail.vert";
+export const RAIL_FRAG_URL = "../shaders/rail.frag";
 
 // The volumetric laser beam, one instance per ion. The box spans the segment
 // between the ion (LASER_MIN_Y) and the lens (LASER_MAX_Y); it is wide enough
