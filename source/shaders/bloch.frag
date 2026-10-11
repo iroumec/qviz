@@ -125,6 +125,11 @@ void main() {
     // appears (a NaN would make the whole sphere disappear).
     float psiLen = length(vPsi);
     vec3 psi = psiLen > 1e-6 ? vPsi / psiLen : vec3(0.0, 1.0, 0.0);
+    // How pure the state of the qubit is: 1 for a vector of length 1, 0 when the
+    // qubit is (nearly) maximally entangled. The reduced state of an entangled
+    // qubit is mixed, so its arrow is dimmed and its tip and angle sweeps, which
+    // mark one definite pure state, fade out with it.
+    float purity = smoothstep(0.55, 0.98, psiLen);
 
     float anglePsi = atan(psi.z, psi.x);
     if(anglePsi < 0.0) anglePsi += 2.0 * PI;
@@ -141,8 +146,8 @@ void main() {
     
     float radiusVec = RADIUS_STATE_VEC * uVectorWidth;
     float radiusTip = RADIUS_STATE_TIP * uVectorWidth;
-    float gainVec = INTENSITY_STATE_VEC * uVectorGain;
-    float gainTip = INTENSITY_STATE_TIP * uVectorGain;
+    float gainVec = INTENSITY_STATE_VEC * uVectorGain * mix(0.35, 1.0, purity);
+    float gainTip = INTENSITY_STATE_TIP * uVectorGain * purity;
 
     for(int i = 0; i < MAX_STEPS; i++) {
         vec3 p = (ro + rd * d0) - vInstancePos;
@@ -195,8 +200,8 @@ void main() {
 
         if(d < SURF_DIST) hitSweeps = true;
 
-        glow += uSweepAzimuth * (INTENSITY_SWEEP_AZIMUTH * uSphereGain / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
-        glow += uSweepPolar * (INTENSITY_SWEEP_POLAR * uSphereGain / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
+        glow += purity * uSweepAzimuth * (INTENSITY_SWEEP_AZIMUTH * uSphereGain / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
+        glow += purity * uSweepPolar * (INTENSITY_SWEEP_POLAR * uSphereGain / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
 
         d0 += d * RAY_ADVANCE;
         if(d0 > MAX_DIST) break;
