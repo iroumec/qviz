@@ -32,6 +32,12 @@ in the `instancePsi` attribute, and the animation is driven by the `iTime`
 uniform. The `cameraPosition` uniform, which three.js provides automatically for
 a `ShaderMaterial`, is used to trace the rays.
 
+The two **angle sweeps** follow the state vector: a wedge in the equator that
+spans from the `+x` axis to the azimuth of the vector, and a wedge in the
+vertical half-plane of that azimuth that spans the polar angle. Both are drawn
+in the same plane and with the same sign as the vector, so they always point at
+it.
+
 Because the shaders are separate files, and because the JSON files are read over
 HTTP, the 3D viewer must be served by a local server. The commands are given
 below.
@@ -187,10 +193,11 @@ radii and short transitions.
   when the qubit is fully entangled (`r` is zero).
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
-- Each ion carries a **decoherence heat**: its colour shifts towards red as its
-  accumulated health drops. The health is the per-qubit `fidelities` of the step,
-  which already mix the idle, 1Q and 2Q errors, so the colour only degrades and
-  never goes back to a healthy one. No backend change is needed.
+- Each ion carries a **decoherence heat**: its colour shifts towards red as it
+  spends the circuit idle. The heat is the fraction of the steps the qubit was
+  not addressed by any gate (`inactivity` over the number of steps, scaled by
+  `DECOHERENCE_IDLE_GAIN`), so the ions nobody uses are the ones that turn red,
+  and the colour only grows. No backend change is needed.
 - A volumetric **laser beam** above each ion, from the lens down to the ion. It
   is dark by default and fires only for the target ions of a native gate: the
   species colour for GPI and GPI2, and a neon-orange colour for MS and ZZ, which

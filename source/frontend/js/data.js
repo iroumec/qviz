@@ -1,7 +1,7 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { DECOHERENCE_FIDELITY_SPAN, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { DECOHERENCE_IDLE_GAIN, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { laserColorFor, laserPulseFor } from "./laser.js";
 import { startIntro } from "./horizontal.js";
 import { compileQasm } from "./host.js";
@@ -120,6 +120,7 @@ export function updateStep(index, instant = false) {
     );
   }
 
+  const totalSteps = Math.max(1, state.data.steps.length);
   for (let q = 0; q < state.qubits.length; q++) {
     const qubit = state.qubits[q];
     const vector = (states[q] || [0, 0, 1]).slice();
@@ -127,11 +128,11 @@ export function updateStep(index, instant = false) {
     qubit.isTarget = targets.has(q);
     qubit.entangled = entangledPair ? entangledPair.includes(q) : false;
     qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
-    // The heat of the ion is its accumulated health: the per-qubit fidelity of
-    // the step, which already mixes the idle, 1Q and 2Q errors. It only
-    // degrades, so a qubit never goes back to a healthy colour.
-    qubit.decoherence = step && step.fidelities
-      ? Math.min(1, Math.max(0, (100 - step.fidelities[q]) / DECOHERENCE_FIDELITY_SPAN))
+    // The heat of the ion is how much of the circuit it has spent idle: an ion
+    // that nobody addresses keeps decohering while the others are driven, so it
+    // turns red. It only grows, so a qubit never goes back to a healthy colour.
+    qubit.decoherence = step && step.inactivity
+      ? Math.min(1, (step.inactivity[q] / totalSteps) * DECOHERENCE_IDLE_GAIN)
       : 0;
     // The laser is off unless this step fires it on this ion, so moving to a
     // step that does not fire it cancels a pulse that is still fading.

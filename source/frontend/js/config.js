@@ -52,11 +52,12 @@ export const OPTICS_MARGIN = 4.0;
 // ions; INTRO_MS is how long that preparation pulse lasts.
 export const INTRO_MS = 1500;
 
-// How much accumulated fidelity loss (in %) makes a qubit look fully decohered
-// (red). The heat is driven by the per-qubit `fidelities` of the step, which
-// already mix the idle, 1Q and 2Q errors. The loss of a real circuit is small
-// (a few %), so the span is kept small to make the heat visible.
-export const DECOHERENCE_FIDELITY_SPAN = 2;
+// The decoherence heat is the fraction of the circuit a qubit has spent idle
+// (not addressed by any gate): an ion that nobody uses keeps decohering while
+// the others are driven, so it turns red. It comes from the step `inactivity`
+// and is normalised by the number of steps, so it works for short and long
+// circuits alike. It only grows, so a qubit never goes back to a healthy look.
+export const DECOHERENCE_IDLE_GAIN = 1.6;
 
 // The height of the individual laser lens above each ion, and of the ion label.
 export const LENS_Y = 3.4;

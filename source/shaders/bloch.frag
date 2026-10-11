@@ -180,7 +180,9 @@ void main() {
         if (uDetail < 1.5) break;
         vec3 p = (ro + rd * d0) - vInstancePos;
         
-        float sweepAzimuth = sdAzimuthSector(p, (anglePsi + PI * 2.0) * -1.0, RADIUS_SPHERE * RADIUS_SWEEP_AZIMUTH, THICKNESS_SWEEPS);
+        // The wedge spans from the +x axis to the azimuth of the state, in the
+        // same plane and with the same sign, so it always points at the vector.
+        float sweepAzimuth = sdAzimuthSector(p, anglePsi, RADIUS_SPHERE * RADIUS_SWEEP_AZIMUTH, THICKNESS_SWEEPS);
 
         vec2 p2dPolar = vec2(dot(p, -vPolar), p.y);
         vec2 pRotPolar = rotPolar * p2dPolar;
