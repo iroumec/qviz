@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
 import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING, TABLE_TOP } from "./config.js";
+import { animatedVector } from "./motion.js";
 import { state } from "./state.js";
 import { PALETTES, hexToRgb } from "./settings.js";
 import { qubitLabel, showStageMessage, t } from "./utils.js";
@@ -123,7 +124,9 @@ export function applyViewToScene() {
   const palette = PALETTES[view.palette];
   const u = instMesh.material.uniforms;
   const colours = {
-    uAxisX: "axisX", uAxisY: "axisY", uAxisZ: "axisZ", uVecColor: "vector",
+    // The vertical axis of the shader is the Bloch z (blue in the legend) and the
+    // depth axis is the Bloch y (green), see the mapping in `animate`.
+    uAxisX: "axisX", uAxisY: "axisZ", uAxisZ: "axisY", uVecColor: "vector",
     uTipColor: "tip", uSphereColor: "sphere", uLinesColor: "lines",
     uDotsStart: "dotsStart", uDotsEnd: "dotsEnd",
     uSweepAzimuth: "sweepAzimuth", uSweepPolar: "sweepPolar",
@@ -224,7 +227,7 @@ export function buildScene(n) {
     state.three.ionLights.push(pointLight);
 
     state.qubits.push({
-      x, label, valueLabel, valueText: "", current: [0, 0, 1], target: [0, 0, 1],
+      x, label, valueLabel, valueText: "", current: [0, 0, 1], target: [0, 0, 1], motion: null,
       vibration: 0, isTarget: false, laserStart: 0, laserEnd: 0, entangled: false,
       decoherence: 0,
     });
@@ -590,12 +593,14 @@ export function animate(time) {
   for (let i = 0; i < state.qubits.length; i++) {
     const qubit = state.qubits[i];
     let moving = false;
-    for (let axis = 0; axis < 3; axis++) {
-      const difference = qubit.target[axis] - qubit.current[axis];
-      if (Math.abs(difference) > 1e-3) moving = true;
-      qubit.current[axis] += difference * 0.18;
+    if (qubit.motion) {
+      const motion = animatedVector(qubit.motion, time);
+      moving = motion.moving;
+      qubit.current = motion.vector;
+      if (!moving) qubit.motion = null;
+    } else {
+      qubit.current = qubit.target.slice();
     }
-    if (!moving) qubit.current = qubit.target.slice();
 
     const vector = qubit.current.slice();
     // The wobble is shown only while the ion moves, so the chain settles when a

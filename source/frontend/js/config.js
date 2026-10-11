@@ -61,7 +61,17 @@ export const INTRO_MS = 1500;
 // count at which the ion is 63 % red; it is exaggerated on purpose, because the
 // real idle error of the profiles (1e-4 per step) would not be visible. It
 // comes from the step `inactivity` and only grows.
-export const DECOHERENCE_IDLE_STEPS = 12;
+export const DECOHERENCE_IDLE_STEPS = 30;
+
+// A qubit whose Bloch vector is shorter than this is entangled with the rest of
+// the register (the register is in a pure state, so the reduced state of one
+// qubit is mixed exactly when it is entangled). Its halo is shown, and the shader
+// fades the vector and the angle sweeps, which only make sense for a pure state.
+export const ENTANGLED_R = 0.98;
+
+// How long a Bloch vector takes to move when the step has no laser pulse that
+// sets the time (a VirtualZ, a jump, or a step back), in milliseconds.
+export const MOTION_MS = 350;
 
 // The height of the individual laser lens above each ion, and of the ion label.
 export const LENS_Y = 3.4;

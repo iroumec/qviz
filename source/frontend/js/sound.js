@@ -1,6 +1,7 @@
 // The sound of the gates, synthesised with the Web Audio API (no audio files, so
 // it works in the bundle of Qollab as well). Each native gate has its own voice:
-//   GPI and GPI2  a short laser tone; the GPI is lower and twice as long
+//   GPI and GPI2  a thin laser zap (a fast fall in pitch) over a faint buzzing
+//                 beam; the GPI is lower and twice as long
 //   MS and ZZ     a long, detuned two-tone swell, as long as the pulse
 //   VirtualZ      a click (it is a software phase: no laser, no tone)
 // The length of every tone follows the pulse of the gate (`laserPulseFor`), so
@@ -45,31 +46,58 @@ function envelope(start, seconds, peak) {
   return gain;
 }
 
-/** An oscillator that sweeps from ``from`` to ``to`` Hz and stops at ``end``. */
-function tone(type, from, to, start, end, destination) {
+/** An oscillator that sweeps from ``from`` to ``to`` Hz by ``end`` and stops at ``stopAt``. */
+function tone(type, from, to, start, end, destination, stopAt = end) {
   const oscillator = context.createOscillator();
   oscillator.type = type;
   oscillator.frequency.setValueAtTime(from, start);
   oscillator.frequency.exponentialRampToValueAtTime(to, end);
-  oscillator.connect(destination);
+  if (destination) oscillator.connect(destination);
   oscillator.start(start);
-  oscillator.stop(end + 0.05);
+  oscillator.stop(stopAt + 0.05);
   return oscillator;
 }
 
-/** A GPI or GPI2: a laser tone with a soft overtone and a slight fall in pitch. */
-function laserTone(start, seconds, pitch) {
+/**
+ * A GPI or GPI2: a thin laser "zap". A bright, narrow tone falls fast in pitch
+ * (``fromHz`` to ``toHz``) and dies down to a faint, buzzing beam that lasts
+ * until the end of the pulse.
+ */
+function laserTone(start, seconds, fromHz, toHz) {
   const end = start + seconds;
-  const gain = envelope(start, seconds, PEAK);
-  const filter = context.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = 3200;
-  filter.connect(gain);
-  return [
-    tone("triangle", pitch, pitch * 0.9, start, end, filter),
-    tone("sine", pitch * 2, pitch * 1.8, start, end, filter),
-    gain,
-  ];
+  const drop = Math.min(0.16, seconds * 0.3);
+
+  // The zap: a square wave through a narrow band-pass that follows the pitch, so
+  // only a thin whistle is left of it.
+  const zap = tone("square", fromHz, toHz, start, start + drop, null, end);
+  const band = context.createBiquadFilter();
+  band.type = "bandpass";
+  band.Q.value = 7;
+  band.frequency.setValueAtTime(fromHz, start);
+  band.frequency.exponentialRampToValueAtTime(toHz, start + drop);
+  zap.connect(band);
+  const zapGain = context.createGain();
+  zapGain.gain.setValueAtTime(0, start);
+  zapGain.gain.linearRampToValueAtTime(PEAK * 1.6, start + 0.004);
+  zapGain.gain.exponentialRampToValueAtTime(PEAK * 0.25, start + drop + 0.05);
+  zapGain.gain.setValueAtTime(PEAK * 0.25, Math.max(start + drop + 0.05, end - seconds * RAMP));
+  zapGain.gain.linearRampToValueAtTime(0, end);
+  band.connect(zapGain);
+  zapGain.connect(master);
+
+  // The beam: a faint, high sine with a fast tremolo, which gives the buzz.
+  const hum = tone("sine", toHz * 1.5, toHz * 1.5, start, end, null);
+  const humGain = envelope(start, seconds, PEAK * 0.18);
+  const tremolo = context.createOscillator();
+  const depth = context.createGain();
+  tremolo.frequency.value = 48;
+  depth.gain.value = PEAK * 0.09;
+  tremolo.connect(depth);
+  depth.connect(humGain.gain);
+  hum.connect(humGain);
+  tremolo.start(start);
+  tremolo.stop(end + 0.05);
+  return [zap, hum, tremolo, zapGain, humGain];
 }
 
 /** An MS or ZZ: two detuned saws that beat, a slow vibrato and a rising filter. */
@@ -88,13 +116,13 @@ function entanglerSwell(start, seconds) {
   const high = tone("sawtooth", 200, 268, start, end, filter);
   const fifth = tone("sine", 294, 392, start, end, gain);
 
-  // The vibrato moves the pitch of all three by a few cents.
+  // The vibrato moves the pitch of all three by a few hertz.
   const lfo = context.createOscillator();
   const depth = context.createGain();
   lfo.frequency.value = 5;
-  depth.gain.value = 6;
+  depth.gain.value = 3;
   lfo.connect(depth);
-  for (const oscillator of [low, high, fifth]) depth.connect(oscillator.detune);
+  for (const oscillator of [low, high, fifth]) depth.connect(oscillator.frequency);
   lfo.start(start);
   lfo.stop(end + 0.05);
   return [low, high, fifth, lfo, gain];
@@ -115,7 +143,7 @@ function click(start) {
   filter.frequency.value = 2800;
   filter.Q.value = 1.2;
   const gain = context.createGain();
-  gain.gain.value = PEAK * 3;
+  gain.gain.value = PEAK * 4;
   source.connect(filter);
   filter.connect(gain);
   gain.connect(master);
@@ -151,12 +179,12 @@ export function playGateSound(operation, ms) {
   const audio = audioContext();
   if (!audio) return;
   try {
-    if (audio.state === "suspended") audio.resume();
+    if (audio.state === "suspended") audio.resume().catch(() => {});
     master.gain.value = state.view.soundVolume;
     const start = audio.currentTime + 0.01;
     const seconds = Math.max(0.05, ms / 1000);
-    if (operation === "gpi") voices = laserTone(start, seconds, 440);
-    else if (operation === "gpi2") voices = laserTone(start, seconds, 660);
+    if (operation === "gpi") voices = laserTone(start, seconds, 2200, 900);
+    else if (operation === "gpi2") voices = laserTone(start, seconds, 3000, 1600);
     else if (operation === "ms" || operation === "zz") voices = entanglerSwell(start, seconds);
     else if (operation === "virtual_z") voices = click(start);
   } catch (error) {

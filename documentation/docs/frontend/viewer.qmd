@@ -101,10 +101,11 @@ travels as a vibration (a phonon).
 - **The jiggle.** While the pulse runs, the ions between the two targets (and the
   targets themselves) swing up and down, the targets more than the ions in
   between, which resonate with the chain. The chain settles when the pulse ends.
-- **The synchronized halo.** Once the pulse ends, the two targets carry a halo in
-  the entangler colour that pulses in step (they share the time, so the two
-  pulses are exactly in sync). It shows that the two ions are now entangled,
-  through the vibration of the chain and not through the ions in between.
+- **The synchronized halo.** Once the pulse ends, every entangled ion carries a
+  halo in the entangler colour that pulses in step (they share the time, so the
+  pulses are exactly in sync). An ion is entangled when its Bloch vector is
+  shorter than `ENTANGLED_R` (see below), so the halo follows the real state and
+  not the last two-qubit gate that ran: after a SWAP the halo is gone.
 
 The halo is drawn by the sphere shader (`source/shaders/bloch.frag`), which reads the
 `instanceEntangled` attribute of each instance.
@@ -192,11 +193,30 @@ radii and short transitions.
   of that qubit at the current step. Its length is the length `r` of the reduced
   state: it is shorter than one when the qubit is entangled, and it is absent
   when the qubit is fully entangled (`r` is zero).
+  Since the register is in a pure state, a qubit is entangled with the rest
+  exactly when `r < 1`, so no other data is needed. An entangled qubit has no
+  state of its own: the arrow is the *reduced* state (the average that a
+  measurement of that qubit alone would give), which is mixed and lies inside
+  the ball. It is drawn dimmer the shorter it is, and its tip and its two
+  angle sweeps, which mark one definite pure state, fade out with it (the
+  `purity` of `bloch.frag`). In a Bell pair `r` is zero and nothing is drawn;
+  with partial entanglement (for example `r = 0.71` in the QFT) a faint arrow
+  remains.
+- **The vector moves like the gate.** A single-qubit gate is a rotation, so the
+  arrow turns along the surface of the sphere and keeps its length: GPI is a half
+  turn and GPI2 a quarter turn about the equatorial axis `(cos φ, sin φ, 0)`, and
+  the VirtualZ turns about `z` (`js/motion.js`). The turn lasts as long as the
+  laser pulse. A straight line between the two ends would cross the ball and make
+  a pure state look entangled half way. The two-qubit gates do change the length,
+  so there it is blended while the direction swings along the shortest arc. The
+  axis and the angle are checked against the end state (843 single-qubit steps of
+  the example circuits match), and stepping back turns the opposite way.
+- The axes follow the legend: x red, z blue and vertical (|0⟩ up), y green.
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
 - Each ion carries a **decoherence heat**: its colour shifts towards red as it
   spends the circuit idle. The heat is `1 − exp(−idle / DECOHERENCE_IDLE_STEPS)`,
-  where `idle` is the `inactivity` of the qubit (the steps in which no gate
+  where `DECOHERENCE_IDLE_STEPS` is 30 and `idle` is the `inactivity` of the qubit (the steps in which no gate
   addressed it). The count is absolute and not a fraction of the circuit:
   coherence decays with the idle time itself (`exp(−t / T₂)`), so the same idle
   count gives the same colour in a short and in a long circuit. The scale is
@@ -383,8 +403,8 @@ length of the tone follows the laser pulse, so the sound ends when the beam does
 
 | Gate | Sound |
 |---|---|
-| GPI2 | A short, high laser tone (the shortest pulse). |
-| GPI | A lower tone, twice as long as the GPI2. |
+| GPI2 | A thin, high laser zap: a bright tone that falls fast in pitch over a faint, buzzing beam (the shortest pulse). |
+| GPI | The same zap, lower in pitch and twice as long as the GPI2. |
 | MS and ZZ | A long swell of two detuned tones that beat, with a slow vibrato and a rising filter; it lasts as long as the pulse (three times the GPI2). |
 | VirtualZ | A click. It is a software phase, so there is no laser and no tone. |
 
@@ -518,6 +538,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/main.js` | The entry point: reads the view options, wires the controls, builds the scene and loads the first file. |
 | `js/settings.js` | The view options: defaults, palettes, profiles and their storage. It imports only `state.js`. |
 | `js/viewpanel.js` | The *View and accessibility* button and its panel (profiles and options), and the interface options (text size, contrast, reduced motion). |
+| `js/motion.js` | How the Bloch vector moves between steps: a rotation along the sphere for single-qubit gates, an arc with a blended length otherwise. |
 | `js/sound.js` | The sound of the gates (Web Audio): laser tones, the entangler swell and the VirtualZ click. |
 | `js/camerapad.js` | The on-screen camera buttons (rotate, tilt, zoom, centre). |
 | `js/config.js` | The constants, the URLs and the host hooks (`window.QVIZ_HOST`). |

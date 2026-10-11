@@ -1,9 +1,10 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { DECOHERENCE_IDLE_STEPS, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { DECOHERENCE_IDLE_STEPS, ENTANGLED_R, HOST, MOTION_MS, MANIFEST_URL, OUT_URL } from "./config.js";
 import { laserColorFor, laserPulseFor } from "./laser.js";
 import { startIntro } from "./horizontal.js";
+import { gateRotation, makeMotion, wrapAngle } from "./motion.js";
 import { playGateSound, stopGateSounds } from "./sound.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
@@ -75,13 +76,57 @@ export async function loadCircuitFile(file) {
   }
 }
 
+/** The Bloch vector of qubit ``q`` after step ``index`` (0 is the initial state). */
+function vectorAt(q, index) {
+  if (index === 0) return [0, 0, 1];
+  const states = state.data.steps[index - 1].states;
+  return (states[q] || [0, 0, 1]).slice();
+}
+
+/** The turn of the VirtualZ of step ``index`` on qubit ``q``, in radians. */
+function zTurn(q, index) {
+  const steps = state.data.steps;
+  const now = steps[index - 1].virtual_z ? steps[index - 1].virtual_z[q] : 0;
+  const before = index >= 2 && steps[index - 2].virtual_z ? steps[index - 2].virtual_z[q] : 0;
+  return wrapAngle(now - before);
+}
+
+/**
+ * How the vector of qubit ``q`` travels when the viewer goes from step ``from``
+ * to step ``to``. Moving one step with a single-qubit gate turns the vector about
+ * the axis of the gate (forwards, or backwards with the opposite turn), so it
+ * stays on the sphere; any other change swings it along the shortest arc
+ * (see ``motion.js``).
+ */
+function motionFor(q, from, to, now, pulse) {
+  const qubit = state.qubits[q];
+  const end = vectorAt(q, to);
+  const stepNumber = to === from + 1 ? to : from === to + 1 ? from : 0;
+  const step = stepNumber ? state.data.steps[stepNumber - 1] : null;
+
+  if (step && step.targets.length === 1 && step.targets[0] === q) {
+    let rotation = gateRotation(step.operation, step.phases, zTurn(q, stepNumber));
+    if (rotation && stepNumber === from) {
+      rotation = { axis: rotation.axis, angle: -rotation.angle };
+    }
+    const ms = stepNumber === to && pulse ? pulse.ms : MOTION_MS;
+    return makeMotion(vectorAt(q, from), end, rotation, now, ms || MOTION_MS);
+  }
+
+  const start = qubit.current;
+  if (Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]) < 1e-6) return null;
+  const twoIonPulse = step && stepNumber === to && pulse && step.targets.includes(q);
+  return makeMotion(start, end, null, now, twoIonPulse ? pulse.ms : MOTION_MS);
+}
+
 /** Show the step with this index. Step 0 is the initial state. */
 export function updateStep(index, instant = false) {
   if (!state.data) return;
   closeMeasurement();
   // Only a step forward by one has a sound: dragging the slider or jumping would
   // be a burst of clicks.
-  const forward = index === state.stepIndex + 1;
+  const previous = state.stepIndex;
+  const forward = index === previous + 1;
   state.stepIndex = Math.max(0, Math.min(state.data.steps.length, index));
   document.getElementById("slider").value = String(state.stepIndex);
   document.getElementById("stepLabel").textContent =
@@ -109,17 +154,6 @@ export function updateStep(index, instant = false) {
     ? { targets: step.targets.slice(), start: now, end: now + pulse.ms }
     : { targets: [], start: 0, end: 0 };
 
-  // The last two-qubit gate up to this step marks its two ions as entangled,
-  // so their halos pulse in step after the gate.
-  let entangledPair = null;
-  for (let s = state.stepIndex - 1; s >= 0 && !entangledPair; s--) {
-    const candidate = state.data.steps[s];
-    if ((candidate.operation === "ms" || candidate.operation === "zz")
-        && candidate.targets.length === 2) {
-      entangledPair = candidate.targets;
-    }
-  }
-
   if (state.three.laserMesh) {
     state.three.laserMesh.material.uniforms.uLaserColor.value.copy(
       pulse ? pulse.color : laserColorFor(state.data.backend)
@@ -131,7 +165,10 @@ export function updateStep(index, instant = false) {
     const vector = (states[q] || [0, 0, 1]).slice();
     qubit.target = vector;
     qubit.isTarget = targets.has(q);
-    qubit.entangled = entangledPair ? entangledPair.includes(q) : false;
+    // The state of the register is pure, so a qubit is entangled with the others
+    // exactly when its own Bloch vector is shorter than 1 (the reduced state is
+    // mixed). The halo follows that, and not the last two-qubit gate that ran.
+    qubit.entangled = Math.hypot(vector[0], vector[1], vector[2]) < ENTANGLED_R;
     qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
     // The heat of the ion is how long it has spent idle: an ion that nobody
     // addresses keeps decohering while the others are driven, so it turns red.
@@ -150,7 +187,12 @@ export function updateStep(index, instant = false) {
       qubit.laserStart = 0;
       qubit.laserEnd = 0;
     }
-    if (instant) qubit.current = vector.slice();
+    if (instant) {
+      qubit.current = vector.slice();
+      qubit.motion = null;
+    } else {
+      qubit.motion = motionFor(q, previous, state.stepIndex, now, pulse);
+    }
   }
   updateReadouts(step);
   highlightStep(state.stepIndex);
