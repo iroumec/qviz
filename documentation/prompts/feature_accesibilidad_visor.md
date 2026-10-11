@@ -6,7 +6,7 @@
 
 El usuario probó el visor en Qollab y reportó (2026-10-11):
 
-1. **La luz se ve mucho más que en local** y "dificulta ver los vectores". (Se adjuntó una captura que el agente **no pudo ver**; el diagnóstico de abajo sale del código y hay que confirmarlo con la captura o con una prueba en Qollab.)
+1. **La luz se ve mucho más que en local** y "dificulta ver los vectores". (La captura se vio después: ver los hallazgos de §1.)
 2. **La tecla D no mueve la cámara en Qollab** (las otras sí). En local y con eventos reales (CDP) D funciona; ya se agregó el respaldo por `event.key`, y **no alcanzó**.
 3. Pidió **opciones de accesibilidad en un lugar visible**: cambiar colores, cambiar la forma de ver la esfera para que el vector se vea más, y quizá **quitar elementos que sumen ruido visual**.
 
@@ -19,6 +19,15 @@ El usuario probó el visor en Qollab y reportó (2026-10-11):
 - Al terminar: `make test`, `make lint`, `make qollab`, probar en Chromium y en Qollab, docs (`viewer.qmd`) y `memory.md`.
 
 ## 1. Diagnóstico previo (antes de diseñar nada más)
+
+**Hallazgos con la captura de Qollab (2026-10-11) y un experimento local.** En la captura, las esferas aparecen **casi blancas** (borde grueso y relleno lavado), y detrás hay una mesa gris clara con un punto brillante en el centro y electrodos amarillo pálido. No es una sola luz; son dos efectos que se suman:
+
+1. **Las esferas se dibujan con mezcla aditiva** (`bloch.frag`, `AdditiveBlending`): el color de la esfera **se suma** al de lo que hay detrás. Delante de un fondo claro (mesa, electrodos dorados, hoja global) el resultado se satura a blanco y el vector se pierde. Incluso sobre fondo negro el borde de la esfera ya es blanco y denso.
+2. **El fondo está demasiado iluminado.** Con la cámara baja (la que usa el usuario), tras las esferas están la mesa metálica (`metalness 0.8`, `roughness 0.4`) y las filas de electrodos. Los ilumina el mapa de entorno `RoomEnvironment`, el ambiente, la direccional y las `PointLight` (el punto brillante del centro es el reflejo de la luz de acento o de la móvil).
+
+Experimento local (Chromium, cámara baja y cerca): apagar las `PointLight` casi no cambia el fondo (los electrodos siguen claros por el entorno y la direccional); apagar **todas las luces y el entorno** deja el fondo oscuro, pero **el borde blanco de la esfera sigue ahí**. Conclusión: **para ver el vector hay que actuar sobre las dos cosas**: oscurecer o atenuar el fondo (entorno, luces, exposición) y bajar la ganancia de la esfera o cambiar cómo se mezcla con el fondo. Los controles de §3.3 y §3.5 salen de esto. Falta confirmar si Qollab ilumina más que el local (hipótesis 1 de abajo).
+
+Una mejora de fondo para evaluar en el paso 3: dibujar la esfera con **mezcla normal premultiplicada** o con un **disco oscuro semitransparente detrás** (un "respaldo" suave) para que el vector tenga siempre un fondo del que destacar, sin depender de lo que haya detrás; es un cambio visible y necesita aprobación.
 
 **1.1 La luz en Qollab.** Hipótesis, de más a menos probable, a descartar en este orden:
 
@@ -146,7 +155,7 @@ Hace falta una referencia a cada grupo (`state.three.groups.environment`, `.trap
 
 ## Preguntas abiertas para el usuario
 
-1. ¿La captura muestra el brillo en toda la escena o sobre todo el láser y la hoja global? (Cambia por dónde empieza el diagnóstico.)
+1. ~~¿La captura muestra el brillo en toda la escena o sobre todo el láser?~~ Respondida: es el fondo claro más la mezcla aditiva de las esferas (ver §1).
 2. ¿Qué navegador usás en Qollab y qué pantalla (resolución, escala del sistema)?
 3. ¿Los perfiles de §3.1 te alcanzan o querés otros?
 4. ¿Las flechas de la cámara van con Shift (para no chocar con ←/→ de los pasos), o preferís solo los botones en pantalla?
