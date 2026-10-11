@@ -52,12 +52,16 @@ export const OPTICS_MARGIN = 4.0;
 // ions; INTRO_MS is how long that preparation pulse lasts.
 export const INTRO_MS = 1500;
 
-// The decoherence heat is the fraction of the circuit a qubit has spent idle
-// (not addressed by any gate): an ion that nobody uses keeps decohering while
-// the others are driven, so it turns red. It comes from the step `inactivity`
-// and is normalised by the number of steps, so it works for short and long
-// circuits alike. It only grows, so a qubit never goes back to a healthy look.
-export const DECOHERENCE_IDLE_GAIN = 1.6;
+// The decoherence heat of a qubit grows with the steps it has spent idle (not
+// addressed by any gate): an ion that nobody uses keeps decohering while the
+// others are driven, so it turns red. Coherence decays as exp(-t / T2) with the
+// idle time itself, not with the length of the circuit, so the heat is
+// 1 - exp(-idle / DECOHERENCE_IDLE_STEPS): the same idle count gives the same
+// colour in a short and in a long circuit. DECOHERENCE_IDLE_STEPS is the idle
+// count at which the ion is 63 % red; it is exaggerated on purpose, because the
+// real idle error of the profiles (1e-4 per step) would not be visible. It
+// comes from the step `inactivity` and only grows.
+export const DECOHERENCE_IDLE_STEPS = 12;
 
 // The height of the individual laser lens above each ion, and of the ion label.
 export const LENS_Y = 3.4;

@@ -147,6 +147,7 @@ At the height of the chain there is a second layer of optics
 - The **side optics** close the layer: a readout objective lens at one end of the
   chain and a mirror mount at the other. They sit far enough from the end ions,
   and each rests on a stand down to the optical table.
+  The pink glass of the readout lens sits flush on its barrel.
 
 ## Preparing the ions (the intro) {.unnumbered}
 
@@ -194,9 +195,13 @@ radii and short transitions.
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
 - Each ion carries a **decoherence heat**: its colour shifts towards red as it
-  spends the circuit idle. The heat is the fraction of the steps the qubit was
-  not addressed by any gate (`inactivity` over the number of steps, scaled by
-  `DECOHERENCE_IDLE_GAIN`), so the ions nobody uses are the ones that turn red,
+  spends the circuit idle. The heat is `1 − exp(−idle / DECOHERENCE_IDLE_STEPS)`,
+  where `idle` is the `inactivity` of the qubit (the steps in which no gate
+  addressed it). The count is absolute and not a fraction of the circuit:
+  coherence decays with the idle time itself (`exp(−t / T₂)`), so the same idle
+  count gives the same colour in a short and in a long circuit. The scale is
+  exaggerated on purpose, since the real idle error of the profiles (10⁻⁴ per
+  step) would not be visible. The ions nobody uses are the ones that turn red,
   and the colour only grows. No backend change is needed.
 - A volumetric **laser beam** above each ion, from the lens down to the ion. It
   is dark by default and fires only for the target ions of a native gate: the
@@ -370,6 +375,27 @@ mouse, the touch screen or the keyboard (Enter or Space on a focused button), so
 the camera can be moved without the letter keys and without a right button. The step is announced to screen readers in a
 polite live region (*Paso 3 de 7: GPI2 en q0. Fidelidad 99.44 %.*).
 
+## The sound of the gates {.unnumbered}
+
+Every native gate has a sound, synthesised in the browser with the Web Audio API
+(`js/sound.js`, no audio files, so it also works in the bundle of Qollab). The
+length of the tone follows the laser pulse, so the sound ends when the beam does.
+
+| Gate | Sound |
+|---|---|
+| GPI2 | A short, high laser tone (the shortest pulse). |
+| GPI | A lower tone, twice as long as the GPI2. |
+| MS and ZZ | A long swell of two detuned tones that beat, with a slow vibrato and a rising filter; it lasts as long as the pulse (three times the GPI2). |
+| VirtualZ | A click. It is a software phase, so there is no laser and no tone. |
+
+Only a step forward by one makes a sound (Play, the next button, the arrow keys
+and a click on the next step of the timeline); dragging the slider or jumping
+does not, and a new step cuts the previous sound with a short fade. Browsers only
+allow audio after a gesture, so the first sound comes with the first click; if the
+browser has no audio, the viewer works without it. The **Sound** section of the
+View and accessibility panel turns the sound off and sets the volume (both are
+kept in the browser).
+
 ## The circuit timeline {.unnumbered}
 
 A strip between the scene and the playback bar shows the **transpiled circuit**:
@@ -492,6 +518,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/main.js` | The entry point: reads the view options, wires the controls, builds the scene and loads the first file. |
 | `js/settings.js` | The view options: defaults, palettes, profiles and their storage. It imports only `state.js`. |
 | `js/viewpanel.js` | The *View and accessibility* button and its panel (profiles and options), and the interface options (text size, contrast, reduced motion). |
+| `js/sound.js` | The sound of the gates (Web Audio): laser tones, the entangler swell and the VirtualZ click. |
 | `js/camerapad.js` | The on-screen camera buttons (rotate, tilt, zoom, centre). |
 | `js/config.js` | The constants, the URLs and the host hooks (`window.QVIZ_HOST`). |
 | `js/state.js` | The mutable state of the viewer, in one place. |

@@ -1,9 +1,10 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { DECOHERENCE_IDLE_GAIN, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { DECOHERENCE_IDLE_STEPS, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { laserColorFor, laserPulseFor } from "./laser.js";
 import { startIntro } from "./horizontal.js";
+import { playGateSound, stopGateSounds } from "./sound.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
@@ -78,6 +79,9 @@ export async function loadCircuitFile(file) {
 export function updateStep(index, instant = false) {
   if (!state.data) return;
   closeMeasurement();
+  // Only a step forward by one has a sound: dragging the slider or jumping would
+  // be a burst of clicks.
+  const forward = index === state.stepIndex + 1;
   state.stepIndex = Math.max(0, Math.min(state.data.steps.length, index));
   document.getElementById("slider").value = String(state.stepIndex);
   document.getElementById("stepLabel").textContent =
@@ -94,6 +98,8 @@ export function updateStep(index, instant = false) {
   const pulse = step ? laserPulseFor(step.operation, state.data.backend) : null;
   const now = performance.now();
   state.pulseMs = pulse ? pulse.ms : 0;
+  stopGateSounds();
+  if (step && forward && !instant) playGateSound(step.operation, state.pulseMs);
 
   // The two-qubit gate that is running (MS or ZZ): its ions and its window,
   // for the phonon bus and the jiggle.
@@ -120,7 +126,6 @@ export function updateStep(index, instant = false) {
     );
   }
 
-  const totalSteps = Math.max(1, state.data.steps.length);
   for (let q = 0; q < state.qubits.length; q++) {
     const qubit = state.qubits[q];
     const vector = (states[q] || [0, 0, 1]).slice();
@@ -128,11 +133,13 @@ export function updateStep(index, instant = false) {
     qubit.isTarget = targets.has(q);
     qubit.entangled = entangledPair ? entangledPair.includes(q) : false;
     qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
-    // The heat of the ion is how much of the circuit it has spent idle: an ion
-    // that nobody addresses keeps decohering while the others are driven, so it
-    // turns red. It only grows, so a qubit never goes back to a healthy colour.
+    // The heat of the ion is how long it has spent idle: an ion that nobody
+    // addresses keeps decohering while the others are driven, so it turns red.
+    // Coherence decays with the idle time and not with the length of the
+    // circuit, so the count is absolute (see DECOHERENCE_IDLE_STEPS). It only
+    // grows, so a qubit never goes back to a healthy colour.
     qubit.decoherence = step && step.inactivity
-      ? Math.min(1, (step.inactivity[q] / totalSteps) * DECOHERENCE_IDLE_GAIN)
+      ? 1 - Math.exp(-step.inactivity[q] / DECOHERENCE_IDLE_STEPS)
       : 0;
     // The laser is off unless this step fires it on this ion, so moving to a
     // step that does not fire it cancels a pulse that is still fading.

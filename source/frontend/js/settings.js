@@ -69,6 +69,8 @@ export const DEFAULT_VIEW = {
   laserGain: 1, // the brightness of the vertical laser beams
   sheetGain: 1, // the brightness of the global beam sheet
   reducedMotion: false,
+  sound: true, // the sound of the gates (see sound.js)
+  soundVolume: 0.5, // between 0 and 1
   textScale: 1, // the size of the text of the panels
   uiContrast: false,
 };

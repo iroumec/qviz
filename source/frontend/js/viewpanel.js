@@ -4,6 +4,7 @@
 // settings.js and follows its changes, so the panel and the scene always agree.
 
 import { PALETTES, PROFILES, applyProfile, resetView, setOption, subscribe } from "./settings.js";
+import { setSoundVolume } from "./sound.js";
 import { state } from "./state.js";
 import { isEnglish } from "./utils.js";
 
@@ -94,6 +95,13 @@ const SECTIONS = [
       { key: "laserGain", type: "range", label: t("Brillo de los láseres", "Laser brightness"), min: 0.1, max: 1.5, step: 0.05 },
       { key: "sheetGain", type: "range", label: t("Brillo del haz global", "Global beam brightness"), min: 0, max: 1.5, step: 0.05 },
       { key: "reducedMotion", type: "check", label: t("Movimiento reducido", "Reduced motion") },
+    ],
+  },
+  {
+    title: t("Sonido", "Sound"),
+    controls: [
+      { key: "sound", type: "check", label: t("Sonido de las compuertas", "Gate sounds") },
+      { key: "soundVolume", type: "range", label: t("Volumen", "Volume"), min: 0, max: 1, step: 0.05 },
     ],
   },
   {
@@ -218,6 +226,7 @@ function applyInterface(view) {
   root.classList.toggle("reduce-motion", Boolean(view.reducedMotion));
   root.classList.toggle("hc-ui", Boolean(view.uiContrast));
   root.style.setProperty("--ui-zoom", String(view.textScale));
+  setSoundVolume(view.soundVolume);
 
   const palette = PALETTES[view.palette];
   if (palette) {

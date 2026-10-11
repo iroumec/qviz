@@ -48,7 +48,8 @@ function createReadoutLens() {
       emissive: 0x7a2748, emissiveIntensity: 0.5,
     })
   );
-  glass.position.set(1.0, 0, 0);
+  // The base of the dome (0.647 behind its centre) sits on the front of the barrel.
+  glass.position.set(1.25 - 1.1 * Math.cos(Math.PI * 0.3), 0, 0);
   group.add(glass);
   return group;
 }
