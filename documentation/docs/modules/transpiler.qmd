@@ -1,6 +1,6 @@
 # Transpiler {#sec-transpiler}
 
-The transpiler is found in `backend/core/transpiler/transpiler.py`. It changes
+The transpiler is found in `source/backend/core/transpiler/transpiler.py`. It changes
 the circuit of the user into the gate set of the chosen backend. It is the first
 stage of the pipeline, and the only one that may call `backend.run` before the
 tomography stage.

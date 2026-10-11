@@ -16,7 +16,7 @@ from examples import ghz, layered
 
 _SCHEMA = json.loads(
     (
-        Path(__file__).parent.parent
+        Path(__file__).parent.parent.parent
         / "documentation"
         / "schema"
         / "visualization.schema.json"

@@ -15,7 +15,7 @@ from backend.core.errors import UnsupportedProviderError, QVizError
 from tests.circuits import ALL_CIRCUITS, bell
 
 _SCHEMA_PATH = (
-    Path(__file__).parent.parent
+    Path(__file__).parent.parent.parent
     / "documentation"
     / "schema"
     / "visualization.schema.json"

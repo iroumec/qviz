@@ -1,6 +1,6 @@
 """Demo M5: fidelities, inactivity, vibration and cost per step.
 
-Run with: python scripts/demo_metrics.py
+Run with: python resources/scripts/demo_metrics.py
 """
 
 from __future__ import annotations

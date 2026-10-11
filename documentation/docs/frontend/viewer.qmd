@@ -2,7 +2,7 @@
 
 A basic viewer is included for the JSON file. It is a tool to see the output of
 the backend, and it is not the final frontend. It is written in plain
-JavaScript: `frontend/index.html` draws 3D Bloch spheres with shaders, and it
+JavaScript: `source/frontend/index.html` draws 3D Bloch spheres with shaders, and it
 loads three.js from a CDN.
 
 The viewer is connected to the JSON files that
@@ -23,7 +23,7 @@ performance can be watched.
 
 ![How the frontend is connected to the backend.](../../diagrams/svg/Frontend.svg)
 
-The spheres are drawn with the **shaders in the `shaders/` folder**
+The spheres are drawn with the **shaders in the `source/shaders/` folder**
 (`bloch.vert` and `bloch.frag`). The fragment shader is a volumetric
 raymarcher: the axes, the state vector, the angle sweeps, the sphere shell and
 the dotted grid are all computed from the ray. The vertex shader is instanced,
@@ -44,12 +44,12 @@ axis. One box is placed per ion, with the same instance matrix as its sphere, so
 the beam is centred on its own ion. The colour follows the species of the
 backend: magenta for ytterbium (Aria, Harmony), green for barium (Forte), and
 violet when the species is unknown. The beam is cut by the two uniforms
-`uLaserMinY` and `uLaserMaxY`, which are set from `frontend/js/config.js`
+`uLaserMinY` and `uLaserMaxY`, which are set from `source/frontend/js/config.js`
 (`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly. `LASER_MAX_Y` is `LENS_Y`, so it follows the height of the device.
 
 The lens is a detailed **laser head**: a fiber connector, a mounting flange with
 bolts, a body with a focusing ring, a front barrel and a glass aperture, built by
-`createLaserHead` in `frontend/js/laser.js`. The heads are not floating: they hang
+`createLaserHead` in `source/frontend/js/laser.js`. The heads are not floating: they hang
 from a **rail** above the chain, which is held by a post at each end.
 
 A beam is **dark by default**. It is fired only for the target ions of a native
@@ -70,9 +70,9 @@ two-qubit gate is told apart from a single-qubit one.
 
 The species colour is magenta for ytterbium (Aria, Harmony), green for barium
 (Forte) and violet when the species is unknown; it is returned by `laserColorFor`
-in `frontend/js/laser.js`. The length and the colour of every pulse are returned
+in `source/frontend/js/laser.js`. The length and the colour of every pulse are returned
 by `laserPulseFor` in the same file, from the constants in
-`frontend/js/config.js`. The pulse has a flat top: it rises and falls in the
+`source/frontend/js/config.js`. The pulse has a flat top: it rises and falls in the
 first and last 15 % of its length.
 
 The automatic play waits for the pulse to finish before it moves to the next
@@ -87,7 +87,7 @@ do not exchange light: the whole chain is one elastic spring, and the coupling
 travels as a vibration (a phonon).
 
 - **The phonon bus.** While the two lasers are on, an energy tube joins the two
-  targets (`shaders/bus.vert` and `bus.frag`, built by `frontend/js/phonon.js`).
+  targets (`source/shaders/bus.vert` and `bus.frag`, built by `source/frontend/js/phonon.js`).
   The tube is drawn between the centres of the two ions, so it **passes through**
   the ions in between: the coupling is not local, it uses the whole chain. Its
   colour is the entangler colour, and two waves of different frequency run along
@@ -100,7 +100,7 @@ travels as a vibration (a phonon).
   pulses are exactly in sync). It shows that the two ions are now entangled,
   through the vibration of the chain and not through the ions in between.
 
-The halo is drawn by the sphere shader (`shaders/bloch.frag`), which reads the
+The halo is drawn by the sphere shader (`source/shaders/bloch.frag`), which reads the
 `instanceEntangled` attribute of each instance.
 
 The example circuit `bell_distant.json` (a Bell pair on q0 and q2) shows this
@@ -110,7 +110,7 @@ the ion in between, even though it is not a target.
 ## The surface-trap chip {.unnumbered}
 
 The ions are held by a microfabricated **surface-trap chip** below the chain
-(`frontend/js/trap.js`):
+(`source/frontend/js/trap.js`):
 
 - A dark, mirror-like **silicon substrate** gives contrast to the lasers and the
   gold. It rests on four legs down to the optical table, so it is not floating.
@@ -127,7 +127,7 @@ the ions float above the chip.
 ## The horizontal layer {.unnumbered}
 
 At the height of the chain there is a second layer of optics
-(`frontend/js/horizontal.js`):
+(`source/frontend/js/horizontal.js`):
 
 - A broad **global Raman beam sheet** crosses the whole chain. It is invisible at
   rest and flashes with every gate (single- or two-qubit), in step with the
@@ -144,7 +144,7 @@ At the height of the chain there is a second layer of optics
 ## The laboratory environment {.unnumbered}
 
 The scene is set inside an ultra-high-vacuum chamber on an optical table
-(`frontend/js/environment.js`):
+(`source/frontend/js/environment.js`):
 
 - A dark anodised **optical breadboard** with a grid of threaded holes sits
   below everything.
@@ -219,7 +219,7 @@ The expressions in the panels (the qubit labels, the kets, `p(|1⟩)` and the
 readout correction) are written in the LaTeX style as **inline MathML**, so the
 browser typesets them natively, with no maths library and nothing fetched at run
 time. The helpers `qubitMath`, `ketMath`, `probOneMath` and `probCorrectionMath`
-in `frontend/js/utils.js` build them. On the 3D canvas, where MathML cannot be
+in `source/frontend/js/utils.js` build them. On the 3D canvas, where MathML cannot be
 drawn, the same expressions use the Unicode subscripts and angle brackets (`q₀`,
 `|0⟩`) from `qubitLabel` and `ket`.
 
@@ -249,7 +249,7 @@ make outputs
 ```
 
 The files are written to `out/`, together with `out/manifest.json`. Any of them
-can then be chosen in the selector of `frontend/index.html`, or dragged onto a
+can then be chosen in the selector of `source/frontend/index.html`, or dragged onto a
 viewer.
 
 The pages are served by a small local server, so that the shaders and the JSON
@@ -258,10 +258,11 @@ files can be read.
 ```bash
 make outputs
 make server            # or: make server PORT=9000
+make open              # like server, but also opens the browser
 # then open http://localhost:8000/frontend/index.html
 ```
 
-`make server` runs `scripts/server.py`. It serves the repository like
+`make server` runs `resources/scripts/server.py`. It serves the repository like
 `python -m http.server`, and it adds `POST /api/compile`: the body is the OpenQASM
 text, the optional query has `shots` and `entangler` (`auto`, `ms` or `zz`), and
 the reply is the JSON of the visualization. It calls `qollab_api.run_qasm`, so the
@@ -408,7 +409,7 @@ done in the browser, from the fields of the JSON, so no job is sent to a
 backend.
 
 The measurement is also shown in the scene as **state-dependent fluorescence**
-(`frontend/js/measurement.js`), the way a trapped-ion measurement really works.
+(`source/frontend/js/measurement.js`), the way a trapped-ion measurement really works.
 The individual vertical lasers are not fired; the horizontal layer does the
 illumination.
 
@@ -466,8 +467,8 @@ The viewer reads only the fields of the contract. The fields that are used are
 ## The files of the viewer {.unnumbered}
 
 The viewer is a set of small ES modules, so that each file has one purpose.
-`frontend/index.html` holds only the markup and the style; the script starts at
-`frontend/js/main.js`.
+`source/frontend/index.html` holds only the markup and the style; the script starts at
+`source/frontend/js/main.js`.
 
 | File | Purpose |
 | --- | --- |

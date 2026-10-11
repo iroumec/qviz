@@ -1,6 +1,6 @@
 # The `to_qiskit` bridge {#sec-to-qiskit}
 
-The file `backend/core/to_qiskit.py` rebuilds a Qiskit circuit from a
+The file `source/backend/core/to_qiskit.py` rebuilds a Qiskit circuit from a
 `NativeCircuit`. It is the opposite of the translator, which goes from Qiskit to
 native gates, and it is not a pipeline stage.
 

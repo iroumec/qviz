@@ -1,6 +1,6 @@
 # Provider {#sec-provider}
 
-The provider module is found in `backend/core/provider/`. It has two
+The provider module is found in `source/backend/core/provider/`. It has two
 responsibilities. The family of the backend is recognised, and the noise profile
 of a reference machine is chosen. Two files are used: `provider.py` and
 `profiles.py`.

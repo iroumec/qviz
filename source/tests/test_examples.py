@@ -17,7 +17,7 @@ from examples import inverse_qft, qft, qft_adder
 
 _SCHEMA = json.loads(
     (
-        Path(__file__).parent.parent
+        Path(__file__).parent.parent.parent
         / "documentation"
         / "schema"
         / "visualization.schema.json"

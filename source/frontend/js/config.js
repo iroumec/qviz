@@ -113,14 +113,14 @@ export const JIGGLE_SPEED = 0.05;
 export const PLAY_INTERVAL_MS = 700;
 export const PLAY_MARGIN_MS = 150;
 
-export const MANIFEST_URL = "../out/manifest.json";
-export const OUT_URL = "../out/";
+export const MANIFEST_URL = "../../out/manifest.json";
+export const OUT_URL = "../../out/";
 
 export const COMPILE_URL = "../api/compile";
 export const SAMPLE_URL = "../api/sample";
 
-export const OBJ_URL = "../models/laser_lens.obj";
-export const MTL_URL = "../models/laser_lens.mtl";
+export const OBJ_URL = "../../resources/models/laser_lens.obj";
+export const MTL_URL = "../../resources/models/laser_lens.mtl";
 
 // The readable name, the short label (for the timeline boxes) and the family of
 // each native operation.

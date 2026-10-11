@@ -1,6 +1,6 @@
 # The QFT adder {#sec-qft-adder}
 
-The worked examples are found in the `examples/` directory. They are plain
+The worked examples are found in the `resources/examples/` directory. They are plain
 Qiskit circuits that can be compiled by the backend and shown in the viewer. The
 most interesting one is the **QFT adder**: two numbers are added with the
 quantum Fourier transform.
@@ -26,7 +26,7 @@ The controlled phase between the qubit `high` and the qubit `low` has the angle
 with the sign of every phase changed.
 
 The functions are `apply_qft`, `apply_inverse_qft`, `qft` and `inverse_qft` in
-`examples/qft.py`. The `qft(count)` and `inverse_qft(count)` functions return a
+`resources/examples/qft.py`. The `qft(count)` and `inverse_qft(count)` functions return a
 standalone circuit for a given number of qubits.
 
 ## The Draper adder {.unnumbered}
@@ -87,7 +87,7 @@ three input pairs. A JSON file is written for each pair, for example
 The result is also checked by the test suite.
 
 ```bash
-.venv/bin/python -m pytest tests/test_examples.py
+.venv/bin/python -m pytest source/tests/test_examples.py
 ```
 
 The test prepares every input pair, runs the adder, and confirms that the first

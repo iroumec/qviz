@@ -1,6 +1,6 @@
 # Sampler {#sec-sampler}
 
-The sampler is found in `backend/core/sampler/sampler.py`. It simulates a
+The sampler is found in `source/backend/core/sampler/sampler.py`. It simulates a
 measurement of all the qubits at any step of a visualization, and it returns the
 counts of each bitstring. It is **not** a stage of the pipeline: it works on the
 dictionary that `compile` returns, and it is exported from `backend` for

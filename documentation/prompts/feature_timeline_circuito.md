@@ -1,6 +1,6 @@
 # Feature: línea de tiempo del circuito transpilado (franja inferior)
 
-> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/timeline.js`, markup y CSS en `index.html`, cableado en `controls.js`/`data.js`/`scene.js`. Queda por probar en Qollab, y no se hizo el realce de las esferas 3D al pasar el mouse ni el clic en el nombre del qubit (opcionales); el realce 3D ya está hecho (`selection.js`) y se agregó zoom, arrastre y clic en el número de paso para circuitos largos. Prompt original: Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
+> **Estado (2026-10-11): implementada, sin commitear.** `source/frontend/js/timeline.js`, markup y CSS en `index.html`, cableado en `controls.js`/`data.js`/`scene.js`. Queda por probar en Qollab, y no se hizo el realce de las esferas 3D al pasar el mouse ni el clic en el nombre del qubit (opcionales); el realce 3D ya está hecho (`selection.js`) y se agregó zoom, arrastre y clic en el número de paso para circuitos largos. Prompt original: Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `source/frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
 
 ## Objetivo
 
@@ -43,11 +43,11 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
 
 ## Cómo se construye
 
-- **Módulo nuevo `frontend/js/timeline.js`** con `initTimeline()`, `buildTimeline(data)` (al cargar un circuito) y `highlightStep(index)` (en cada `updateStep`).
+- **Módulo nuevo `source/frontend/js/timeline.js`** con `initTimeline()`, `buildTimeline(data)` (al cargar un circuito) y `highlightStep(index)` (en cada `updateStep`).
 - **Sin ciclos de imports.** Hoy el grafo de módulos no tiene ciclos y `bundle_modules` de `package_qollab.py` asume cada módulo después de lo que importa. `timeline.js` **no** importa `data.js` ni `controls.js`: `initTimeline(onSelect)` recibe un callback y lo cablea `controls.js` (`initTimeline((n) => { stopPlay(); updateStep(n); })`). `data.js` llama a `buildTimeline`/`highlightStep` igual que hoy llama a `updateReadouts`/`renderDetails`.
 - **`OPERATIONS` hoy es privado de `panels.js`** (nombres y `kind` de cada operación). Moverlo a `config.js` o `utils.js` y exportarlo para compartirlo, sin cambiar el panel.
 - **Redimensionado del canvas.** `scene.js` llama a `onResize` solo con el `resize` de la ventana, y al plegar o abrir la franja cambia el alto de `#stage` sin que cambie la ventana. Hay que avisar a la escena: un `ResizeObserver` sobre `#stage` que llame a `onResize` (hoy no exportada) o exportarla y llamarla desde el botón de plegar. `computeFitRadius` depende del aspecto (y desde `0944af5` usa `halfY = 5.6`), así que el encuadre se recalcula solo.
-- **HTML/CSS** en `frontend/index.html`: `<section class="timeline">` entre `</main>` y `.playback`. CSS en el bloque `<style>` existente (Qollab usa ese bloque tal cual como `main.css`). Grid CSS con una columna por paso; sin canvas ni librerías.
+- **HTML/CSS** en `source/frontend/index.html`: `<section class="timeline">` entre `</main>` y `.playback`. CSS en el bloque `<style>` existente (Qollab usa ese bloque tal cual como `main.css`). Grid CSS con una columna por paso; sin canvas ni librerías.
 - **Escala:** 16 qubits × cientos de pasos son pocas miles de cajas: aceptable construyendo el DOM una vez por circuito y solo cambiando clases en `highlightStep`. No virtualizar salvo que se mida lentitud (`ghz16`, `layered16`, `qft3`).
 - **Empaquetado:** `bundle_modules` sigue los `import` desde `main.js`, así que `timeline.js` entra solo si algún módulo lo importa. Verificar con `make qollab` que está en `qollab/main.js` y que el CSS llegó a `main.css`.
 - **i18n:** textos nuevos por `TEXT`/`data-i18n` (título, vacío, tooltips), como el resto del visor.
@@ -64,7 +64,7 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
 
 ## Pruebas y criterios de aceptación
 
-- No hay tests de JS en el repo. Agregar: (a) `node --check` de `timeline.js` y del `main.js` generado; (b) un test de Python en `tests/test_package_qollab.py` que arme el paquete y compruebe que `timeline` está en `main.js`, que no quedan `import` relativos y que el CSS de la franja está en `main.css`.
+- No hay tests de JS en el repo. Agregar: (a) `node --check` de `timeline.js` y del `main.js` generado; (b) un test de Python en `source/tests/test_package_qollab.py` que arme el paquete y compruebe que `timeline` está en `main.js`, que no quedan `import` relativos y que el CSS de la franja está en `main.css`.
 - Manual, con `bell`, `bell_distant`, `ghz3`, `ghz16`, `layered16`, `adder_n2_1_1` y un `.qasm` cargado:
   - la franja tiene una caja por paso y el orden coincide con "Detalle del paso";
   - el clic salta al paso correcto, pausa el Play y la escena 3D lo refleja;

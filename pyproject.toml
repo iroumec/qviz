@@ -24,10 +24,11 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
+where = ["source", "resources"]
 include = ["backend*", "examples*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["source/tests"]
 
 [tool.pydocstyle]
 convention = "pep257"

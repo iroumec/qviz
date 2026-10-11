@@ -11,34 +11,37 @@ qollab_api.py               The functions that Qollab pages call (they return te
 requirements.txt            Dependencies for Qollab.
 pyproject.toml              Local development and packaging.
 Makefile                    The build and the convenience targets.
-make/                       The makefiles that the Makefile includes.
-  Makefile.git              The branch workflow.
-  Makefile.quarto           The build of this book.
 .flake8                     The style rules of flake8.
 .github/workflows/ci.yml    The continuous integration (lint and tests).
-backend/                    The library.
-  __init__.py               The public API: compile, export, __version__.
-  core/
-    model.py                The frozen dataclasses of the pipeline.
-    errors.py               The exception hierarchy.
-    constants.py            The fixed mathematical constants (never changed).
-    config.py               The tunable configuration parameters.
-    to_qiskit.py            The bridge from a native circuit to a Qiskit circuit.
-    provider/               Provider detection and noise profiles.
-    compiler/               The pipeline orchestration.
-    transpiler/             Transpilation for the backend.
-    translator/             Translation into the native gate set.
-    simulator/              The statevector, the gate matrices and the tomography.
-    vectorizer/             The Bloch vectors.
-    sampler/                The simulated measurement of a step.
-    metrics/                The didactic metrics.
-    formatter/              The JSON contract.
-    exporter/               The JSON serialization.
-tests/                      The pytest suite.
-examples/                   Worked circuits (for example the QFT adder).
-scripts/                    The demo scripts and the generator of the files of out/.
-frontend/                   The viewers (index.html) and their ES modules (frontend/js).
-shaders/                    The volumetric shaders of the spheres.
+source/                     The Python library, the viewer and the tests.
+  backend/                  The library.
+    __init__.py             The public API: compile, export, __version__.
+    core/
+      model.py              The frozen dataclasses of the pipeline.
+      errors.py             The exception hierarchy.
+      constants.py          The fixed mathematical constants (never changed).
+      config.py             The tunable configuration parameters.
+      to_qiskit.py          The bridge from a native circuit to a Qiskit circuit.
+      provider/             Provider detection and noise profiles.
+      compiler/             The pipeline orchestration.
+      transpiler/           Transpilation for the backend.
+      translator/           Translation into the native gate set.
+      simulator/            The statevector, the gate matrices and the tomography.
+      vectorizer/           The Bloch vectors.
+      sampler/              The simulated measurement of a step.
+      metrics/              The didactic metrics.
+      formatter/            The JSON contract.
+      exporter/             The JSON serialization.
+  frontend/                 The viewers (index.html) and their ES modules (frontend/js).
+  shaders/                  The volumetric shaders of the spheres.
+  tests/                    The pytest suite.
+resources/                  The examples and the development tools.
+  examples/                 Worked circuits (for example the QFT adder).
+  models/                   The laser model (OBJ and MTL).
+  scripts/                  The demo scripts, the generator of out/ and the server.
+  make/                     The makefiles that the Makefile includes.
+    Makefile.git            The branch workflow.
+    Makefile.quarto         The build of this book.
 documentation/              The specification, the schema and this book.
   _quarto.yml               The configuration of this book.
   index.qmd                 The preface.
@@ -47,13 +50,14 @@ documentation/              The specification, the schema and this book.
   theme-rules.scss          The rules that both themes share.
   docs/                     The chapters of this book.
   diagrams/                 The PlantUML diagrams and their SVG renders.
+  prompts/                  spec.md, DESIGN.md and the working notes.
   schema/                   The JSON schema of the contract.
 ```
 
 ## One module per package {.unnumbered}
 
 Each pipeline stage lives in its own package:
-`backend/core/<module>/<module>.py`. The public function has the same name as the
+`source/backend/core/<module>/<module>.py`. The public function has the same name as the
 module, and it is a verb.
 
 | Module | Function |
@@ -91,8 +95,8 @@ that an accidental change raises an error.
 
 ## No printing inside the library {.unnumbered}
 
-The `print` function is used only in `scripts/` and in `main.py`. Inside
-`backend/core`, the `logging` module is used instead.
+The `print` function is used only in `resources/scripts/` and in `main.py`. Inside
+`source/backend/core`, the `logging` module is used instead.
 
 ```python
 import logging

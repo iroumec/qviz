@@ -1,6 +1,6 @@
 # Demos {#sec-demos}
 
-The demo scripts are found in the `scripts/` directory. They are meant to be
+The demo scripts are found in the `resources/scripts/` directory. They are meant to be
 read and run by a person, so they use `print`. They are not part of the library.
 Each script prints a readable result for one stage of the pipeline.
 
@@ -18,7 +18,7 @@ make demo M=adder
 
 ## The shared helpers {.unnumbered}
 
-The file `scripts/_common.py` holds the helpers that the demos share.
+The file `resources/scripts/_common.py` holds the helpers that the demos share.
 
 | Function | Meaning |
 | --- | --- |
@@ -75,7 +75,7 @@ The whole repository has more files than Qollab accepts (100 per project), and
 Qollab looks only at the files of the root to decide the type of the project. The
 script therefore builds the folder `qollab/` (not committed) with a complete **JS
 project**: `index.html`, `main.css` and `main.js` made from the viewer (its modules bundled), `qollab_api.py`,
-`requirements.txt` and the libraries `backend/` and `examples/`. `main.py` is left
+`requirements.txt` and the libraries `source/backend/` and `resources/examples/`. `main.py` is left
 out, because in a JS project it could compile a second time and spend a second
 IonQ job. The content of the folder is uploaded to Qollab. See
 `documentation/prompts/qollab_pruebas.md`.

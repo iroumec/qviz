@@ -104,11 +104,11 @@ Both modes share the same rendering code, so no logic is duplicated.
 ### 5.2 Files
 
 ```
-frontend/
+source/frontend/
   index.html      # main viewer: shaders, manifest selector, panels
   viewer3d.html   # standalone 3D demo (always loads out/bell.json)
   viewer.html     # 2D canvas fallback; no three.js
-shaders/
+source/shaders/
   bloch.vert      # instanced vertex shader (per-instance state vector)
   bloch.frag      # volumetric raymarching fragment shader
 out/              # JSON files and manifest.json, produced by the backend
@@ -140,7 +140,7 @@ little-endian qubit order, `|0⟩` at `+z`.
 
 ### 7.1 The volumetric shader
 
-The spheres are drawn with the two shaders in `shaders/`. The fragment shader
+The spheres are drawn with the two shaders in `source/shaders/`. The fragment shader
 is a volumetric raymarcher: from each ray it derives the axes, the state vector,
 the azimuth and polar sweeps, the sphere shell and the dotted grid. The vertex
 shader is **instanced**, so all the ions are drawn in a single draw call. Each

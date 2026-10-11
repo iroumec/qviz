@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-_ROOT = Path(__file__).parent.parent
-_SCRIPT = _ROOT / "scripts" / "package_qollab.py"
+_ROOT = Path(__file__).parent.parent.parent
+_SCRIPT = _ROOT / "resources" / "scripts" / "package_qollab.py"
 
 
 @pytest.fixture(scope="module")
@@ -64,14 +64,14 @@ def test_the_viewer_package_is_the_real_viewer(packaged):
     assert "<script" not in html, "Qollab runs no script of the HTML"
     assert 'id="measure"' in html and 'id="stage"' in html
 
-    source = (_ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    source = (_ROOT / "source" / "frontend" / "index.html").read_text(encoding="utf-8")
     style = source.split("<style>")[1].split("</style>")[0]
     assert (out / "main.css").read_text(encoding="utf-8").strip() == style.strip()
 
     # Qollab serves no other file of the project: the modules go inside main.js.
     assert not any(name.startswith("js/") for name in files)
     js = (out / "main.js").read_text(encoding="utf-8")
-    for path in sorted((_ROOT / "frontend" / "js").glob("*.js")):
+    for path in sorted((_ROOT / "source" / "frontend" / "js").glob("*.js")):
         assert f"// ---- {path.name}\n" in js, path.name
     assert not re.search(r"^import .* from [\"']\.", js, re.M), "relative import"
     assert 'import("./js' not in js and "from './" not in js
@@ -85,7 +85,9 @@ def test_the_timeline_strip_reaches_the_package_without_import_cycles(packaged):
     assert "function buildTimeline" in (out / "main.js").read_text(encoding="utf-8")
 
     # The strip is wired by the controls: importing them back would make a cycle.
-    source = (_ROOT / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
+    source = (
+        _ROOT / "source" / "frontend" / "js" / "timeline.js"
+    ).read_text(encoding="utf-8")
     imported = set(re.findall(r"from \"\./(\w+)\.js\"", source))
     assert imported <= {"config", "state", "utils"}
 
@@ -114,8 +116,8 @@ def test_every_service_of_the_prelude_is_used_by_the_viewer(module):
     services = re.findall(r"^\s{4}(\w+):", host, re.M)
     assert {"circuits", "load", "sample"} <= set(services)
 
-    viewer = (_ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    for path in sorted((_ROOT / "frontend" / "js").glob("*.js")):
+    viewer = (_ROOT / "source" / "frontend" / "index.html").read_text(encoding="utf-8")
+    for path in sorted((_ROOT / "source" / "frontend" / "js").glob("*.js")):
         viewer += path.read_text(encoding="utf-8")
     for service in services:
         assert f"HOST.{service}" in viewer, f"the viewer ignores HOST.{service}"
@@ -220,21 +222,27 @@ def test_the_view_panel_reaches_the_package_without_import_cycles(packaged):
     assert "uVecColor" in js, "the palette uniforms are embedded in the shader"
 
     # The settings only hold values: the scene imports them, never the reverse.
-    source = (_ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    source = (
+        _ROOT / "source" / "frontend" / "js" / "settings.js"
+    ).read_text(encoding="utf-8")
     assert set(re.findall(r"from \"\./(\w+)\.js\"", source)) == {"state"}
 
 
 def test_every_uniform_of_the_sphere_shader_is_given_by_the_scene():
-    shader = (_ROOT / "shaders" / "bloch.frag").read_text(encoding="utf-8")
-    scene = (_ROOT / "frontend" / "js" / "scene.js").read_text(encoding="utf-8")
+    shader = (_ROOT / "source" / "shaders" / "bloch.frag").read_text(encoding="utf-8")
+    scene = (
+        _ROOT / "source" / "frontend" / "js" / "scene.js"
+    ).read_text(encoding="utf-8")
     uniforms = re.findall(r"^uniform\s+\w+\s+(\w+);", shader, re.M)
     assert "uVecColor" in uniforms
     assert [name for name in uniforms if f"{name}:" not in scene] == []
 
 
 def test_the_laser_gain_reaches_the_beam_shader():
-    shader = (_ROOT / "shaders" / "laser.frag").read_text(encoding="utf-8")
-    laser = (_ROOT / "frontend" / "js" / "laser.js").read_text(encoding="utf-8")
+    shader = (_ROOT / "source" / "shaders" / "laser.frag").read_text(encoding="utf-8")
+    laser = (
+        _ROOT / "source" / "frontend" / "js" / "laser.js"
+    ).read_text(encoding="utf-8")
     uniforms = re.findall(r"^uniform\s+\w+\s+(\w+);", shader, re.M)
     assert "uLaserGain" in uniforms
     assert [name for name in uniforms if f"{name}:" not in laser] == []
@@ -242,7 +250,7 @@ def test_the_laser_gain_reaches_the_beam_shader():
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_view_options_have_profiles_that_are_kept_and_checked(tmp_path):
-    js = _ROOT / "frontend" / "js"
+    js = _ROOT / "source" / "frontend" / "js"
     script = tmp_path / "view.mjs"
     script.write_text(
         f"""

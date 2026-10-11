@@ -21,8 +21,8 @@ main.js           un preludio generado (los servicios de Qollab) + todos los mó
 qollab_api.py     las funciones que llama la página (devuelven texto)
 requirements.txt
 LICENSE           el texto MIT
-backend/          la biblioteca
-examples/         los circuitos de ejemplo
+source/backend/          la biblioteca
+resources/examples/         los circuitos de ejemplo
 ```
 
 Subí el **contenido** de `qollab/` (no la carpeta misma), de modo que `index.html` y `main.js` queden en la raíz del proyecto. Se puede subir una y otra vez sobre el mismo proyecto de Qollab: después de cambiar algo en el repositorio, `make qollab` y volver a subir.
@@ -43,7 +43,7 @@ Elegí un backend en *Select QPU* (empezá con **Built-in**), apretá Run y abr�
 | 6 | **Medir** con el Bell en el paso 4 | `01` y `10` cerca de 50 % cada uno. |
 | 7 | Cambiar `shots` (por ejemplo 100 y 20000) y medir de nuevo | El histograma cambia con cada clic; la suma de los porcentajes es 100. |
 | 8 | Elegir otro circuito (`ghz16`, `layered16`) | Carga. Anotá cuánto tarda y si la página se congela. En IonQ, la segunda compilación de un ejemplo falla con "only one job is allowed": el visor lo muestra en la línea de errores. |
-| 9 | **Cargar circuito** con `examples/qasm/bell.qasm` (OpenQASM 3) y con `bell_qasm2.qasm` (OpenQASM 2); también arrastrar el archivo a la página | Aparece como entrada nueva del selector y se ve el Bell. Funciona también en IonQ y todas las veces que se quiera (no gasta el job). Medir anda igual. |
+| 9 | **Cargar circuito** con `resources/examples/qasm/bell.qasm` (OpenQASM 3) y con `bell_qasm2.qasm` (OpenQASM 2); también arrastrar el archivo a la página | Aparece como entrada nueva del selector y se ve el Bell. Funciona también en IonQ y todas las veces que se quiera (no gasta el job). Medir anda igual. |
 | 10 | Cargar un `.qasm` con un `if`, un `reset`, una compuerta `opaque`, una inexistente (`rzz`) o 17 qubits | La línea roja de errores dice por qué no se puede (`control flow … is not supported`, `reset … not supported`, `opaque gates have no definition`, `gate 'rzz' is not defined`, `maximum is 16`). |
 | 11 | Botón **Vista** (arriba a la derecha): perfil *Enfoque en el vector*, luego *Daltonismo*, luego *Restablecer* | El panel abre y cierra (clic, Esc, clic afuera). Con *Enfoque* quedan solo las esferas y se ve bien el vector; con *Daltonismo* cambian los colores de los ejes y de la leyenda; *Restablecer* vuelve al defecto. |
 | 12 | Recargar la página después de elegir un perfil | Si Qollab deja usar `localStorage`, recuerda el perfil; si no, arranca con el defecto sin errores. |

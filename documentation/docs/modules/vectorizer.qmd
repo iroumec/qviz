@@ -1,6 +1,6 @@
 # Vectorizer {#sec-vectorizer}
 
-The vectorizer is found in `backend/core/vectorizer/vectorizer.py`. It changes
+The vectorizer is found in `source/backend/core/vectorizer/vectorizer.py`. It changes
 the spherical coordinates of the simulator into Cartesian coordinates, and it
 computes the two probabilities of each qubit.
 

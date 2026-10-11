@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-_ROOT = Path(__file__).parent.parent
+_ROOT = Path(__file__).parent.parent.parent
 _MAX_LINES = 150
 _SECTIONS = (
     "## Cómo retomar",

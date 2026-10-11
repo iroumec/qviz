@@ -20,7 +20,7 @@ from backend.core.errors import (
 )
 from tests.circuits import bell
 
-_QASM = Path(__file__).parent.parent / "examples" / "qasm"
+_QASM = Path(__file__).parent.parent.parent / "resources" / "examples" / "qasm"
 _HEAD3 = 'OPENQASM 3.0;\ninclude "stdgates.inc";\n'
 
 

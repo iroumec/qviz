@@ -1,8 +1,8 @@
 # The viewer on Qollab {#sec-viewer-qollab}
 
-This page explains how the viewer of `frontend/index.html` runs on Qollab, and how
+This page explains how the viewer of `source/frontend/index.html` runs on Qollab, and how
 to change it without breaking that. Read it before changing the viewer, the
-measurement, `qollab_api.py` or `scripts/package_qollab.py`.
+measurement, `qollab_api.py` or `resources/scripts/package_qollab.py`.
 
 ## At a glance {.unnumbered}
 
@@ -64,30 +64,30 @@ qollab_context.md`), and they decide the design.
 make qollab
 ```
 
-The command runs `scripts/package_qollab.py`, which writes the folder `qollab/`
+The command runs `resources/scripts/package_qollab.py`, which writes the folder `qollab/`
 (not committed). Its **content** is uploaded to Qollab. The folder has:
 
 | File | Where it comes from |
 | --- | --- |
-| `index.html` | The markup of the `<body>` of `frontend/index.html`, without the script. |
-| `main.css` | The `<style>` block of `frontend/index.html`, unchanged. |
-| `main.js` | A generated prelude (the Qollab services), then all the modules of `frontend/js` bundled in one script. |
+| `index.html` | The markup of the `<body>` of `source/frontend/index.html`, without the script. |
+| `main.css` | The `<style>` block of `source/frontend/index.html`, unchanged. |
+| `main.js` | A generated prelude (the Qollab services), then all the modules of `source/frontend/js` bundled in one script. |
 | `qollab_api.py`, `requirements.txt` | The files of the root. |
-| `backend/`, `examples/` | The libraries. |
+| `source/backend/`, `resources/examples/` | The libraries. |
 
 `main.py` is left out on purpose. In a JS project it could also run, compile a
 second time and spend a second IonQ job. The viewer does what `main.py` does.
 
-The viewer is copied, not rewritten, so a change in `frontend/index.html` or in
-`frontend/js` reaches Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
+The viewer is copied, not rewritten, so a change in `source/frontend/index.html` or in
+`source/frontend/js` reaches Qollab with `make qollab` and nothing else. Do not edit the files of `qollab/`.
 
 ## The prelude of `main.js` {.unnumbered}
 
-The viewer is modular (`frontend/js`), but Qollab serves no file of the project
+The viewer is modular (`source/frontend/js`), but Qollab serves no file of the project
 besides the ones it loads itself: a relative `import("./js/main.js")` fails there
 with `TypeError: error loading dynamically imported module: …/_nuxt/js/main.js`.
 So `main.js` is **one script**: the prelude, followed by the modules bundled by
-`bundle_modules` in `scripts/package_qollab.py`. The prelude runs first, so that
+`bundle_modules` in `resources/scripts/package_qollab.py`. The prelude runs first, so that
 the host is ready when the modules read it.
 
 1. **The host.** It defines `window.QVIZ_HOST` with the services below. If
@@ -97,9 +97,9 @@ the host is ready when the modules read it.
    supported), the prelude keeps only its message and drops the traceback, so
    the `error` line shows a sentence a person can read. Any other error is shown
    as it is.
-2. **The files.** `shaders/` (`bloch`, `lens` and `laser`) and `models/laser_lens.obj`
+2. **The files.** `source/shaders/` (`bloch`, `lens` and `laser`) and `resources/models/laser_lens.obj`
    and `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
-3. **The modules.** Each module of `frontend/js` becomes an `async` function with
+3. **The modules.** Each module of `source/frontend/js` becomes an `async` function with
    its own scope, in the order of their imports, and returns what it exports; the
    modules that import it destructure that object. Two modules may therefore
    declare the same private name. The imports of `three` are kept once at the
@@ -116,8 +116,8 @@ a field is missing, the viewer does what it always did.
 
 | Field | Type | What the viewer does with it |
 | --- | --- | --- |
-| `shaders` | `{vert, frag, lensVert, lensFrag, laserVert, laserFrag}` | Uses these sources, instead of fetching `shaders/`. |
-| `laser` | `{obj, mtl}` | Parses this text for the laser model, instead of fetching `models/`. |
+| `shaders` | `{vert, frag, lensVert, lensFrag, laserVert, laserFrag}` | Uses these sources, instead of fetching `source/shaders/`. |
+| `laser` | `{obj, mtl}` | Parses this text for the laser model, instead of fetching `resources/models/`. |
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |
 | `sample` | `async (data, step, shots) -> [[bitstring, count], …]` | Measures with the backend. |
@@ -125,8 +125,8 @@ a field is missing, the viewer does what it always did.
 
 The test `test_every_service_of_the_prelude_is_used_by_the_viewer` fails if the
 prelude defines a service that the viewer does not read. **To add a service:**
-read it in `frontend/index.html` as `HOST.<name>` with a fallback for when it is
-missing, define it in the prelude of `scripts/package_qollab.py`, add the Python
+read it in `source/frontend/index.html` as `HOST.<name>` with a fallback for when it is
+missing, define it in the prelude of `resources/scripts/package_qollab.py`, add the Python
 function to `qollab_api.py` if it needs one, and document it in this table.
 
 ## The measurement {.unnumbered}
@@ -168,7 +168,7 @@ values or text.
 Each of these is a limit of the platform that broke something. Some were found by
 running on Qollab, and some are in its documentation. Each one is why a piece of
 the packaging exists, so keep them in mind before simplifying
-`scripts/package_qollab.py`.
+`resources/scripts/package_qollab.py`.
 
 | What failed | Cause | Solution |
 | --- | --- | --- |

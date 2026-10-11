@@ -1,7 +1,7 @@
 # Data model {#sec-model}
 
 Every object that travels between the pipeline stages is defined in
-`backend/core/model.py`. All the objects are **frozen dataclasses**. A frozen
+`source/backend/core/model.py`. All the objects are **frozen dataclasses**. A frozen
 dataclass cannot be changed after it is created, so the pipeline functions are
 easy to keep pure.
 

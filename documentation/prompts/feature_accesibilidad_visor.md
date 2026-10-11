@@ -1,6 +1,6 @@
 # Feature: accesibilidad y legibilidad del visor (panel "Vista")
 
-> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/settings.js`, `viewpanel.js` y `camerapad.js`, uniformes en `shaders/bloch.frag`, grupos y luces en `scene.js`, markup y CSS en `index.html`, tests en `tests/test_package_qollab.py`, docs en `viewer.qmd`. Quedan sin hacer (a propósito): el factor de duración del pulso (la ganancia de láser y de hoja global ya está) y las flechas con Shift (descartadas); el modo `?debug=keys` ya no hace falta (la D sí anda). Falta probarla en Qollab (`qollab_pruebas.md` filas 11 a 13). Lo de abajo es el plan original. Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/`, `shaders/bloch.frag` y `documentation/docs/frontend/viewer.qmd`. Para el formato se siguió el de `feature_timeline_circuito.md`.
+> **Estado (2026-10-11): implementada, sin commitear.** `source/frontend/js/settings.js`, `viewpanel.js` y `camerapad.js`, uniformes en `source/shaders/bloch.frag`, grupos y luces en `scene.js`, markup y CSS en `index.html`, tests en `source/tests/test_package_qollab.py`, docs en `viewer.qmd`. Quedan sin hacer (a propósito): el factor de duración del pulso (la ganancia de láser y de hoja global ya está) y las flechas con Shift (descartadas); el modo `?debug=keys` ya no hace falta (la D sí anda). Falta probarla en Qollab (`qollab_pruebas.md` filas 11 a 13). Lo de abajo es el plan original. Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `source/frontend/js/`, `source/shaders/bloch.frag` y `documentation/docs/frontend/viewer.qmd`. Para el formato se siguió el de `feature_timeline_circuito.md`.
 
 ## Por qué
 
@@ -114,11 +114,11 @@ Hace falta una referencia a cada grupo (`state.three.groups.environment`, `.trap
 
 ## 4. Cómo se construye
 
-- **Módulo `frontend/js/settings.js`**: valores por defecto, perfiles, lectura y escritura en `localStorage` (con `try/catch` y versión), `applySettings()` y un `subscribe` mínimo. Sin dependencias de los módulos de escena: **no puede crear ciclos de imports** (hoy el grafo no tiene ciclos y `bundle_modules` lo necesita así). Quien dibuja (`scene.js`, `laser.js`, `trap.js`, …) **lee** `state.view` y se suscribe.
-- **Módulo `frontend/js/viewpanel.js`**: construye el panel y el botón y escribe en `settings`. Lo cablea `main.js` o `controls.js`.
+- **Módulo `source/frontend/js/settings.js`**: valores por defecto, perfiles, lectura y escritura en `localStorage` (con `try/catch` y versión), `applySettings()` y un `subscribe` mínimo. Sin dependencias de los módulos de escena: **no puede crear ciclos de imports** (hoy el grafo no tiene ciclos y `bundle_modules` lo necesita así). Quien dibuja (`scene.js`, `laser.js`, `trap.js`, …) **lee** `state.view` y se suscribe.
+- **Módulo `source/frontend/js/viewpanel.js`**: construye el panel y el botón y escribe en `settings`. Lo cablea `main.js` o `controls.js`.
 - `state.js`: `view` (los valores vigentes) y `three.groups` (referencias a los grupos para ocultarlos).
 - `index.html`: el botón "Vista" en `.controls`, el contenedor del panel y su CSS, con las variables de diseño de hoy (`--panel`, `--border`, `--accent`, `--radius`, `--speed`).
-- `shaders/bloch.frag`, `laser.frag`, `rail.frag`, `bus.frag`: constantes de color e intensidad pasadas a uniformes con el valor actual por defecto.
+- `source/shaders/bloch.frag`, `laser.frag`, `rail.frag`, `bus.frag`: constantes de color e intensidad pasadas a uniformes con el valor actual por defecto.
 - `package_qollab.py`: los shaders ya se embeben; comprobar que los uniformes nuevos llegan y que no hay `import` relativos nuevos.
 - Cuidado con los nombres reservados de GLSL (`active` ya dio problemas: usar `intensity`).
 
@@ -133,7 +133,7 @@ Hace falta una referencia a cada grupo (`state.three.groups.environment`, `.trap
 
 ## 6. Pruebas y criterios de aceptación
 
-- `node --check` de los módulos nuevos y del `main.js` generado; un test de Python en `tests/test_package_qollab.py` que compruebe que `settings` y `viewpanel` están en `main.js`, que el CSS del panel llegó a `main.css`, que los uniformes nuevos están en los shaders embebidos y que `settings.js` no importa módulos de escena.
+- `node --check` de los módulos nuevos y del `main.js` generado; un test de Python en `source/tests/test_package_qollab.py` que compruebe que `settings` y `viewpanel` están en `main.js`, que el CSS del panel llegó a `main.css`, que los uniformes nuevos están en los shaders embebidos y que `settings.js` no importa módulos de escena.
 - Manual (local y Qollab), con `bell`, `bell_distant`, `ghz16` y `layered16`:
   - el botón **Vista** se ve sin buscarlo; el panel abre y cierra con clic, Esc y clic afuera;
   - el perfil Predeterminado se ve **igual que antes** (comparar capturas);

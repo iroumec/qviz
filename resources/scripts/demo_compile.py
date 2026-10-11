@@ -1,6 +1,6 @@
 """Demo M6: compile Bell and GHZ circuits and write the JSON contract.
 
-Run with: python scripts/demo_compile.py
+Run with: python resources/scripts/demo_compile.py
 """
 
 from __future__ import annotations

@@ -19,7 +19,7 @@ El plan está en `spec.md` §7 (M0 … M8). Para cada módulo:
 
 1. Confirmá cuál es el módulo actual en la tabla de estado (`spec.md` §8). **No empieces uno si el anterior no está "Validado"**, salvo que el equipo lo diga.
 2. Leé la sección completa del módulo en `spec.md`: objetivo, reglas, tests y demo.
-3. Implementá solo ese módulo, junto con sus tests y su `scripts/demo_<modulo>.py`.
+3. Implementá solo ese módulo, junto con sus tests y su `resources/scripts/demo_<modulo>.py`.
 4. Corré `make test` y la demo. Todo en verde.
 5. Pasá el estado a "Listo para validar" en `spec.md` §8.
 6. **Frená** y reportá al equipo:
@@ -43,11 +43,11 @@ Pipeline (detalle en `spec.md` §3):
 provider → transpiler → translator → simulator → vectorizer → metrics → formatter → exporter
 ```
 
-- **Un paquete por módulo:** `backend/core/<modulo>/<modulo>.py`, con una función pública cuyo verbo nombra al módulo (`transpile`, `translate`, `simulate`, `vectorize`, `measure`, `format`, `export`). Los helpers van en archivos hermanos dentro del mismo paquete.
+- **Un paquete por módulo:** `source/backend/core/<modulo>/<modulo>.py`, con una función pública cuyo verbo nombra al módulo (`transpile`, `translate`, `simulate`, `vectorize`, `measure`, `format`, `export`). Los helpers van en archivos hermanos dentro del mismo paquete.
 - **`compiler.py` solo orquesta.** Los módulos del pipeline **no se importan entre sí**; solo usan `core.model`, `core.errors`, `core.config`, `core.provider` y `core.to_qiskit` (puente neutral de `NativeCircuit` a `QuantumCircuit`, que usan la tomografía y los tests).
 - **Imports absolutos desde el paquete:** `from backend.core.translator import translator`. El estilo `from core...` no funciona en Qollab.
 - **Datos:** dataclasses `frozen=True` definidos en `core/model.py`. Las funciones son puras: devuelven objetos nuevos y no mutan la entrada.
-- **Sin estado global y sin `print` en `backend/core`.** Se usa `logging.getLogger(__name__)`. Los `print` van solo en `scripts/` y `main.py`.
+- **Sin estado global y sin `print` en `source/backend/core`.** Se usa `logging.getLogger(__name__)`. Los `print` van solo en `resources/scripts/` y `main.py`.
 - **Errores:** solo las excepciones de `core/errors.py`. `provider.detect` **nunca** falla: un backend que no es IonQ ni el simulador integrado cae en la clasificación `unsupported`. Quien lo rechaza es `compile`, con `UnsupportedProviderError`.
 - **Unidades (`spec.md` §5.1):** fases en radianes; `angle` de MS/ZZ en turnos [0, 0.25]; fidelidades en %; orden de qubits little-endian de Qiskit; Bloch estándar (|0⟩ = +z). Las compuertas de `qiskit_ionq` usan turnos: convertí en el borde.
 - **Matemática:** NumPy. Nada de dependencias pesadas para lo que NumPy resuelve.
@@ -76,10 +76,10 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ### El visor y Qollab
 
-El visor (`frontend/index.html`). Guía completa: `documentation/docs/frontend/qollab.qmd`.
+El visor (`source/frontend/index.html`). Guía completa: `documentation/docs/frontend/qollab.qmd`.
 
 - Tiene que seguir funcionando solo, servido con `python -m http.server`.
-- Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `laser`, `circuits`, `load`, `sample`, `compileQasm`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
+- Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `laser`, `circuits`, `load`, `sample`, `compileQasm`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`resources/scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
 - `make qollab` arma `qollab/` (proyecto JS de 51 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. No edites `qollab/`.
 - Qollab no ejecuta los `<script>` del HTML, solo carga `main.css` y el JS no lee archivos del proyecto: por eso el paquete embebe los shaders y el modelo del láser, y toma los circuitos de Python.
 - Versiones de Qollab (medidas el 2026-10-10): Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. El código tiene que funcionar con qiskit-ionq ≥ 1.0.0.
@@ -87,7 +87,7 @@ El visor (`frontend/index.html`). Guía completa: `documentation/docs/frontend/q
 
 ## 4. Tests
 
-- `pytest` en `tests/`, un `test_<modulo>.py` por módulo. Los circuitos de prueba compartidos van en `tests/circuits.py`.
+- `pytest` en `source/tests/`, un `test_<modulo>.py` por módulo. Los circuitos de prueba compartidos van en `source/tests/circuits.py`.
 - **Sin red ni credenciales:** IonQ siempre mockeado. Backends locales: `BasicSimulator` y `qiskit.providers.fake_provider.GenericBackendV2`.
 - **Oráculos:**
   - Traducción: `qiskit.quantum_info.Operator(...).equiv(...)` entre el circuito de origen y `to_qiskit(native)`.
@@ -104,10 +104,11 @@ El visor (`frontend/index.html`). Guía completa: `documentation/docs/frontend/q
 make venv          # crea .venv
 make install       # instala el paquete + extras de dev
 make test          # corre pytest
-make demo M=translator   # corre scripts/demo_translator.py
+make demo M=translator   # corre resources/scripts/demo_translator.py
 make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
 make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
 make server        # el visor en http://localhost:8000 con compilar y medir en Python, sin Qollab (PORT=9000)
+make open          # como server, pero además abre el navegador
 ```
 
 (Se crean en M0. Hasta entonces, `python -m pytest`.)
@@ -118,7 +119,7 @@ Entorno local: Python 3.14 (igual que Qollab) y Qiskit `>=2.5.2,<3`.
 
 ## 6. Git
 
-- Flujo de `make/Makefile.git`: `main` (estable), `development` (integración) y `feature/<modulo>` por módulo (`make feature NAME=translator`).
+- Flujo de `resources/make/Makefile.git`: `main` (estable), `development` (integración) y `feature/<modulo>` por módulo (`make feature NAME=translator`).
 - **No hagas commit, push ni merge si el equipo no lo pide.** Nunca `--no-verify` ni force-push.
 - Mensajes de commit en inglés: un resumen corto en la primera línea y, si hace falta, un cuerpo con viñetas, como en el historial.
 

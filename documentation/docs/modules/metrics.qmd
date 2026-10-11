@@ -1,6 +1,6 @@
 # Metrics {#sec-metrics}
 
-The metrics module is found in `backend/core/metrics/metrics.py`. It adds the
+The metrics module is found in `source/backend/core/metrics/metrics.py`. It adds the
 didactic figures to each step: the fidelities, the inactivity, the vibration and
 the estimated cost. This is a simple documented model, and it is **not** a
 simulation of noise.

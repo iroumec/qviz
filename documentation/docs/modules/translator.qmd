@@ -1,6 +1,6 @@
 # Translator {#sec-translator}
 
-The translator is found in `backend/core/translator/`. It changes any transpiled
+The translator is found in `source/backend/core/translator/`. It changes any transpiled
 circuit into a sequence of native ion gates. Only `gpi`, `gpi2`, `virtual_z` and
 **one** entangler, either `ms` or `zz`, appear in the result. The two entanglers
 are never mixed.

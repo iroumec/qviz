@@ -26,7 +26,7 @@ gate can be explained. See
   and given the error model. A gate with no native translation (`opaque`, an
   undefined gate, `reset`, control flow, …) is rejected with an error that says
   why.
-- Examples are in `examples/qasm/`. Supported backends: the built-in simulator
+- Examples are in `resources/examples/qasm/`. Supported backends: the built-in simulator
   and IonQ. Any other provider is rejected with an explicit error.
 
 ## Use it
@@ -59,6 +59,7 @@ browser. See [`viewer.qmd`](documentation/docs/frontend/viewer.qmd).
 make venv && make install   # needs Python 3.12 or newer (see Versions)
 make test                   # the test suite
 make server                 # the viewer at http://localhost:8000 (PORT=9000)
+make open                   # like server, but it opens the browser for you
 ```
 
 `make server` serves the viewer and runs the same Python code as Qollab. The

@@ -1,6 +1,6 @@
 """Demo M2: translate Bell and GHZ circuits to native ops for MS and ZZ.
 
-Run with: python scripts/demo_translator.py
+Run with: python resources/scripts/demo_translator.py
 """
 
 from __future__ import annotations

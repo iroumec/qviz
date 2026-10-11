@@ -17,7 +17,7 @@ a JS project it could compile a second time and spend a second IonQ job.
 
 Upload the **content** of ``qollab/``. See ``documentation/prompts/qollab_pruebas.md``.
 
-Run with: python scripts/package_qollab.py   (or: make qollab)
+Run with: python resources/scripts/package_qollab.py   (or: make qollab)
 """
 
 from __future__ import annotations
@@ -28,18 +28,19 @@ import shutil
 from collections.abc import Iterator
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / "qollab"
 MAX_FILES = 100
 MAX_BYTES = 2_000_000
 
-_LIBRARY = ("backend", "examples")
+# The library folders, as (source folder, folder in the Qollab project).
+_LIBRARY = (("source/backend", "backend"), ("resources/examples", "examples"))
 _SHARED = ("qollab_api.py", "requirements.txt", "LICENSE")
-_VIEWER = Path("frontend") / "index.html"
-_VIEWER_MODULES = Path("frontend") / "js"
+_VIEWER = Path("source/frontend") / "index.html"
+_VIEWER_MODULES = Path("source/frontend") / "js"
 _ENTRY_IMPORT = "./js/main.js"
-_SHADERS = Path("shaders")
-_MODELS = Path("models")
+_SHADERS = Path("source/shaders")
+_MODELS = Path("resources/models")
 
 # The prelude runs before the modules, so that `window.QVIZ_HOST` is ready when
 # the modules read it. It provides the shaders, the laser model, the circuits,
@@ -260,17 +261,18 @@ def viewer_files() -> dict[str, str]:
     }
 
 
-def _library_files() -> list[Path]:
-    """Return the paths, relative to the root, of the library and shared files."""
-    files = [Path(name) for name in _SHARED]
-    for folder in _LIBRARY:
-        files += sorted(
-            path.relative_to(ROOT)
-            for path in (ROOT / folder).rglob("*")
-            if path.is_file()
-            and "__pycache__" not in path.parts
-            and path.suffix != ".pyc"
-        )
+def _library_files() -> list[tuple[Path, Path]]:
+    """Return (source, destination) pairs, both relative to the root."""
+    files = [(Path(name), Path(name)) for name in _SHARED]
+    for source_dir, dest_dir in _LIBRARY:
+        for path in sorted((ROOT / source_dir).rglob("*")):
+            if not path.is_file():
+                continue
+            if "__pycache__" in path.parts or path.suffix == ".pyc":
+                continue
+            source = path.relative_to(ROOT)
+            destination = Path(dest_dir) / path.relative_to(ROOT / source_dir)
+            files.append((source, destination))
     return files
 
 
@@ -281,11 +283,11 @@ def package(out_dir: Path = OUT) -> list[Path]:
     out_dir.mkdir(parents=True)
 
     written = []
-    for source in _library_files():
-        destination = out_dir / source
+    for source, destination_rel in _library_files():
+        destination = out_dir / destination_rel
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / source, destination)
-        written.append(source)
+        written.append(destination_rel)
 
     for name, content in viewer_files().items():
         destination = out_dir / name

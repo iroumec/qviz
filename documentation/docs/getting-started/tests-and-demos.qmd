@@ -8,13 +8,13 @@ This page describes how the automated tests and the demo scripts are run.
 make test
 ```
 
-The command runs `pytest` over the `tests/` directory. All the tests must pass
+The command runs `pytest` over the `source/tests/` directory. All the tests must pass
 before a module is considered finished.
 
 A single test file can also be run.
 
 ```bash
-.venv/bin/python -m pytest tests/test_translator.py -v
+.venv/bin/python -m pytest source/tests/test_translator.py -v
 ```
 
 The tests are described in detail on the
@@ -46,7 +46,7 @@ make demo M=adder
 ```
 
 The `M` variable is required. The command runs
-`scripts/demo_<module>.py` with the virtual environment.
+`resources/scripts/demo_<module>.py` with the virtual environment.
 
 The `demo_compile` script writes two files, `out/bell.json` and
 `out/ghz3.json`. The `demo_adder` script writes the adder files. The `out`
@@ -74,8 +74,8 @@ make server
 # then open http://localhost:8000/frontend/index.html
 ```
 
-The page `frontend/index.html` is connected to the files in `out/`. It reads the
+The page `source/frontend/index.html` is connected to the files in `out/`. It reads the
 manifest, fills a selector with the available files, and opens the default one.
-An OpenQASM file (`examples/qasm/*.qasm`) can be loaded with the button *Cargar circuito*
+An OpenQASM file (`resources/examples/qasm/*.qasm`) can be loaded with the button *Cargar circuito*
 or dragged onto the page: `make server` compiles it (a plain `python -m http.server`
 cannot).

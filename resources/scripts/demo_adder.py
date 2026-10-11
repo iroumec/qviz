@@ -3,7 +3,7 @@
 The Fourier transform is printed for two qubits, and the adder is compiled by
 the backend for two input pairs. The result is written to ``out/adder_*.json``.
 
-Run with: python scripts/demo_adder.py
+Run with: python resources/scripts/demo_adder.py
 """
 
 from __future__ import annotations

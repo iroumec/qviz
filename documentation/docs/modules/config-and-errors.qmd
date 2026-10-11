@@ -1,8 +1,8 @@
 # Configuration, constants and errors {#sec-config-errors}
 
 This page documents two small modules that are used by every other module, and
-the exception hierarchy: `backend/core/config.py`, `backend/core/constants.py`
-and `backend/core/errors.py`.
+the exception hierarchy: `source/backend/core/config.py`, `source/backend/core/constants.py`
+and `source/backend/core/errors.py`.
 
 ## The two constant modules {.unnumbered}
 
@@ -99,7 +99,7 @@ equals `MAX_QUBITS`. If the cap is changed, the schema must be changed with it.
 
 ## The error module {.unnumbered}
 
-The file `backend/core/errors.py` defines a small hierarchy of exceptions. Only
+The file `source/backend/core/errors.py` defines a small hierarchy of exceptions. Only
 these exceptions are raised by the backend, so that a caller can catch all the
 expected failures with one `except` clause.
 

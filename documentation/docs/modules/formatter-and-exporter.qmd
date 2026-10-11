@@ -5,7 +5,7 @@ and the exporter writes it as a JSON string.
 
 ## `format(measured)` {.unnumbered}
 
-The function is found in `backend/core/formatter/formatter.py`. Because `format`
+The function is found in `source/backend/core/formatter/formatter.py`. Because `format`
 is also the name of a Python built-in, the function is usually imported as a
 module: `from backend.core.formatter import formatter`, and called as
 `formatter.format(...)`.
@@ -33,7 +33,7 @@ The full list of keys is given in the
 
 ## `export(data, path=None)` {.unnumbered}
 
-The function is found in `backend/core/exporter/exporter.py`.
+The function is found in `source/backend/core/exporter/exporter.py`.
 
 **Parameters**
 

@@ -3,7 +3,7 @@
 Only IonQ and the built-in simulator are accepted by ``compile``; the chip and
 the unknown backend show how the transpiler alone behaves.
 
-Run with: python scripts/demo_transpiler.py
+Run with: python resources/scripts/demo_transpiler.py
 """
 
 from __future__ import annotations

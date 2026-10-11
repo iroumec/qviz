@@ -2,7 +2,7 @@
 
 > Estado: **resuelta el 2026-10-10: IBM, AWS y los demás backends no se soportan.** Escrito el 2026-10-10. Lo que sigue queda como registro del problema y de las opciones que se descartaron.
 > **Resolución:** `compile` solo acepta `ionq` y `local`, y rechaza IBM, AWS y cualquier otro backend con `UnsupportedProviderError` antes de transpilar (`spec.md` §5.5). Los simuladores locales (Built-in) y las máquinas IonQ tienen conectividad total y no sufren el problema. Se eliminaron `ENABLED_PROVIDERS`, las clasificaciones `ibm`/`aws`/`unknown` y las subclases del translator. Este documento queda como registro del problema y de las opciones que se descartaron.
-> Alcance: `backend/core/transpiler/transpiler.py` y `backend/core/translator/rules.py` (`_compaction`).
+> Alcance: `source/backend/core/transpiler/transpiler.py` y `source/backend/core/translator/rules.py` (`_compaction`).
 > Lo marcado **[a verificar]** hay que comprobarlo en Qollab, porque los objetos `backend` de Qollab no son idénticos a los que se pueden crear en una máquina local.
 
 ## 1. Resumen
@@ -61,7 +61,7 @@ Se instalaron los mismos paquetes que usa Qollab (`qiskit-ibm-runtime`, `qiskit-
 | Built-in, Braket local, IonQ (estándar y nativo) | los 5 circuitos de prueba | ≤ 1e-14 (correcto) |
 | `FakeBerlin` | bell, ghz3, mixed3, wide4 | ≤ 1e-14 (correcto) |
 | `FakeBoston` | wide4 (4 qubits, varias interacciones) | **1,6** |
-| `FakeBerlin` | sumador QFT de 2 bits (`examples/`) | **2,0** |
+| `FakeBerlin` | sumador QFT de 2 bits (`resources/examples/`) | **2,0** |
 | `FakeBoston` | transpilación repetida 8 veces | **2 resultados distintos** |
 | Cadena lineal de 5 qubits (sin IBM, ver §4) | todos los pares interactúan | **error 2,0 en 10 de 10 corridas** |
 
@@ -179,13 +179,13 @@ El código local no puede reemplazar a Qollab: por ejemplo, según las notas de 
 
 ### 6.1 Cómo correr la sonda
 
-1. Crear un proyecto de Qollab (tipo Python) con la carpeta `backend/` del repositorio y `requirements.txt`.
+1. Crear un proyecto de Qollab (tipo Python) con la carpeta `source/backend/` del repositorio y `requirements.txt`.
 2. Pegar el script de abajo como `main.py` (reemplaza al de ejemplo).
 3. Para cada backend (Built-in, AWS Braket local, **IBM Boston, Kingston, Fez, Berlin** como mínimo, IonQ Aria 2 y Forte 1 simuladores): elegirlo en *Select QPU*, apretar *Run* y copiar la consola completa en la tabla de §6.3.
 4. Para **QPUs de IonQ de pago**, poner `RUN_END_TO_END = False` antes de correr: el script no manda ningún job y solo describe el backend. No sabemos **[a verificar]** si el diálogo de Qollab pide confirmar costo igual; si es así, cancelar.
 
 ```python
-"""QViz probe for Qollab. Use it as main.py of a project that also has backend/."""
+"""QViz probe for Qollab. Use it as main.py of a project that also has source/backend/."""
 
 import importlib.metadata as metadata
 import logging

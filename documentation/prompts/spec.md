@@ -1,8 +1,8 @@
 # QViz — Especificación del backend
 
-> Visualizador educativo de iones atrapados. Este documento cubre **solo el backend** (Python). El frontend (three.js) vive en `frontend/` y aquí solo aparece como consumidor del contrato JSON (§6).
+> Visualizador educativo de iones atrapados. Este documento cubre **solo el backend** (Python). El frontend (three.js) vive en `source/frontend/` y aquí solo aparece como consumidor del contrato JSON (§6).
 >
-> Fuentes: requerimientos del equipo, `documentation/diagrams/activity.puml`, `backend/core/compiler/compiler.py`, `documentation/prompts/qollab_context.md` (restricciones de la plataforma) y `documentation/references/ionq_native_gates.md` (definición de las compuertas nativas, identidades verificadas y errores de la doc de IonQ).
+> Fuentes: requerimientos del equipo, `documentation/diagrams/activity.puml`, `source/backend/core/compiler/compiler.py`, `documentation/prompts/qollab_context.md` (restricciones de la plataforma) y `documentation/references/ionq_native_gates.md` (definición de las compuertas nativas, identidades verificadas y errores de la doc de IonQ).
 >
 > Convención de este documento: **[a verificar]** = supuesto que hay que comprobar en Qollab antes de apostar el diseño. **[decisión]** = elección tomada acá que el equipo puede revertir.
 
@@ -75,18 +75,18 @@ QuantumCircuit + backend
 - **provider** queda separado porque el transpiler (para elegir estrategia) y el translator (para elegir MS o ZZ) necesitan conocer el proveedor. El requerimiento pone la detección dentro del "normalizador"; acá vive en un módulo propio que el normalizador usa.
 - **translator** es una función: `translator.translate(info, transpiled)`. La regla de traducción es la misma para todo backend (`rules.py`); lo único que cambia es el entrelazador objetivo de `info`. Hubo una base abstracta `Translator` con una subclase por proveedor (`IonQTranslator`, `IBMTranslator`, `AWSTranslator`, `LocalTranslator`, `GenericTranslator`); se quitó porque todas hacían lo mismo y IBM, AWS y `unknown` ya no se aceptan (§5.5).
 - **metrics** queda separado porque fidelidad, costo e inactividad no son estado cuántico ni formato, y mezclarlos en vectorizer o formatter rompería la responsabilidad única.
-- `exporter` ya aparece importado en `backend/__init__.py`.
+- `exporter` ya aparece importado en `source/backend/__init__.py`.
 
 ### 3.2 Estructura de carpetas (objetivo)
 
-Sigue el patrón actual: un paquete por módulo, `backend/core/<modulo>/<modulo>.py`, con una función pública cuyo verbo nombra al módulo. `compiler.py` solo orquesta.
+Sigue el patrón actual: un paquete por módulo, `source/backend/core/<modulo>/<modulo>.py`, con una función pública cuyo verbo nombra al módulo. `compiler.py` solo orquesta.
 
 ```
 main.py                         # Entrada en Qollab (proyecto Python). M7
 qollab_api.py                   # Funciones que llaman las páginas JS de Qollab (devuelven texto). M7, M9
 requirements.txt                # Dependencias para Qollab, iguales a las de pyproject.toml (un test lo comprueba). M7
 pyproject.toml                  # Desarrollo local (y PyPI a futuro). M0
-backend/
+source/backend/
   __init__.py                   # API pública: compile, export, sample, __version__
   core/
     __init__.py
@@ -106,13 +106,13 @@ backend/
     exporter/   exporter.py
     sampler/    sampler.py                  # Medición simulada de un paso (M9); no es una etapa del pipeline
     importer/   importer.py                 # Lectura de circuitos OpenQASM 2/3 (M10); no es una etapa del pipeline
-tests/
+source/tests/
   conftest.py
   circuits.py                   # Circuitos de prueba compartidos (Bell, GHZ, rotaciones, ...)
   test_<modulo>.py
-examples/                       # Circuitos de ejemplo (por ejemplo el sumador QFT)
+resources/examples/                       # Circuitos de ejemplo (por ejemplo el sumador QFT)
   qft.py
-scripts/
+resources/scripts/
   demo_<modulo>.py              # Salida legible para validar cada módulo a mano
   package_qollab.py             # `make qollab`: arma `qollab/`, el proyecto JS que se sube a Qollab (el visor real) (M9)
 documentation/
@@ -309,7 +309,7 @@ Los campos que no aplican **se omiten** (no van como `null`). Los floats se redo
 
 **Regla de trabajo:** se implementa **un módulo por vez**. Al terminar cada uno: tests en verde, demo corrida y estado actualizado en la tabla de §8. Después se **frena hasta que el equipo lo valide**. Cada módulo vive en su rama `feature/<modulo>` (`make feature NAME=<modulo>`).
 
-Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `rotations` (rx, ry, rz con ángulos arbitrarios), `bell`, `ghz3`, `swap_test` (con swap y ccx, para forzar descomposiciones) y `idle_qubit` (un qubit que nunca se usa).
+Circuitos de prueba compartidos (`source/tests/circuits.py`): `single_x`, `single_h`, `rotations` (rx, ry, rz con ángulos arbitrarios), `bell`, `ghz3`, `swap_test` (con swap y ccx, para forzar descomposiciones) y `idle_qubit` (un qubit que nunca se usa).
 
 ---
 
@@ -318,9 +318,9 @@ Circuitos de prueba compartidos (`tests/circuits.py`): `single_x`, `single_h`, `
 **Objetivo:** dejar un proyecto que se instala y testea, con la estructura de §3.2 vacía y bien cableada.
 
 - `pyproject.toml`: `requires-python = ">=3.12"`, dependencias `qiskit>=2.5.2,<3.0.0` (la línea que Qollab agrega solo), `qiskit-ionq>=1.0.0,<2.0.0` y `numpy>=2.0,<3.0`, y extras `dev` = `pytest`, `jsonschema`, `flake8`, `pydocstyle` (`make lint`).
-- `__init__.py` en cada paquete. Imports absolutos `backend.core...` (§3.3). Arreglar `backend/__init__.py`: hoy importa `from core.compiler import compile` y `from exporter import export`, que no resuelven, y tiene un `__main__` que no se ejecuta nunca. `show` se saca de `__all__` hasta que exista el frontend.
+- `__init__.py` en cada paquete. Imports absolutos `backend.core...` (§3.3). Arreglar `source/backend/__init__.py`: hoy importa `from core.compiler import compile` y `from exporter import export`, que no resuelven, y tiene un `__main__` que no se ejecuta nunca. `show` se saca de `__all__` hasta que exista el frontend.
 - `core/model.py` (todos los dataclasses de §5.2), `core/errors.py` y `core/config.py`.
-- `tests/circuits.py` y `tests/conftest.py`.
+- `source/tests/circuits.py` y `source/tests/conftest.py`.
 - Makefile: `make venv`, `make install`, `make test`, `make demo M=<modulo>`.
 - Rehacer `documentation/diagrams/modules.puml`, que hoy tiene contenido de otro proyecto (Simulation, RunoffModel, MainWindow…), según §3.1. Agregar a `activity.puml` los pasos provider, metrics y exporter.
 
@@ -362,7 +362,7 @@ El fallback estructural mira `target.operation_names` (o `operation_names`, o `c
 
 **Tests (sin red):** `BasicSimulator`; un `GenericBackendV2` con base `["cz", "rz", "sx", "x"]` (un chip con mapa de conexiones, para probar el layout); un objeto falso sin `target` (clasificado `unsupported`); un mock de backend IonQ cuyo `run` devuelve un job falso con un circuito nativo fijo, para probar la estrategia `remote`; y un mock que lanza una excepción, para el fallback. Además, `detect` sobre cada uno.
 
-**Demo:** `scripts/demo_transpiler.py` imprime el `BackendInfo` y el circuito transpilado de `bell` para cada backend local.
+**Demo:** `resources/scripts/demo_transpiler.py` imprime el `BackendInfo` y el circuito transpilado de `bell` para cada backend local.
 
 ---
 
@@ -427,7 +427,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - Invariantes: solo aparecen los ops permitidos, nunca `ms` y `zz` juntos, cada `angle` está en [0, 0.25] y los targets están en rango.
 - Si una fórmula de 2c no pasa su test, se corrige la fórmula **y** este documento.
 
-**Demo:** `scripts/demo_translator.py` imprime la lista de ops de `bell` y `ghz3` para MS y para ZZ, con la cantidad de compuertas por tipo.
+**Demo:** `resources/scripts/demo_translator.py` imprime la lista de ops de `bell` y `ghz3` para MS y para ZZ, con la cantidad de compuertas por tipo.
 
 ---
 
@@ -447,7 +447,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - Oráculo: el estado final de cada circuito de prueba se compara contra `qiskit.quantum_info.Statevector(qc_original)` con `partial_trace` por qubit (atol 1e-9).
 - Las matrices de cada archivo se comparan contra `Operator(GPIGate(φ/2π))` etc. de qiskit-ionq, salvo fase global.
 
-**Demo:** `scripts/demo_simulator.py` imprime una tabla de paso × qubit con (r, θ, φ) para `bell`.
+**Demo:** `resources/scripts/demo_simulator.py` imprime una tabla de paso × qubit con (r, θ, φ) para `bell`.
 
 ---
 
@@ -489,9 +489,9 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - `compiler.compile(...)`: descomenta y completa el pipeline de §3.1.
 - `documentation/schema/visualization.schema.json` (JSON Schema draft 2020-12) con los tipos, rangos, campos condicionales por `operation` y largos de listas iguales a `total_qubits`.
 
-**Tests:** el resultado de `compile` para cada circuito de prueba valida contra el schema (`jsonschema`); snapshot (golden file) de `bell` en BasicSimulator, en `tests/golden/bell_basic.json`; y `export` → `json.loads` da el mismo dict.
+**Tests:** el resultado de `compile` para cada circuito de prueba valida contra el schema (`jsonschema`); snapshot (golden file) de `bell` en BasicSimulator, en `source/tests/golden/bell_basic.json`; y `export` → `json.loads` da el mismo dict.
 
-**Demo:** `scripts/demo_compile.py` escribe `out/bell.json` y `out/ghz3.json` (`out/` va en `.gitignore`).
+**Demo:** `resources/scripts/demo_compile.py` escribe `out/bell.json` y `out/ghz3.json` (`out/` va en `.gitignore`).
 
 ---
 
@@ -542,7 +542,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - No envía ningún job: respeta la regla de un job por corrida en IonQ.
 - **Puente para Qollab:** `qollab_api.py` expone `run(backend, circuit, shots, entangler) -> str` y `sample_step(visualization, step, shots) -> str`. Devuelven texto (el `dict` → `Map` de Pyodide no se puede imprimir) y `sample_step` responde una **lista de pares** `[bitstring, cuenta]`, no un objeto, porque JavaScript reordena las claves enteras de un objeto (`"10"`, `"11"`) y se perdería el orden.
 - **Limitación:** requiere poder llamar a Python desde un clic en la página. **Verificado en Qollab el 2026-10-10** (Built-in): la llamada con `callPromising` funciona después de la primera corrida, las 8 mediciones de la prueba salieron bien, `import * as api from "qollab_api"` funciona con un archivo de la raíz y compilar un Bell y cada medición tardan unos milisegundos. Entonces no hace falta la alternativa de simular en JavaScript.
-- **Conexión con el visor.** El botón Medir de `frontend/index.html` usa `sample` cuando el visor corre en Qollab. **[decisión]** Lo que Qollab necesita entra como hooks opcionales (`window.QVIZ_HOST` con `shaders`, `laser`, `circuits`, `load` y `sample`; sin ellos el visor se comporta como siempre) y como código generado por `scripts/package_qollab.py`, que copia el HTML y el CSS del visor y arma un único `main.js` con un preludio (los shaders y el modelo del láser embebidos y el host) seguido de los módulos de `frontend/js` empaquetados sin reescribirlos, cada uno en su ámbito (Qollab no sirve los demás archivos del proyecto, así que un `import("./js/...")` falla ahí). Lo único visible que cambia: con la medición del backend no se muestra la nota de "qubits entrelazados" (el muestreo ya conserva las correlaciones). Guía completa, reglas para cambios futuros y qué falta verificar en `documentation/docs/frontend/qollab.qmd`.
+- **Conexión con el visor.** El botón Medir de `source/frontend/index.html` usa `sample` cuando el visor corre en Qollab. **[decisión]** Lo que Qollab necesita entra como hooks opcionales (`window.QVIZ_HOST` con `shaders`, `laser`, `circuits`, `load` y `sample`; sin ellos el visor se comporta como siempre) y como código generado por `resources/scripts/package_qollab.py`, que copia el HTML y el CSS del visor y arma un único `main.js` con un preludio (los shaders y el modelo del láser embebidos y el host) seguido de los módulos de `source/frontend/js` empaquetados sin reescribirlos, cada uno en su ámbito (Qollab no sirve los demás archivos del proyecto, así que un `import("./js/...")` falla ahí). Lo único visible que cambia: con la medición del backend no se muestra la nota de "qubits entrelazados" (el muestreo ya conserva las correlaciones). Guía completa, reglas para cambios futuros y qué falta verificar en `documentation/docs/frontend/qollab.qmd`.
 
 **Tests:** la distribución conjunta coincide con las marginales de cada paso del JSON y con `Statevector` del circuito original; un Bell sin ruido solo da `00` y `11`; con fidelidad 0 la distribución es uniforme; el orden de bits; la semilla; el rechazo de pasos, shots y datos inválidos; y las funciones de `qollab_api.py` (incluido el orden de la lista de pares).
 
@@ -558,11 +558,11 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 - **Compuertas que no se pueden traducir a IonQ → error descriptivo [decisión del usuario].** Toda compuerta que Qiskit sabe descomponer (la librería estándar, las definidas con `gate`, `ctrl @`, `inv @`, `pow @`) termina en GPI, GPI2, MS/ZZ y Z virtual. Lo que no se puede traducir se rechaza antes de gastar ningún job, con el nombre y el motivo: `opaque` (importer, y `transpiler` para cualquier `Gate` sin definición, también dentro de otras definiciones), una compuerta que no existe (`rzz`, `rxx`: se dice qué compuertas hay y cómo definirla con `gate`), `reset`, medición a mitad de circuito, control clásico, subrutinas `def` y calibración de pulsos, y los índices fuera de registro.
 - Los límites que dependen de la máquina siguen en `compile`: más de 16 qubits, `reset`, medición a mitad de circuito y parámetros sin valor (`input`). Las mediciones finales se aceptan y se quitan.
 - **[decisión] Sin job de IonQ para los circuitos cargados.** `compile` recibe `allow_remote=True` (por omisión, sin cambios); `qollab_api.run_qasm` pasa `False`, así que se transpila en local y se pueden cargar todos los archivos que se quiera en una corrida. El modelo de error (`metrics`) no usa ningún job: sale del perfil fijo de la máquina; el único job de la transpilación es el que pide a IonQ su propia compilación. Costo: el circuito no pasa por el compilador de IonQ, así que su cantidad de pasos puede diferir de la del ejemplo compilado en remoto.
-- **Puente para Qollab:** `qollab_api.run_qasm(backend, qasm, shots, entangler) -> str`; el preludio del paquete lo expone como `HOST.compileQasm`. El visor, con ese hook, muestra "Cargar circuito" (acepta `.qasm`, `.qasm3` y `.txt`, también arrastrando) y agrega el circuito al selector; sin el hook el visor llama a `POST /api/compile` del servidor local (`make server`, `scripts/server.py`: sirve el repo y compila con `qollab_api.run_qasm` sobre el simulador integrado, siempre en `127.0.0.1`); con un `http.server` común avisa que ese servidor no compila. **[decisión del usuario, 2026-10-10]** El botón Medir funciona igual en Qollab y en local: sin `HOST.sample` llama a `POST /api/sample` del mismo servidor (`qollab_api.sample_step`). Se eliminó del visor el muestreo independiente por marginales, porque no modela el entrelazamiento; sin Python el visor muestra un error. **[decisión del usuario, 2026-10-10]** Solo archivos y arrastrar; pegar texto queda fuera.
-- Ejemplos en `examples/qasm/` (`bell`, `ghz4`, `qft3` y `bell_qasm2`); los tests los compilan todos.
+- **Puente para Qollab:** `qollab_api.run_qasm(backend, qasm, shots, entangler) -> str`; el preludio del paquete lo expone como `HOST.compileQasm`. El visor, con ese hook, muestra "Cargar circuito" (acepta `.qasm`, `.qasm3` y `.txt`, también arrastrando) y agrega el circuito al selector; sin el hook el visor llama a `POST /api/compile` del servidor local (`make server`, `resources/scripts/server.py`: sirve el repo y compila con `qollab_api.run_qasm` sobre el simulador integrado, siempre en `127.0.0.1`); con un `http.server` común avisa que ese servidor no compila. **[decisión del usuario, 2026-10-10]** El botón Medir funciona igual en Qollab y en local: sin `HOST.sample` llama a `POST /api/sample` del mismo servidor (`qollab_api.sample_step`). Se eliminó del visor el muestreo independiente por marginales, porque no modela el entrelazamiento; sin Python el visor muestra un error. **[decisión del usuario, 2026-10-10]** Solo archivos y arrastrar; pegar texto queda fuera.
+- Ejemplos en `resources/examples/qasm/` (`bell`, `ghz4`, `qft3` y `bell_qasm2`); los tests los compilan todos.
 - **Licencia:** las dependencias nuevas son Apache-2.0/BSD-3 (§9). El `LICENSE` MIT está en el repositorio y en el paquete de Qollab (§2, Licencias).
 
-**Tests:** `tests/test_server.py` (el servidor local: compila, errores 400/404/413, redirección y archivos), `tests/test_importer.py` (versiones 2 y 3, encabezado, comentarios, errores con posición, control de flujo, tope de texto, ejemplos que compilan, límites de `compile`) y las pruebas de `run_qasm` en `tests/test_qollab_api.py` (JSON de salida, sin job de IonQ, error como `QVizError`).
+**Tests:** `source/tests/test_server.py` (el servidor local: compila, errores 400/404/413, redirección y archivos), `source/tests/test_importer.py` (versiones 2 y 3, encabezado, comentarios, errores con posición, control de flujo, tope de texto, ejemplos que compilan, límites de `compile`) y las pruebas de `run_qasm` en `source/tests/test_qollab_api.py` (JSON de salida, sin job de IonQ, error como `QVizError`).
 
 ---
 

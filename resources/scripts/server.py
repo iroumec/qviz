@@ -16,7 +16,8 @@ simulator. It is a tool for development, not for Qollab.
 An error is ``{"error": "..."}`` with the status 400 (the request is not valid) or
 500 (something unexpected).
 
-Run with: python scripts/server.py [--port 8000] [--host 127.0.0.1]   (or: make server)
+Run with: python resources/scripts/server.py [--port 8000] [--host 127.0.0.1] [--open]
+(or: make server, or make open to also open the browser)
 """
 
 from __future__ import annotations
@@ -24,14 +25,17 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "source"))
+sys.path.insert(0, str(ROOT / "resources"))
 
 from qiskit.providers.basic_provider import BasicSimulator  # noqa: E402
 
@@ -42,7 +46,7 @@ from backend.core.errors import QVizError  # noqa: E402
 COMPILE_PATH = "/api/compile"
 SAMPLE_PATH = "/api/sample"
 MAX_SAMPLE_BYTES = 64_000_000
-VIEWER_PATH = "/frontend/index.html"
+VIEWER_PATH = "/source/frontend/index.html"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -127,10 +131,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(
+        "--open", action="store_true", help="open the viewer in the browser"
+    )
     args = parser.parse_args()
     server = make_server(args.host, args.port)
-    print(f"QViz viewer: http://{args.host}:{server.server_port}{VIEWER_PATH}")
+    url = f"http://{args.host}:{server.server_port}{VIEWER_PATH}"
+    print(f"QViz viewer: {url}")
     print("Circuits (OpenQASM) are compiled on the built-in simulator. Ctrl+C stops.")
+    if args.open:
+        webbrowser.open(url)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

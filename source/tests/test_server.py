@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-_SCRIPT = Path(__file__).parent.parent / "scripts" / "server.py"
+_SCRIPT = Path(__file__).parent.parent.parent / "resources" / "scripts" / "server.py"
 _BELL = (
     'OPENQASM 3.0;\ninclude "stdgates.inc";\n'
     "qubit[2] q; h q[0]; cx q[0], q[1];"
@@ -99,9 +99,9 @@ def test_other_services_do_not_exist(base):
 
 def test_the_root_goes_to_the_viewer_and_the_files_are_served(base):
     with urllib.request.urlopen(base + "/") as response:
-        assert response.url.endswith("/frontend/index.html")
+        assert response.url.endswith("/source/frontend/index.html")
         assert b"Cargar circuito" in response.read()
-    with urllib.request.urlopen(base + "/shaders/bloch.frag") as response:
+    with urllib.request.urlopen(base + "/source/shaders/bloch.frag") as response:
         assert response.status == 200
         assert response.headers["Cache-Control"] == "no-store"
 

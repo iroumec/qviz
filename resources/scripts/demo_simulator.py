@@ -1,6 +1,6 @@
 """Demo M3: (r, theta, phi) per qubit after every native op of a Bell circuit.
 
-Run with: python scripts/demo_simulator.py
+Run with: python resources/scripts/demo_simulator.py
 """
 
 from __future__ import annotations

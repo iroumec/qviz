@@ -1,6 +1,6 @@
 # Simulator {#sec-simulator}
 
-The simulator is found in `backend/core/simulator/`. It computes the state of
+The simulator is found in `source/backend/core/simulator/`. It computes the state of
 every qubit after every native operation. The statevector is computed exactly;
 no noise is added at this stage. Each native gate has its own file, and a
 `matrix` function is defined in each one.

@@ -1,6 +1,6 @@
 # Compiler {#sec-compiler}
 
-The compiler is found in `backend/core/compiler/compiler.py`. It is the only
+The compiler is found in `source/backend/core/compiler/compiler.py`. It is the only
 module that knows all the other modules. It connects the stages of the pipeline,
 and it returns the final dictionary.
 

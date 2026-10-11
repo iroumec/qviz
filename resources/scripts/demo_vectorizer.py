@@ -1,6 +1,6 @@
 """Demo M4: Cartesian Bloch vectors and p(|1>) per qubit.
 
-Run with: python scripts/demo_vectorizer.py
+Run with: python resources/scripts/demo_vectorizer.py
 """
 
 from __future__ import annotations

@@ -68,7 +68,7 @@ Two rules are respected by all the modules of the pipeline.
    test and to change.
 2. **The public functions are pure.** An object is received, and a new object is
    returned. The input is never changed. There is no global state. There are no
-   `print` calls inside `backend/core`; the `logging` module is used instead.
+   `print` calls inside `source/backend/core`; the `logging` module is used instead.
 
 There is one documented exception. The `transpiler` and `tomography` modules are
 allowed to call `backend.run`, because a real measurement is needed. The rule of
@@ -85,6 +85,6 @@ page.
 ## Where the data types are defined {.unnumbered}
 
 Every object that travels between the stages is defined as a frozen dataclass in
-`backend/core/model.py`. A frozen dataclass cannot be changed after it is
+`source/backend/core/model.py`. A frozen dataclass cannot be changed after it is
 created, so the purity rule is easy to keep. The types are documented on the
 [Data model](../modules/model.qmd) page.

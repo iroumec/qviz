@@ -4,7 +4,7 @@ The manifest (``out/manifest.json``) lists every file with a readable label, so
 that the viewer can offer a selector. The 16-qubit circuits are used to test the
 performance of the renderer.
 
-Run with: python scripts/generate_outputs.py
+Run with: python resources/scripts/generate_outputs.py
 """
 
 from __future__ import annotations

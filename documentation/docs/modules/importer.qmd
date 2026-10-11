@@ -1,6 +1,6 @@
 # Importer {#sec-importer}
 
-The importer is found in `backend/core/importer/importer.py`. It reads a circuit
+The importer is found in `source/backend/core/importer/importer.py`. It reads a circuit
 written in **OpenQASM 2 or 3** and returns a Qiskit `QuantumCircuit`. It is **not**
 a stage of the pipeline: `compile` receives the circuit it returns, like any
 other circuit. It is exported from `backend` for convenience:
@@ -54,4 +54,4 @@ the circuit is transpiled locally and the job is never sent. The error model
 `qollab_api.run_qasm(backend, qasm, shots, entangler)` reads the text and returns
 the JSON text of the visualization. The viewer calls it through `HOST.compileQasm`
 (see [the Qollab page](../frontend/qollab.qmd)). The example circuits are in
-`examples/qasm/` (`bell.qasm`, `ghz4.qasm`, `qft3.qasm` and `bell_qasm2.qasm`).
+`resources/examples/qasm/` (`bell.qasm`, `ghz4.qasm`, `qft3.qasm` and `bell_qasm2.qasm`).

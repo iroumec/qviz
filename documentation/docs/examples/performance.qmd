@@ -1,7 +1,7 @@
 # Performance circuits {#sec-performance}
 
 Two wide circuits are provided to test the performance. They are found in
-`examples/performance.py`. They are used to check that many Bloch spheres can
+`resources/examples/performance.py`. They are used to check that many Bloch spheres can
 be drawn at the same time, and that a long JSON file is handled without a
 problem.
 
@@ -50,7 +50,7 @@ python -m http.server 8000
 # then open http://localhost:8000/frontend/index.html
 ```
 
-The file `frontend/index.html` is connected to the generated files. It loads
+The file `source/frontend/index.html` is connected to the generated files. It loads
 `out/manifest.json`, fills the selector with the available files, and opens the
 default one. The other files can be chosen in the selector. The number of qubits
 and the number of steps are shown, together with a live frame-rate counter, so

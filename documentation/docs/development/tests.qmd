@@ -1,6 +1,6 @@
 # Tests {#sec-tests}
 
-The tests are found in the `tests/` directory. They are run with `pytest`:
+The tests are found in the `source/tests/` directory. They are run with `pytest`:
 
 ```bash
 make test
@@ -10,7 +10,7 @@ One file exists for each module. The name of a file is `test_<module>.py`.
 
 ## The shared circuits {.unnumbered}
 
-The file `tests/circuits.py` holds the circuits that are used by several test
+The file `source/tests/circuits.py` holds the circuits that are used by several test
 files, together with a helper. Every circuit is built by a function, so that a
 fresh circuit is made for each test.
 
@@ -30,7 +30,7 @@ used by the tests that do not need a real backend.
 
 ## The fixtures {.unnumbered}
 
-The file `tests/conftest.py` defines two fixtures. A fixture is a value that
+The file `source/tests/conftest.py` defines two fixtures. A fixture is a value that
 `pytest` prepares for a test.
 
 | Fixture | Value |
@@ -79,7 +79,7 @@ An oracle is a trusted source of truth that is used for comparison.
 
 ## The golden file {.unnumbered}
 
-The file `tests/golden/bell_basic.json` is a snapshot of the full output for the
+The file `source/tests/golden/bell_basic.json` is a snapshot of the full output for the
 Bell circuit on the `BasicSimulator`. The test compares the new result with this
 file. When a change to the output is intended, the golden file is regenerated,
 and the change is mentioned in the review.
