@@ -20,27 +20,12 @@ from qiskit import QuantumCircuit
 from backend import compile, export, load_circuit, sample
 from backend.core.errors import QVizError
 from backend.core.model import Entangler
-from examples import ghz, layered
-
-
-def _bell() -> QuantumCircuit:
-    qc = QuantumCircuit(2)
-    qc.h(0)
-    qc.cx(0, 1)
-    return qc
-
-
-def _distant_bell() -> QuantumCircuit:
-    """A Bell pair on two ions that are not neighbours (q0 and q2)."""
-    qc = QuantumCircuit(3)
-    qc.h(0)
-    qc.cx(0, 2)
-    return qc
+from examples import bell, distant_bell, ghz, layered
 
 
 CIRCUITS: dict[str, Callable[[], QuantumCircuit]] = {
-    "bell": _bell,
-    "bell_distant": _distant_bell,
+    "bell": bell,
+    "bell_distant": distant_bell,
     "ghz3": lambda: ghz(3),
     "ghz16": lambda: ghz(16),
     "layered16": lambda: layered(16),

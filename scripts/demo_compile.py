@@ -9,7 +9,8 @@ from pathlib import Path
 
 from qiskit.providers.basic_provider import BasicSimulator
 
-from _common import bell, ghz3
+from _common import ghz3
+from examples import bell
 from backend import compile, export
 
 OUT = Path("out")

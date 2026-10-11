@@ -9,7 +9,8 @@ from collections import Counter
 
 from qiskit import QuantumCircuit
 
-from _common import bell, ghz3, make_info
+from _common import ghz3, make_info
+from examples import bell
 from backend.core.model import TranspiledCircuit
 from backend.core.translator import translator
 

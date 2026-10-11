@@ -6,7 +6,16 @@ scripts. The most interesting one is the QFT adder, which adds two numbers with
 the quantum Fourier transform.
 """
 
+from examples.bell import bell, distant_bell
 from examples.performance import ghz, layered
 from examples.qft import inverse_qft, qft, qft_adder
 
-__all__ = ["qft", "inverse_qft", "qft_adder", "ghz", "layered"]
+__all__ = [
+    "qft",
+    "inverse_qft",
+    "qft_adder",
+    "ghz",
+    "layered",
+    "bell",
+    "distant_bell",
+]

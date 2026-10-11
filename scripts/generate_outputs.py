@@ -17,30 +17,10 @@ from qiskit import QuantumCircuit
 from qiskit.providers.basic_provider import BasicSimulator
 
 from backend import compile, export
-from examples import qft_adder
-from examples.performance import ghz, layered
+from examples import bell, distant_bell, ghz, layered, qft_adder
 
 OUT = Path("out")
 _MANIFEST = OUT / "manifest.json"
-
-
-def _bell() -> QuantumCircuit:
-    circuit = QuantumCircuit(2)
-    circuit.h(0)
-    circuit.cx(0, 1)
-    return circuit
-
-
-def _distant_bell() -> QuantumCircuit:
-    """A Bell pair on two ions that are not neighbours (q0 and q2).
-
-    The entangler acts on q0 and q2 directly, so the two-qubit gate skips the
-    ion in between: it is the long-range coupling of the phonon bus.
-    """
-    circuit = QuantumCircuit(3)
-    circuit.h(0)
-    circuit.cx(0, 2)
-    return circuit
 
 
 def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:
@@ -56,10 +36,10 @@ def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:
 
 def _outputs() -> dict[str, tuple[str, QuantumCircuit]]:
     return {
-        "bell.json": ("Bell (2 qubits)", _bell()),
+        "bell.json": ("Bell (2 qubits)", bell()),
         "bell_distant.json": (
             "Distant Bell pair (q0-q2, 3 qubits)",
-            _distant_bell(),
+            distant_bell(),
         ),
         "ghz3.json": ("GHZ (3 qubits)", ghz(3)),
         "ghz16.json": ("GHZ (16 qubits, performance)", ghz(16)),

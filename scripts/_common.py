@@ -6,6 +6,7 @@ from qiskit import QuantumCircuit
 
 from backend.core.model import BackendInfo, Entangler
 from backend.core.provider import profiles
+from examples import ghz
 
 
 def make_info(entangler: Entangler = "ms") -> BackendInfo:
@@ -21,18 +22,6 @@ def make_info(entangler: Entangler = "ms") -> BackendInfo:
     )
 
 
-def bell() -> QuantumCircuit:
-    """Build a two-qubit Bell-state circuit."""
-    qc = QuantumCircuit(2)
-    qc.h(0)
-    qc.cx(0, 1)
-    return qc
-
-
 def ghz3() -> QuantumCircuit:
     """Build a three-qubit GHZ-state circuit."""
-    qc = QuantumCircuit(3)
-    qc.h(0)
-    qc.cx(0, 1)
-    qc.cx(1, 2)
-    return qc
+    return ghz(3)
