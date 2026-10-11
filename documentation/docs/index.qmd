@@ -26,7 +26,10 @@ that are needed are defined where they first appear.
 | Getting started | Installation, a first example and the test and demo commands. |
 | Core concepts | The pipeline, the units and the JSON contract. |
 | Architecture | How the parts connect, the structure of the repository, the entry points and the engineering practices. |
-| Backend modules | One page per module, with every function and parameter. |
+| Backend foundations | The constants, the errors, the data model and the provider. One page per module, with every function and parameter. |
+| Backend input and translation | The importer, the transpiler, the translator and the `to_qiskit` bridge. |
+| Backend simulation and output | The simulator, the vectorizer, the metrics and the formatter and exporter. |
+| Backend orchestration and extras | The compiler, the sampler and the tomography. |
 | Examples | Complete circuits, such as the QFT adder and the performance tests. |
 | Frontend | The architecture of the viewer, the viewer itself and its use on Qollab. |
 | Development | Tests, demos, the coding style, the tooling and the workflow. |

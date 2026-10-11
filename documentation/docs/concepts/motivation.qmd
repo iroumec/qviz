@@ -39,7 +39,10 @@ English), so that it can be used in a classroom without a translation step.
   shows a first example.
 - [Core concepts](pipeline-overview.qmd) explains the pipeline, the units and the
   JSON contract.
-- [Backend modules](../modules/compiler.qmd) documents each module.
+- [Backend foundations](../modules/config-and-errors.qmd), [input and
+  translation](../modules/transpiler.qmd), [simulation and
+  output](../modules/simulator.qmd) and [orchestration and
+  extras](../modules/compiler.qmd) document each module.
 - [Examples](../examples/qft-adder.qmd) shows complete circuits, such as the QFT
   adder and the 16-qubit performance circuits.
 - [Frontend](../frontend/viewer.qmd) documents the viewer.

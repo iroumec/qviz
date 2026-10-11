@@ -26,7 +26,14 @@ The pages are grouped as follows.
 - **Architecture** shows how the library, the adapters, the viewer and the hosts
   are connected, how the repository is organised and which engineering practices
   are followed.
-- **Backend modules** documents each module, function by function.
+- **Backend foundations** documents the constants, the errors, the data model and
+  the provider.
+- **Backend input and translation** documents the importer, the transpiler, the
+  translator and the `to_qiskit` bridge.
+- **Backend simulation and output** documents the simulator, the vectorizer, the
+  metrics and the formatter and exporter.
+- **Backend orchestration and extras** documents the compiler, the sampler and the
+  tomography.
 - **Examples** shows complete circuits, such as the QFT adder.
 - **Frontend** documents the architecture of the viewer, the viewer itself and its
   use on Qollab.

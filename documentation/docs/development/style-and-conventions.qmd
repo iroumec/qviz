@@ -105,6 +105,15 @@ The colour blocks use the `/*-- scss:defaults --*/` and `/*-- scss:rules --*/`
 markers that Quarto expects. The syntax highlighting uses Pandoc's `monochrome`
 style, with a small grey hierarchy added by `theme-rules.scss`.
 
+The PDF is built with Typst through the `orange-book` extension (`document-class:
+book`). One default of that extension is tuned in `_quarto.yml`: the part number
+is made smaller, so a wide numeral such as `VIII` does not run into the part
+title. The mini table of contents of a part divider page is kept at its default
+depth, which lists the chapters of the part and their sections. For it to fit, the
+backend pages are grouped into several parts (foundations, input and translation,
+simulation and output, orchestration and extras) instead of one part of fourteen
+chapters.
+
 ## The memory of the project {.unnumbered}
 
 The chat of an agent is emptied between sessions, but the repository is not. The

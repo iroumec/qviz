@@ -28,21 +28,27 @@ book:
         - docs/architecture/project-structure.qmd
         - docs/architecture/entry-points.qmd
         - docs/architecture/engineering-practices.qmd
-    - part: "Backend modules"
+    - part: "Backend foundations"
       chapters:
         - docs/modules/config-and-errors.qmd
         - docs/modules/model.qmd
         - docs/modules/provider.qmd
+    - part: "Backend input and translation"
+      chapters:
+        - docs/modules/importer.qmd
         - docs/modules/transpiler.qmd
         - docs/modules/translator.qmd
         - docs/modules/to-qiskit.qmd
-        - docs/modules/importer.qmd
-        - docs/modules/sampler.qmd
+    - part: "Backend simulation and output"
+      chapters:
         - docs/modules/simulator.qmd
         - docs/modules/vectorizer.qmd
         - docs/modules/metrics.qmd
         - docs/modules/formatter-and-exporter.qmd
+    - part: "Backend orchestration and extras"
+      chapters:
         - docs/modules/compiler.qmd
+        - docs/modules/sampler.qmd
         - docs/modules/tomography.qmd
     - part: "Examples"
       chapters:
@@ -60,8 +66,6 @@ book:
         - docs/development/tooling.qmd
         - docs/development/style-and-conventions.qmd
 
-bibliography: references.bib
-
 format:
   html:
     theme:
@@ -70,6 +74,15 @@ format:
     highlight-style: monochrome
   typst:
     document-class: book
+    include-before-body:
+      - text: |
+          // Tidy the part divider pages of orange-book, whose defaults assume a
+          // single-glyph part number. The part number is made smaller so a wide
+          // numeral such as "VIII" does not run into the part title. The mini
+          // table of contents keeps its default depth (chapters and sections):
+          // each part is small enough for it to fit.
+          #import "@preview/orange-book:0.7.1" as orange-book
+          #orange-book.part-font-size-state.update(x => 8em)
     include-in-header:
       - text: |
           #set par(leading: 1.35em)
