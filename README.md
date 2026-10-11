@@ -52,13 +52,13 @@ A trapped-ion machine has two one-qubit gates and one entangler. QViz uses the
 matrices of [IonQ's native gates](documentation/references/ionq_native_gates.md)
 and checks every translation against them.
 
-| Native gate | What it does to the ions | How it looks in QViz |
-| --- | --- | --- |
-| **GPI(φ)** | A π rotation about an axis of the equator of the Bloch sphere, set by the phase φ of the laser. | A long laser pulse on one ion. |
-| **GPI2(φ)** | A π/2 rotation about the same kind of axis. | A short laser pulse on one ion. |
-| **VirtualZ(θ)** | A Z rotation, done for free by shifting the phase of the gates that follow. | No pulse: only the phase changes. |
-| **MS(φ₀, φ₁, θ)** | Mølmer–Sørensen: entangles two ions through the shared vibration of the chain (Aria). | Two orange beams and a phonon bus between the ions. |
-| **ZZ(θ)** | The entangler of Forte, instead of MS. | The same, with `zz` steps. |
+| Native gate       | What it does to the ions                                                                        | How it looks in QViz                                |
+| ----------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **GPI(φ)**        | A π rotation about an axis of the equator of the Bloch sphere, set by the phase φ of the laser. | A long laser pulse on one ion.                      |
+| **GPI2(φ)**       | A π/2 rotation about the same kind of axis.                                                     | A short laser pulse on one ion.                     |
+| **VirtualZ(θ)**   | A Z rotation, done for free by shifting the phase of the gates that follow.                     | No pulse: only the phase changes.                   |
+| **MS(φ₀, φ₁, θ)** | Mølmer–Sørensen: entangles two ions through the shared vibration of the chain (Aria).           | Two orange beams and a phonon bus between the ions. |
+| **ZZ(θ)**         | The entangler of Forte, instead of MS.                                                          | The same, with `zz` steps.                          |
 
 ### The pipeline
 
@@ -89,13 +89,13 @@ OpenQASM → provider → transpiler → translator → simulator → vectorizer
 
 `h q[0]; cx q[0], q[1];` becomes seven native steps (the Aria profile):
 
-| Step | Native gate | Ions | What happens |
-| --- | --- | --- | --- |
-| 1 | VirtualZ | q₀ | Phase bookkeeping, no pulse. |
-| 2 | GPI2 | q₀ | The vector of q₀ goes to +x, on the equator. |
-| 3 | GPI2 | q₀ | It goes on to −z (|1⟩). |
-| 4 | **MS** | q₀, q₁ | The two ions entangle: both vectors vanish (`r = 0`). |
-| 5 to 7 | GPI2 | q₀, q₁, q₀ | One-qubit rotations that complete the CNOT; the pair stays entangled. |
+| Step   | Native gate | Ions       | What happens                                                          |
+| ------ | ----------- | ---------- | --------------------------------------------------------------------- | ---- |
+| 1      | VirtualZ    | q₀         | Phase bookkeeping, no pulse.                                          |
+| 2      | GPI2        | q₀         | The vector of q₀ goes to +x, on the equator.                          |
+| 3      | GPI2        | q₀         | It goes on to −z (                                                    | 1⟩). |
+| 4      | **MS**      | q₀, q₁     | The two ions entangle: both vectors vanish (`r = 0`).                 |
+| 5 to 7 | GPI2        | q₀, q₁, q₀ | One-qubit rotations that complete the CNOT; the pair stays entangled. |
 
 The fidelity falls from 99.5 % to about 98.8 %, most of it at the MS gate.
 
@@ -135,7 +135,7 @@ M=translator` runs the demo of one module; the pipeline is described in
 
 ### Reading the viewer
 
-The **Vista** (*View*) button, at the top right, opens the accessibility
+The **Vista** (_View_) button, at the top right, opens the accessibility
 options: profiles (focus on the vector, high contrast, colour blindness,
 reduced motion), colour palettes, the shape of the sphere and the vector, what
 to hide, light and text size. The camera buttons at the bottom right of the
@@ -145,30 +145,30 @@ choice is remembered in the browser. See
 
 ## Project layout
 
-| Path | What is in it |
-| --- | --- |
-| `source/backend/core/` | One package per module of the pipeline, plus the model, the errors and the noise profiles. |
-| `source/frontend/`, `source/shaders/` | The viewer: `index.html` and the ES modules of `js/`, and its shaders. |
-| `qollab_api.py`, `main.py`, `resources/scripts/package_qollab.py` | What Qollab runs and the script that builds the project to upload. |
-| `resources/examples/` | Example circuits in Python and OpenQASM. |
-| `source/tests/` | The test suite (no network, IonQ is mocked). |
-| `documentation/prompts/spec.md` | The architecture, the JSON contract and the plan by module. |
-| `documentation/` | The Quarto book (English), the schema and the references. |
+| Path                                                              | What is in it                                                                              |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `source/backend/core/`                                            | One package per module of the pipeline, plus the model, the errors and the noise profiles. |
+| `source/frontend/`, `source/shaders/`                             | The viewer: `index.html` and the ES modules of `js/`, and its shaders.                     |
+| `qollab_api.py`, `main.py`, `resources/scripts/package_qollab.py` | What Qollab runs and the script that builds the project to upload.                         |
+| `resources/examples/`                                             | Example circuits in Python and OpenQASM.                                                   |
+| `source/tests/`                                                   | The test suite (no network, IonQ is mocked).                                               |
+| `documentation/prompts/spec.md`                                   | The architecture, the JSON contract and the plan by module.                                |
+| `documentation/`                                                  | The Quarto book (English), the schema and the references.                                  |
 
 ## Versions
 
-| Piece | Required | Tested with | Notes |
-| --- | --- | --- | --- |
-| Python | `>=3.12` | 3.13.16 (CI: 3.12 and 3.13) | Qollab runs 3.14 (Pyodide v314.0.7). Python 3.11 is refused by `pip install`. |
-| Qiskit | `>=2.5.2,<3` | 2.5.2 | Qollab ships 2.5.2. |
-| qiskit-ionq | `>=1.0.0,<2` | 1.0.0 to 1.1.1 | Qollab ships 1.0.2. Before 1.0.3, tomography on a non-IonQ backend fails. |
-| NumPy | `>=2.0,<3` | 2.0.2 and 2.5.4 | Qollab ships 2.4.6. |
-| qiskit-qasm3-import | `>=0.6,<1` | 0.6.0 | Only for OpenQASM 3. |
-| three.js | n/a | 0.186.1 (standalone and on Qollab) | Loaded from a CDN, so it is not in `requirements.txt`; Qollab provides its own. The standalone viewer uses the same version so both look alike. |
+| Piece               | Required     | Tested with                        | Notes                                                                                                                                           |
+| ------------------- | ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python              | `>=3.12`     | 3.13.16 (CI: 3.12 and 3.13)        | Qollab runs 3.14 (Pyodide v314.0.7). Python 3.11 is refused by `pip install`.                                                                   |
+| Qiskit              | `>=2.5.2,<3` | 2.5.2                              | Qollab ships 2.5.2.                                                                                                                             |
+| qiskit-ionq         | `>=1.0.0,<2` | 1.0.0 to 1.1.1                     | Qollab ships 1.0.2. Before 1.0.3, tomography on a non-IonQ backend fails.                                                                       |
+| NumPy               | `>=2.0,<3`   | 2.0.2 and 2.5.4                    | Qollab ships 2.4.6.                                                                                                                             |
+| qiskit-qasm3-import | `>=0.6,<1`   | 0.6.0                              | Only for OpenQASM 3.                                                                                                                            |
+| three.js            | n/a          | 0.186.1 (standalone and on Qollab) | Loaded from a CDN, so it is not in `requirements.txt`; Qollab provides its own. The standalone viewer uses the same version so both look alike. |
 
 `pyproject.toml` and `requirements.txt` declare the same Python packages (a test
 checks it). Details and the reasons: [installation](documentation/docs/getting-started/installation.qmd).
-The last full run: 426 tests passed, 1 skipped, and `make lint` clean.
+The last full run: 427 tests passed, 1 skipped, and `make lint` clean.
 
 ## Limitations
 
