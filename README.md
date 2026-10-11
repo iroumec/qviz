@@ -76,10 +76,6 @@ Tools used during the project development:
             <br/>DeepSeek
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/openai/412991" alt="ChatGPT" width="40" height="40" />
-            <br/>ChatGPT
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bash/bash-original.svg" alt="Bash" width="40" height="40" />
             <br/>Bash
         </td>
