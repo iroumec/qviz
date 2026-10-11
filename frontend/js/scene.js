@@ -3,7 +3,7 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
-import { BOX, MOVE_SPEED, SPACING } from "./config.js";
+import { BOX, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { qubitLabel, showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
@@ -83,12 +83,12 @@ export function buildScene(n) {
     if (state.three.laserMesh) state.three.laserMesh.setMatrixAt(i, dummy.matrix);
 
     const label = makeLabel(qubitLabel(i));
-    label.position.set(x, 4.3, 0);
+    label.position.set(x, LABEL_Y, 0);
     state.three.world.add(label);
 
     if (state.laser.template) {
       const device = state.laser.template.clone();
-      device.position.set(x, 2.5, 0);
+      device.position.set(x, LENS_Y, 0);
       state.three.world.add(device);
     }
 
@@ -134,7 +134,7 @@ export function buildScene(n) {
 function computeFitRadius() {
   if (!state.three.camera || state.qubits.length === 0) return;
   const halfX = ((state.qubits.length - 1) / 2) * SPACING + 8;
-  const halfY = 4.3;
+  const halfY = 5.6;
   const vFov = (state.three.camera.fov * Math.PI) / 180;
   const hFov = 2 * Math.atan(Math.tan(vFov / 2) * state.three.camera.aspect);
   state.orbit.fitRadius = Math.max(

@@ -8,7 +8,7 @@
 // vacuum viewport. Fog and a blue ambient give the volume of the chamber.
 
 import * as THREE from "three";
-import { SPACING } from "./config.js";
+import { SPACING, TABLE_TOP } from "./config.js";
 
 const TABLE_COLOR = 0x0f172a;
 const COPPER_COLOR = 0xb87333;
@@ -18,13 +18,12 @@ const COLLIMATOR_COLOR = 0x18181b;
 const GRID_COLOR = 0x1d3a5c;
 const GRID_BASE = 0x122036;
 
-const TABLE_TOP = -3.35;
 const TABLE_HEIGHT = 0.5;
-const COIL_TOP_Y = 4.6;
+const COIL_TOP_Y = 5.4;
 const COIL_BOTTOM_Y = -2.6;
 const COIL_TUBE = 0.28;
 const POST_RADIUS = 0.1;
-const COLLIMATOR_Y = 3.0;
+const COLLIMATOR_Y = 4.0;
 
 /** Build the chamber environment for a chain of `n` ions. */
 export function createEnvironment(n) {
@@ -87,6 +86,26 @@ export function createEnvironment(n) {
   );
   viewport.geometry.rotateX(Math.PI / 2);
   group.add(viewport);
+
+  // Floor anchors at each bend of the ring, like the supports of an above-ground
+  // pool: a post to the table and a collar that embraces the ring tube.
+  const anchorMaterial = new THREE.MeshStandardMaterial({ color: POST_COLOR, metalness: 0.95, roughness: 0.15 });
+  const anchorGeometry = new THREE.CylinderGeometry(0.16, 0.22, 0.5 - TABLE_TOP, 12);
+  const collarGeometry = new THREE.TorusGeometry(0.62, 0.1, 10, 24);
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    const x = viewportRadius * Math.cos(angle);
+    const z = viewportRadius * Math.sin(angle);
+
+    const post = new THREE.Mesh(anchorGeometry, anchorMaterial);
+    post.position.set(x, (TABLE_TOP + 0.5) / 2, z);
+    group.add(post);
+
+    const collar = new THREE.Mesh(collarGeometry, anchorMaterial);
+    collar.position.set(x, 0, z);
+    collar.lookAt(x - Math.sin(angle), 0, z + Math.cos(angle));
+    group.add(collar);
+  }
 
   return group;
 }

@@ -126,13 +126,15 @@ At the height of the chain there is a second layer of optics
 
 - A broad **global Raman beam sheet** crosses the whole chain. It is invisible at
   rest and flashes with every gate (single- or two-qubit), in step with the
-  vertical lasers.
+  vertical lasers. It spans from one side optic to the other, so its ends stay
+  away from the end ions.
 - A thin **phonon guide rail** threads the ion centres: it is the confinement
   axis, and the vibrational continuum. It is a faint blue thread at rest; between
   the two ions of a two-qubit gate it glows amber and pulses, with wave rings
   travelling along the segment.
 - The **side optics** close the layer: a readout objective lens at one end of the
-  chain and a mirror mount at the other.
+  chain and a mirror mount at the other. They sit far enough from the end ions,
+  and each rests on a stand down to the optical table.
 
 ## The laboratory environment {.unnumbered}
 
@@ -146,7 +148,9 @@ The scene is set inside an ultra-high-vacuum chamber on an optical table
   them to the table.
 - Every vertical laser is born from a black **collimator head**.
 - A polished **viewport ring** frames the scene, so the viewer feels inside the
-  chamber.
+  chamber. It has a floor anchor at each of its eight bends, like the supports of
+  an above-ground pool: a post down to the table and a collar that embraces the
+  ring.
 - **Fog** (`FogExp2`) and a blue ambient light give the chamber its depth.
 
 ## What is shown {.unnumbered}

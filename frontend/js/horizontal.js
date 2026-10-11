@@ -16,6 +16,7 @@ import {
   RAIL_EXTRA,
   RAIL_RADIUS,
   SPACING,
+  TABLE_TOP,
   WAVE_RING_COUNT,
   WAVE_RING_RADIUS,
   WAVE_RING_TUBE,
@@ -76,9 +77,10 @@ export function createHorizontalLayer(n) {
   const chainWidth = (n - 1) * SPACING;
   const half = chainWidth / 2;
 
-  // The global Raman beam sheet, invisible until a gate fires.
+  // The global Raman beam sheet, invisible until a gate fires. It spans from
+  // one side optic to the other, so its ends stay away from the end ions.
   const beam = new THREE.Mesh(
-    new THREE.BoxGeometry(chainWidth + 1, 0.06, GLOBAL_BEAM_DEPTH),
+    new THREE.BoxGeometry(2 * (half + OPTICS_MARGIN), 0.06, GLOBAL_BEAM_DEPTH),
     new THREE.MeshBasicMaterial({
       color: BEAM_COLOR, transparent: true, opacity: 0,
       blending: THREE.AdditiveBlending, depthWrite: false,
@@ -130,6 +132,15 @@ export function createHorizontalLayer(n) {
   const mirror = createMirror();
   mirror.position.set(half + OPTICS_MARGIN, 0, 0);
   group.add(mirror);
+
+  // The side optics rest on stands down to the optical table.
+  const standMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.25 });
+  const standGeometry = new THREE.CylinderGeometry(0.18, 0.24, -TABLE_TOP, 12);
+  for (const x of [-(half + OPTICS_MARGIN), half + OPTICS_MARGIN]) {
+    const stand = new THREE.Mesh(standGeometry, standMaterial);
+    stand.position.set(x, TABLE_TOP / 2, 0);
+    group.add(stand);
+  }
 
   state.three.horizontal = { beam, rail, waves };
   return group;

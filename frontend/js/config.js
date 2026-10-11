@@ -46,7 +46,14 @@ export const RAIL_EXTRA = 4.0;
 export const WAVE_RING_COUNT = 5;
 export const WAVE_RING_RADIUS = 0.45;
 export const WAVE_RING_TUBE = 0.02;
-export const OPTICS_MARGIN = 2.5;
+export const OPTICS_MARGIN = 4.0;
+
+// The height of the individual laser lens above each ion, and of the ion label.
+export const LENS_Y = 3.4;
+export const LABEL_Y = 4.9;
+
+// The top of the optical breadboard. The environment and the supports use it.
+export const TABLE_TOP = -3.35;
 
 export const VERT_URL = "../shaders/bloch.vert";
 export const FRAG_URL = "../shaders/bloch.frag";
