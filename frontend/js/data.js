@@ -86,6 +86,26 @@ export function updateStep(index, instant = false) {
   const pulse = step ? laserPulseFor(step.operation, state.data.backend) : null;
   const now = performance.now();
   state.pulseMs = pulse ? pulse.ms : 0;
+
+  // The two-qubit gate that is running (MS or ZZ): its ions and its window,
+  // for the phonon bus and the jiggle.
+  const twoIonGate = step && (step.operation === "ms" || step.operation === "zz")
+    && step.targets.length === 2;
+  state.gate = twoIonGate
+    ? { targets: step.targets.slice(), start: now, end: now + pulse.ms }
+    : { targets: [], start: 0, end: 0 };
+
+  // The last two-qubit gate up to this step marks its two ions as entangled,
+  // so their halos pulse in step after the gate.
+  let entangledPair = null;
+  for (let s = state.stepIndex - 1; s >= 0 && !entangledPair; s--) {
+    const candidate = state.data.steps[s];
+    if ((candidate.operation === "ms" || candidate.operation === "zz")
+        && candidate.targets.length === 2) {
+      entangledPair = candidate.targets;
+    }
+  }
+
   if (state.three.laserMesh) {
     state.three.laserMesh.material.uniforms.uLaserColor.value.copy(
       pulse ? pulse.color : laserColorFor(state.data.backend)
@@ -97,6 +117,7 @@ export function updateStep(index, instant = false) {
     const vector = (states[q] || [0, 0, 1]).slice();
     qubit.target = vector;
     qubit.isTarget = targets.has(q);
+    qubit.entangled = entangledPair ? entangledPair.includes(q) : false;
     qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
     // The laser is off unless this step fires it on this ion, so moving to a
     // step that does not fire it cancels a pulse that is still fading.

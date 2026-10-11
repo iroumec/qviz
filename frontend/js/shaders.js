@@ -9,6 +9,8 @@ import {
   LENS_FRAG_URL,
   LASER_VERT_URL,
   LASER_FRAG_URL,
+  BUS_VERT_URL,
+  BUS_FRAG_URL,
 } from "./config.js";
 import { state } from "./state.js";
 
@@ -27,16 +29,21 @@ export async function loadShaders() {
       lensFrag: HOST.shaders.lensFrag,
       laserVert: HOST.shaders.laserVert,
       laserFrag: HOST.shaders.laserFrag,
+      busVert: HOST.shaders.busVert,
+      busFrag: HOST.shaders.busFrag,
     };
     return;
   }
-  const [vert, frag, lensVert, lensFrag, laserVert, laserFrag] = await Promise.all([
-    fetchText(VERT_URL),
-    fetchText(FRAG_URL),
-    fetchText(LENS_VERT_URL),
-    fetchText(LENS_FRAG_URL),
-    fetchText(LASER_VERT_URL),
-    fetchText(LASER_FRAG_URL),
-  ]);
-  state.shaders = { vert, frag, lensVert, lensFrag, laserVert, laserFrag };
+  const [vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag] =
+    await Promise.all([
+      fetchText(VERT_URL),
+      fetchText(FRAG_URL),
+      fetchText(LENS_VERT_URL),
+      fetchText(LENS_FRAG_URL),
+      fetchText(LASER_VERT_URL),
+      fetchText(LASER_FRAG_URL),
+      fetchText(BUS_VERT_URL),
+      fetchText(BUS_FRAG_URL),
+    ]);
+  state.shaders = { vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag };
 }

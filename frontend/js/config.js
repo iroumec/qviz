@@ -4,7 +4,7 @@
 // A host page may define `window.QVIZ_HOST`; every field is optional. Without a
 // host, the viewer fetches the shaders and the JSON over HTTP and samples the
 // measurement itself.
-//   shaders  {vert, frag, lensVert, lensFrag, laserVert, laserFrag}  shader sources
+//   shaders  {vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag}  shader sources
 //   circuits [{file, label}]                   what the selector lists
 //   load     async (file) -> object            the JSON of a selector entry
 //   sample   async (data, step, shots) -> [[bitstring, count], ...]
@@ -29,6 +29,8 @@ export const LENS_VERT_URL = "../shaders/lens.vert";
 export const LENS_FRAG_URL = "../shaders/lens.frag";
 export const LASER_VERT_URL = "../shaders/laser.vert";
 export const LASER_FRAG_URL = "../shaders/laser.frag";
+export const BUS_VERT_URL = "../shaders/bus.vert";
+export const BUS_FRAG_URL = "../shaders/bus.frag";
 
 // The volumetric laser beam, one instance per ion. The box spans the segment
 // between the ion (LASER_MIN_Y) and the lens (LASER_MAX_Y); it is wide enough
@@ -52,6 +54,19 @@ export const LASER_ENTANGLER_FACTOR = 3;
 // neon orange, so a two-qubit gate is told apart from the species colour of the
 // single-qubit gates.
 export const LASER_ENTANGLER_COLOR = [1.0, 0.5, 0.05];
+
+// The phonon bus: the energy tube that joins the two ions of a two-qubit gate
+// while it runs. It passes through the ions in between, because the whole chain
+// is one elastic spring.
+export const BUS_RADIUS = 0.14;
+export const BUS_OPACITY = 0.85;
+
+// The mechanical jiggle of the ions while a two-qubit gate runs. The targets
+// swing more than the ions in between (which resonate with the chain), and the
+// whole chain settles when the pulse ends.
+export const JIGGLE_STRONG = 0.22;
+export const JIGGLE_FAINT = 0.08;
+export const JIGGLE_SPEED = 0.05;
 
 // The automatic play. It waits at least PLAY_INTERVAL_MS between steps, and
 // waits for the laser pulse of the step to finish (plus PLAY_MARGIN_MS) when

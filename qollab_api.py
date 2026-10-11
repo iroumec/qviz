@@ -30,8 +30,17 @@ def _bell() -> QuantumCircuit:
     return qc
 
 
+def _distant_bell() -> QuantumCircuit:
+    """A Bell pair on two ions that are not neighbours (q0 and q2)."""
+    qc = QuantumCircuit(3)
+    qc.h(0)
+    qc.cx(0, 2)
+    return qc
+
+
 CIRCUITS: dict[str, Callable[[], QuantumCircuit]] = {
     "bell": _bell,
+    "bell_distant": _distant_bell,
     "ghz3": lambda: ghz(3),
     "ghz16": lambda: ghz(16),
     "layered16": lambda: layered(16),
@@ -41,6 +50,7 @@ CIRCUITS: dict[str, Callable[[], QuantumCircuit]] = {
 # The text that the selector of the viewer shows for each circuit.
 _LABELS = {
     "bell": "Bell (2 qubits)",
+    "bell_distant": "Distant Bell pair (q0-q2, 3 qubits)",
     "ghz3": "GHZ (3 qubits)",
     "ghz16": "GHZ (16 qubits, performance)",
     "layered16": "Random layers, depth 4 (16 qubits, performance)",

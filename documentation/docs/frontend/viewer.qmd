@@ -75,6 +75,33 @@ step, so a long MS or ZZ pulse is never cut in the middle. The wait is
 `PLAY_INTERVAL_MS` (700 ms) between steps, or the length of the pulse plus
 `PLAY_MARGIN_MS` (150 ms) when the gate fires one.
 
+## The two-qubit gate {.unnumbered}
+
+A two-qubit gate (MS or ZZ) is shown with three elements, because the two ions
+do not exchange light: the whole chain is one elastic spring, and the coupling
+travels as a vibration (a phonon).
+
+- **The phonon bus.** While the two lasers are on, an energy tube joins the two
+  targets (`shaders/bus.vert` and `bus.frag`, built by `frontend/js/phonon.js`).
+  The tube is drawn between the centres of the two ions, so it **passes through**
+  the ions in between: the coupling is not local, it uses the whole chain. Its
+  colour is the entangler colour, and two waves of different frequency run along
+  it, so the flow reads as energy going back and forth.
+- **The jiggle.** While the pulse runs, the ions between the two targets (and the
+  targets themselves) swing up and down, the targets more than the ions in
+  between, which resonate with the chain. The chain settles when the pulse ends.
+- **The synchronized halo.** Once the pulse ends, the two targets carry a halo in
+  the entangler colour that pulses in step (they share the time, so the two
+  pulses are exactly in sync). It shows that the two ions are now entangled,
+  through the vibration of the chain and not through the ions in between.
+
+The halo is drawn by the sphere shader (`shaders/bloch.frag`), which reads the
+`instanceEntangled` attribute of each instance.
+
+The example circuit `bell_distant.json` (a Bell pair on q0 and q2) shows this
+directly: the entangler acts on the two ends, and the bus and the jiggle reach
+the ion in between, even though it is not a target.
+
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
@@ -238,13 +265,14 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/state.js` | The mutable state of the viewer, in one place. |
 | `js/utils.js` | Small helpers (`showStageMessage`, `escapeHtml`, `setError`). |
 | `js/demo.js` | The small example embedded in the page. |
-| `js/shaders.js` | Loads the six shader sources (the spheres, the lens and the laser). |
+| `js/shaders.js` | Loads the eight shader sources (the spheres, the lens, the laser and the phonon bus). |
 | `js/three-addons.js` | Loads the three.js addons, with a fallback. |
 | `js/laser.js` | Loads the laser model, and builds the volumetric beams and their colour. |
+| `js/phonon.js` | Builds the phonon bus, and runs the jiggle and the synchronized halo of a two-qubit gate. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
-| `js/panels.js` | The readouts, the detail of the step, the health bar and the measurement. |
+| `js/panels.js` | The readouts, the detail of the step, the fidelity panel and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
-| `js/controls.js` | The buttons, the slider and the drag and drop. |
+| `js/controls.js` | The playback bar (step buttons, play, reset, slider) and the drag and drop. |
 
 No module imports a module that imports it back, so the dependency graph is easy
 to follow. A headless test (a stub DOM and a stub `three`) runs the modules

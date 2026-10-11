@@ -147,6 +147,18 @@ export function laserPulseFor(operation, backend) {
 }
 
 /**
+ * The envelope of a pulse at this time: a flat top that rises and falls in the
+ * first and last 15 % of the window, and is zero outside it.
+ */
+export function pulseIntensity(start, end, time) {
+  const span = end - start;
+  if (span <= 0 || time >= end) return 0;
+  const progress = Math.min(1, Math.max(0, (time - start) / span));
+  const ramp = 0.15;
+  return Math.min(1, progress / ramp, (1 - progress) / ramp);
+}
+
+/**
  * Build the volumetric laser beams as one instanced mesh, one box per ion.
  *
  * The box spans the segment between the ion (``LASER_MIN_Y``) and the lens

@@ -31,6 +31,18 @@ def _bell() -> QuantumCircuit:
     return circuit
 
 
+def _distant_bell() -> QuantumCircuit:
+    """A Bell pair on two ions that are not neighbours (q0 and q2).
+
+    The entangler acts on q0 and q2 directly, so the two-qubit gate skips the
+    ion in between: it is the long-range coupling of the phonon bus.
+    """
+    circuit = QuantumCircuit(3)
+    circuit.h(0)
+    circuit.cx(0, 2)
+    return circuit
+
+
 def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:
     circuit = QuantumCircuit(2 * count)
     for index in range(count):
@@ -45,6 +57,10 @@ def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:
 def _outputs() -> dict[str, tuple[str, QuantumCircuit]]:
     return {
         "bell.json": ("Bell (2 qubits)", _bell()),
+        "bell_distant.json": (
+            "Distant Bell pair (q0-q2, 3 qubits)",
+            _distant_bell(),
+        ),
         "ghz3.json": ("GHZ (3 qubits)", ghz(3)),
         "ghz16.json": ("GHZ (16 qubits, performance)", ghz(16)),
         "layered16.json": (
@@ -58,7 +74,7 @@ def _outputs() -> dict[str, tuple[str, QuantumCircuit]]:
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     backend = BasicSimulator()
-    manifest: dict = {"default": "ghz16.json", "files": []}
+    manifest: dict = {"default": "bell.json", "files": []}
 
     for filename, (label, circuit) in _outputs().items():
         start = time.perf_counter()

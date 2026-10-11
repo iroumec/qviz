@@ -7,7 +7,8 @@ import { BOX, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
-import { createLaserBeams, loadLaserModel } from "./laser.js";
+import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
+import { createPhononBus, updatePhonon } from "./phonon.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -44,6 +45,8 @@ export function buildScene(n) {
   const geometry = new THREE.BoxGeometry(BOX, BOX, BOX);
   state.three.psiAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
   geometry.setAttribute("instancePsi", state.three.psiAttribute);
+  state.three.entangledAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
+  geometry.setAttribute("instanceEntangled", state.three.entangledAttribute);
 
   const material = new THREE.ShaderMaterial({
     uniforms: {
@@ -91,8 +94,8 @@ export function buildScene(n) {
     state.three.world.add(pointLight);
 
     state.qubits.push({
-      label, current: [0, 0, 1], target: [0, 0, 1], vibration: 0, isTarget: false,
-      laserStart: 0, laserEnd: 0,
+      x, label, current: [0, 0, 1], target: [0, 0, 1], vibration: 0, isTarget: false,
+      laserStart: 0, laserEnd: 0, entangled: false,
     });
   }
   state.three.instMesh.instanceMatrix.needsUpdate = true;
@@ -102,6 +105,10 @@ export function buildScene(n) {
     state.three.laserMesh.instanceMatrix.needsUpdate = true;
     state.three.world.add(state.three.laserMesh);
   }
+
+  // The phonon bus of a two-qubit gate (hidden until one runs).
+  state.three.busMesh = createPhononBus();
+  if (state.three.busMesh) state.three.world.add(state.three.busMesh);
 
   computeFitRadius();
 }
@@ -302,11 +309,7 @@ function onResize() {
  * is zero when the ion was not fired, so the beam is dark at rest.
  */
 function laserIntensity(qubit, time) {
-  const span = qubit.laserEnd - qubit.laserStart;
-  if (span <= 0 || time >= qubit.laserEnd) return 0;
-  const progress = Math.min(1, Math.max(0, (time - qubit.laserStart) / span));
-  const ramp = 0.15;
-  return Math.min(1, progress / ramp, (1 - progress) / ramp);
+  return pulseIntensity(qubit.laserStart, qubit.laserEnd, time);
 }
 
 // The timestamp of the previous frame, for the keyboard movement.
@@ -361,6 +364,7 @@ export function animate(time) {
   if (state.three.laserMesh) {
     state.three.laserMesh.material.uniforms.iTime.value = time * 0.001;
   }
+  updatePhonon(time);
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

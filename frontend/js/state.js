@@ -18,10 +18,14 @@ export const state = {
   // One entry per ion: the animated vector and its target.
   qubits: [],
 
+  // The two-qubit gate that is running (MS or ZZ), its two ions and its pulse
+  // window. Empty when the step is not a two-qubit gate.
+  gate: { targets: [], start: 0, end: 0 },
+
   // The shader sources, loaded once.
   shaders: {
     vert: null, frag: null, lensVert: null, lensFrag: null,
-    laserVert: null, laserFrag: null,
+    laserVert: null, laserFrag: null, busVert: null, busFrag: null,
   },
 
   // The three.js objects.
@@ -34,6 +38,8 @@ export const state = {
     psiAttribute: null,
     laserMesh: null,
     laserActive: null,
+    busMesh: null,
+    entangledAttribute: null,
   },
 
   // The laser model and its materials.

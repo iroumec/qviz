@@ -4,6 +4,7 @@ uniform float iTime;
 varying vec3 vWorldPos;
 varying vec3 vInstancePos;
 varying vec3 vPsi;
+varying float vEntangled;
 
 #define MAX_STEPS 64
 #define MAX_DIST 4.5
@@ -22,6 +23,8 @@ const vec3 COLOR_DOTS_START = vec3(0.1, 0.8, 1.0);
 const vec3 COLOR_DOTS_END = vec3(1.0, 0.1, 0.6);
 const vec3 COLOR_SWEEP_AZIMUTH = vec3(0.1, 0.6, 1.0);
 const vec3 COLOR_SWEEP_POLAR = vec3(1.0, 0.7, 0.1);
+// The halo of an entangled ion, in the entangler colour (neon orange).
+const vec3 COLOR_HALO = vec3(1.0, 0.5, 0.1);
 
 const float INTENSITY_AXIS = 0.0008;
 const float INTENSITY_STATE_VEC = 0.0025;
@@ -32,6 +35,10 @@ const float INTENSITY_LINES = 0.0007;
 const float INTENSITY_DOTS = 0.0015;
 const float INTENSITY_SWEEP_AZIMUTH = 0.00015;
 const float INTENSITY_SWEEP_POLAR = 0.00015;
+const float INTENSITY_HALO = 0.0005;
+
+// The speed of the synchronized halo of an entangled ion.
+const float HALO_SPEED = 5.0;
 
 const float RADIUS_SPHERE = 1.0;
 const float RADIUS_SWEEP_AZIMUTH = 0.45;
@@ -201,6 +208,13 @@ void main() {
 
         glow += COLOR_SPHERE * (INTENSITY_SPHERE / (sphere * sphere + 0.0001)) * edgeOpacity * volumetricNoise;
         glow += COLOR_SPECULAR * (INTENSITY_SPECULAR / (sphere * sphere + 0.00005)) * specularEdge;
+
+        // An entangled ion carries a halo that pulses with the others of its
+        // pair (they share the time, so the two pulses are in step).
+        if (vEntangled > 0.5) {
+            float halo = 0.5 + 0.5 * sin(iTime * HALO_SPEED);
+            glow += COLOR_HALO * (INTENSITY_HALO / (sphere * sphere + 0.0001)) * edgeOpacity * halo;
+        }
         
         d0 += sphere * RAY_ADVANCE;
         if(d0 > MAX_DIST) break;

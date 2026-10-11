@@ -81,7 +81,7 @@ functions are in `qollab_api.py`, which a JS page can call too.
 
 | Field | Default | Meaning |
 | --- | --- | --- |
-| `circuit` | `bell` | `bell`, `ghz3`, `ghz16` or `layered16`. |
+| `circuit` | `bell` | `bell`, `bell_distant`, `ghz3`, `ghz16` or `layered16`. |
 | `shots` | `1024` | The number of shots, for the cost and for the measurement. It must be positive. |
 | `entangler` | `auto` | `auto` lets the backend choose: ZZ for a Forte machine, and MS for every other backend. `ms` and `zz` force the entangler. The case is ignored. |
 | `step` | `0` | The step to measure. `0` means the last one. |
