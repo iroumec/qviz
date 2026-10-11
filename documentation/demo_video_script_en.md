@@ -1,0 +1,29 @@
+# QViz demo video script (≈ 3 min, English)
+
+Format: screen recording with voice-over. Total about 2:50, roughly 370 spoken words.
+The Spanish version is `demo_video_script_es.md`.
+
+**Before recording**
+
+- Record with the **Built-in simulator** (instant, free). Run IonQ Aria or Forte once off-camera to be sure it works, but do not wait for a job on camera.
+- Have a `.qasm` file ready to drag in (`resources/examples/qasm/qft3.qasm` or `ghz4.qasm`).
+- Browser zoom at 100 %, window in 16:9, the circuit selector on `bell` at the start.
+
+| Time | On screen | Voice-over |
+|---|---|---|
+| 0:00–0:15 | Qollab project page: title, project card, the **Run on Qollab** button. | "Quantum computers are hard to picture. QViz shows what a trapped-ion computer really does with your circuit, gate by gate, with a Bloch sphere for every qubit." |
+| 0:15–0:35 | Click **Run on Qollab**. The *Select QPU* dialog opens. Hover over *Built-in simulator*, then over *IonQ Aria* and *Forte*. Press **Run**. | "We run it on Qollab. QViz works with two kinds of machine: the local simulator, and IonQ's trapped-ion systems, Aria and Forte. Other providers are rejected on purpose, because the viewer shows IonQ's native gates. I pick the built-in simulator and press Run." |
+| 0:35–0:55 | The viewer opens. The intro plays: the beam sweeps the chain and every ion flashes. Slowly pan over the scene, then over the left and right panels. | "This is the viewer. Every ion in the chain is a qubit, drawn as a Bloch sphere. Below is the trap chip, above are the laser heads. On the left are the simulation details and the fidelity. On the right, the probability of measuring one for each qubit and the details of the current step." |
+| 0:55–1:20 | Open the circuit selector and switch from `bell` to `ghz3`. Then click **Load circuit** and pick `qft3.qasm`. The scene reloads. Show the timeline strip at the bottom. | "Pick one of the ready-made circuits, or load your own OpenQASM file. QViz compiles it to the native gates of the machine and the timeline at the bottom shows every step: one line per qubit, one column per gate." |
+| 1:20–1:40 | Camera: drag to rotate, mouse wheel to zoom, `W A S D` to move, space and left Ctrl to go up and down, right-click drag to pan. Show the on-screen camera buttons. | "The camera is free. Drag to rotate, scroll to zoom, W, A, S and D to move, space and control to go up and down. There are also buttons on screen if you prefer the mouse only." |
+| 1:40–2:15 | Reload `bell`. Press **Play**. Pause on a single-qubit step (a laser fires on one ion, the vector turns). Pause on the two-qubit step (orange beam on two ions, phonon bus between them, halo afterwards). Point at the fidelity panel dropping. Use the arrow keys to step back and forth. | "Press Play. A single-qubit gate fires one laser and you see the vector turn. A two-qubit gate fires two orange lasers and a phonon bus links the ions: that is how they become entangled. Watch the vectors shrink, because an entangled qubit alone is no longer a pure state. With every gate the fidelity goes down, and ions that sit idle turn red. Use the arrows to step through." |
+| 2:15–2:35 | Click the **+** next to shots a few times, then **Measure**. The reading beam turns on, ions in |1⟩ glow and emit photons, badges |0⟩ and |1⟩ appear. A window lists each outcome (e.g. `00`, `11`) with a percentage bar; show it for a moment. | "Now we measure. A reading beam lights the chain: ions in one fluoresce, ions in zero stay dark. The result comes from the backend with the number of shots you chose." |
+| 2:35–2:55 | Click **View and Accessibility Options**. Switch the profile to *High contrast*, then *Colour blindness*, then *Reduced motion*. Open a section and drag one slider (text size or vector thickness). | "And it is built to be readable by everyone. This panel has profiles for focus, high contrast, colour blindness and reduced motion, plus palettes, text size, vector thickness and brightness, and you can hide any layer of the scene." |
+| 2:55–3:00 | Back to the scene with a running circuit. Show the GitHub or Qollab link on screen. | "QViz: see the quantum circuit as the ions run it. Try it on Qollab." |
+
+**Editing notes**
+
+- Keep the cursor slow and let each highlighted control stay on screen for about a second.
+- If a scene runs long, cut the camera section first, then the second circuit.
+- **Measure** samples the step that is on screen, so let Play reach the last step (or jump to it) before measuring a Bell circuit: the result must be about 50 % `00` and 50 % `11`.
+- The two-qubit step is the key moment of the video: give it the most time.
