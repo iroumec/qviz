@@ -11,6 +11,7 @@ the documentation is built.
 | Qiskit | `>=2.5.2,<3.0.0` | Circuits, transpilation and the test oracles. This is the line that Qollab adds by itself. |
 | qiskit-ionq | `>=1.0.0,<2.0.0` | The IonQ native gates and the IonQ backend. |
 | NumPy | `>=2.0,<3.0` | The statevector and the gate matrices. |
+| qiskit-qasm3-import | `>=0.6,<1.0` | Reads OpenQASM 3. It is pure Python; OpenQASM 2 works without it. |
 | Quarto | 1.4 or newer | Only for building this book. |
 
 The Python packages are declared in `pyproject.toml`. The same packages, without
@@ -29,6 +30,17 @@ version from 1.0.0 works. The whole test suite was run with each of the followin
 | 1.0.3, 1.1.0, 1.1.1 | Everything works. |
 
 Qiskit 2.5.2 and NumPy 2.4.6 (and NumPy 2.0.2 with `qiskit-ionq` 1.0.0) were used.
+
+The latest full run (2026-10-11) used Python 3.13.16, Qiskit 2.5.2, qiskit-ionq
+1.1.1, NumPy 2.5.4 and qiskit-qasm3-import 0.6.0: 419 tests passed, 1 was skipped,
+and `make lint` had no findings. A machine whose `python3` is older than 3.12
+(for example Debian 12, with 3.11) cannot install the package: `pip` refuses it
+with `requires a different Python`. Create the environment with a newer
+interpreter, for example `uv venv --python 3.13 .venv`.
+
+The viewer loads three.js from a CDN and does not install it: 0.160.0 when it is
+served alone (import map of `frontend/index.html`) and 0.186.1 on Qollab. Qollab
+runs Python 3.14 (Pyodide v314.0.7).
 On Qollab, the page of the test project prints the versions that are really
 installed (see `documentation/prompts/qollab_pruebas.md`).
 

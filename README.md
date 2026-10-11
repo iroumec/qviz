@@ -14,6 +14,80 @@ gate can be explained. See
 [Why QViz](documentation/docs/concepts/motivation.qmd), and the full book under
 `documentation/`.
 
+## What it does
+
+- Each qubit is a Bloch sphere, and every native gate (GPI, GPI2, MS or ZZ,
+  VirtualZ) moves it, with the laser pulse, the phonon bus and the trap shown.
+- The fidelity of the circuit drops as the machine accumulates error, and the
+  **Medir** button shows what a measurement would give, including the
+  correlations of entangled states.
+- A circuit comes in as **OpenQASM 2 or 3** (`.qasm`, by button or drag and
+  drop). It is transpiled, translated to IonQ's native gates, simulated exactly
+  and given the error model. A gate with no native translation (`opaque`, an
+  undefined gate, `reset`, control flow, …) is rejected with an error that says
+  why.
+- Examples are in `examples/qasm/`. Supported backends: the built-in simulator
+  and IonQ. Any other provider is rejected with an explicit error.
+
+## Use it
+
+### On Qollab
+
+```bash
+make qollab
+```
+
+Upload the **content** of the generated `qollab/` folder (not the folder
+itself) to a Qollab JS project. The repository has more than the 100 files that
+Qollab allows, which is why the package is built. Python (Pyodide) runs the
+backend and the browser draws the viewer, with the backend that you select. Do
+not edit `qollab/`. Loaded circuits are transpiled locally, so they never spend
+the one IonQ job that each run allows.
+
+### Locally
+
+```bash
+make venv && make install   # needs Python 3.12 or newer (see Versions)
+make test                   # the test suite
+make server                 # the viewer at http://localhost:8000 (PORT=9000)
+```
+
+`make server` serves the viewer and runs the same Python code as Qollab. The
+viewer has no calculation of its own: compiling and measuring go through Python.
+`make demo M=translator` runs the demo of one module; the pipeline is described
+in [`spec.md`](spec.md).
+
+## Versions
+
+| Piece | Required | Tested with | Notes |
+| --- | --- | --- | --- |
+| Python | `>=3.12` | 3.13.16 (CI: 3.12 and 3.13) | Qollab runs 3.14 (Pyodide v314.0.7). Python 3.11 is refused by `pip install`. |
+| Qiskit | `>=2.5.2,<3` | 2.5.2 | Qollab ships 2.5.2. |
+| qiskit-ionq | `>=1.0.0,<2` | 1.0.0 to 1.1.1 | Qollab ships 1.0.2. Before 1.0.3, tomography on a non-IonQ backend fails. |
+| NumPy | `>=2.0,<3` | 2.0.2 and 2.5.4 | Qollab ships 2.4.6. |
+| qiskit-qasm3-import | `>=0.6,<1` | 0.6.0 | Only for OpenQASM 3. |
+| three.js | n/a | 0.160.0 standalone, 0.186.1 on Qollab | Loaded from a CDN; not installed. |
+
+`pyproject.toml` and `requirements.txt` declare the same Python packages (a test
+checks it). Details and the reasons: [installation](documentation/docs/getting-started/installation.qmd).
+The last full run: 419 tests passed, 1 skipped, and `make lint` clean.
+
+## Limitations
+
+- At most 16 qubits.
+- Only IonQ (Aria, Forte, Harmony) and the built-in simulator; IBM, AWS and
+  others are not supported.
+- The viewer needs WebGL. Under Qollab, the standard three.js addons and the
+  speed with 16 qubits are still being verified.
+- Qollab does not serve the other files of a project and gives one IonQ job per
+  run; the details and the workarounds are in
+  [`qollab.qmd`](documentation/docs/frontend/qollab.qmd).
+- The vectors of Bloch get shorter, or vanish, while a qubit is entangled
+  (`r < 1`). This is expected, and it can happen in the middle of a two-qubit
+  gate even if the circuit has no entanglement.
+- Tomography (`strategy="tomography"`) on a non-IonQ backend needs
+  qiskit-ionq ≥ 1.0.3.
+
 ## Tools
 
 Tools used during the project development:
