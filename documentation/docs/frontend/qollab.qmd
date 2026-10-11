@@ -42,8 +42,7 @@ is added as an optional hook (see below) or is generated at build time.
 
 ## What Qollab does and does not allow {.unnumbered}
 
-These facts come from the documentation of Qollab (`documentation/prompts/
-qollab_context.md`), and they decide the design.
+These facts come from the documentation of Qollab, and they decide the design.
 
 | Fact | Consequence |
 | --- | --- |

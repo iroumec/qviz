@@ -78,7 +78,7 @@ project**: `index.html`, `main.css` and `main.js` made from the viewer (its modu
 `requirements.txt` and the libraries `source/backend/` and `resources/examples/`. `main.py` is left
 out, because in a JS project it could compile a second time and spend a second
 IonQ job. The content of the folder is uploaded to Qollab. See
-`documentation/prompts/qollab_pruebas.md`.
+[The viewer on Qollab](../frontend/qollab.qmd).
 
 ## `generate_outputs.py` {.unnumbered}
 

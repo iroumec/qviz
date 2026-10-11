@@ -29,7 +29,6 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | `make qollab` | Builds `qollab/`, the JS project to upload to Qollab. |
 | `make server` | Serves the viewer at `http://localhost:8000` with compiling and measuring in Python (`PORT=9000` changes the port). |
 | `make open` | Like `server`, and also opens the browser. |
-| `make resume` | Shows the branch, the last commits, the unpushed changes and the pending list of `memory.md`. |
 
 ### Diagrams {.unnumbered}
 
@@ -123,21 +122,6 @@ If the work shows that the specification is wrong, the code and the specificatio
 are corrected together and the report says so. A change to the JSON contract is not
 made without asking.
 
-## Working with code agents {.unnumbered}
-
-Three files in the root tell an agent how to work, and they are written in Spanish
-because the team is.
-
-| File | Content |
-| --- | --- |
-| `AGENTS.md` | The rules: architecture, Qollab restrictions, tests, commands, Git and the scope. |
-| `CLAUDE.md` | Imports `AGENTS.md` and `memory.md`, so that both are loaded at the start of a session. |
-| `memory.md` | The hand-over: current state, decisions, pending items and the history. It is updated after each change and a test keeps it under 150 lines. |
-
-At the start of a session the agent pulls, reads `memory.md` and runs
-`make resume`. At the end it runs `make test` and `make lint`, brings `memory.md`
-up to date and, only if the team asks, commits and pushes.
-
 ## The tests of the project itself {.unnumbered}
 
 Some tests do not check behaviour. They check that the project stays coherent.
@@ -145,7 +129,6 @@ Some tests do not check behaviour. They check that the project stays coherent.
 | Test | Keeps in line |
 | --- | --- |
 | `test_requirements.py` | `requirements.txt` and the dependencies of `pyproject.toml`. |
-| `test_memory.py` | `memory.md`, which must have its sections and stay short. |
 | `test_package_qollab.py` | The Qollab package, its limits and its services. |
 | `test_smoke.py` | The public API of `backend`. |
 
@@ -157,6 +140,5 @@ A short list that applies to any change.
 - [ ] `make lint` is green.
 - [ ] If the viewer, `qollab_api.py` or the packager changed: `make qollab`.
 - [ ] The affected chapter of this book is updated.
-- [ ] `memory.md` has the new state and a line of history.
 - [ ] If the JSON contract changed, the schema, the golden file and
       [JSON contract](../concepts/json-contract.qmd) agree, and the team knew.

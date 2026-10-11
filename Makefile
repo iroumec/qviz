@@ -4,7 +4,7 @@ VENV := .venv
 PY := $(VENV)/bin/python
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint demo outputs qollab server open resume render-puml install-plantuml
+.PHONY: venv install test lint demo outputs qollab server open render-puml install-plantuml
 
 venv:
 	python3 -m venv $(VENV)
@@ -31,11 +31,6 @@ outputs:
 
 qollab:
 	$(PY) resources/scripts/package_qollab.py viewer
-
-resume:
-	@git fetch -q 2>/dev/null; git status -sb; echo; git log --oneline -5
-	@echo; echo "--- Pendientes (memory.md) ---"
-	@sed -n '/^## Pendientes/,/^## Equipo/p' memory.md | sed '$$d'
 
 install-plantuml:
 	@sudo apt update && sudo apt install -y plantuml graphviz

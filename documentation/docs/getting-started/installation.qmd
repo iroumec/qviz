@@ -47,7 +47,7 @@ and later light the scene with the environment map more strongly. The scene is
 calibrated for 0.186.1 with `ENVIRONMENT_INTENSITY` in `source/frontend/js/config.js`.
 Qollab runs Python 3.14 (Pyodide v314.0.7).
 On Qollab, the page of the test project prints the versions that are really
-installed (see `documentation/prompts/qollab_pruebas.md`).
+installed.
 
 ### What Qollab installs {.unnumbered}
 

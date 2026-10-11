@@ -137,11 +137,12 @@ only in `main.py` and in the scripts.
 
 ### Write the specification first {.unnumbered}
 
-`documentation/prompts/spec.md` defines the architecture, the units, the JSON
-contract and a plan by module. A module is built against its section, with its tests
-and a demo, and it is marked *ready to validate* only when `make test` and the demo
-pass. When the code shows that the specification is wrong, both are corrected in
-the same change.
+The architecture, the units and the JSON contract are written down before the
+code (see [Core concepts](../concepts/pipeline-overview.qmd) and
+[System architecture](system-overview.qmd)). A module is built against its
+specification, with its tests and a demo, and it is marked *ready to validate*
+only when `make test` and the demo pass. When the code shows that the
+specification is wrong, both are corrected in the same change.
 
 ### One module at a time, with a stop {.unnumbered}
 
@@ -154,13 +155,12 @@ the next keeps the failures local.
 
 ### Document where the knowledge is lost {.unnumbered}
 
-Three kinds of knowledge would otherwise be forgotten, and each has a home.
+Some knowledge would otherwise be forgotten, and it has a home.
 
 | Knowledge | Where it lives |
 | --- | --- |
-| Why a decision was made | The specification, and the decision notes in `documentation/prompts/`. |
-| What is true about Qollab | `qollab.qmd` and the test table in `documentation/prompts/qollab_pruebas.md`, with the date of each measurement. |
-| Where the project stands | `memory.md`, kept under 150 lines by a test. |
+| Why a decision was made | The relevant page of this book, with the reason next to the rule. |
+| What is true about Qollab | [The viewer on Qollab](../frontend/qollab.qmd), with the date of each measurement. |
 
 ### Units are stated, always {.unnumbered}
 

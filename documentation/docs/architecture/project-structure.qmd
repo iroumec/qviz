@@ -14,8 +14,6 @@ Makefile                    The commands of the project (see Tooling and workflo
 .flake8                     The style rules of flake8.
 .github/workflows/ci.yml    Continuous integration: lint and tests.
 README.md, LICENSE          The overview of the project and its MIT license.
-AGENTS.md, CLAUDE.md        The rules for code agents.
-memory.md                   The hand-over between work sessions.
 
 source/                     What is shipped: the library, the viewer and the tests.
   backend/                  The Python library.
@@ -33,12 +31,11 @@ resources/                  What supports the project.
   scripts/                  The demos, the generator of out/, the packager and the server.
   make/                     Makefile.git (branch workflow) and Makefile.quarto (this book).
 
-documentation/              The specification, the schema and this book.
+documentation/              The schema and this book.
   _quarto.yml               The configuration of the book.
   docs/                     The chapters.
   diagrams/                 PlantUML sources and their SVG renders.
   schema/                   The JSON schema of the contract.
-  prompts/                  spec.md and the working notes of the team.
   references/               Notes on the native gates of IonQ.
 
 out/                        Generated: the example JSON files and their manifest.
@@ -150,5 +147,4 @@ The suite lives in `source/tests/`, with one `test_<module>.py` per module. It
 also covers the adapters and the tools (`test_qollab_api.py`, `test_server.py`,
 `test_package_qollab.py`), the examples, the performance budget and the files that
 keep the project consistent (`test_requirements.py` compares `requirements.txt`
-with `pyproject.toml`, and `test_memory.py` keeps `memory.md` short). See
-[Tests](../development/tests.qmd).
+with `pyproject.toml`). See [Tests](../development/tests.qmd).

@@ -10,7 +10,7 @@
 
 - **Todos los parámetros de las compuertas nativas van en turnos**: 1 turno = 2π rad. IonQ dice que así evita errores de conversión de punto flotante, porque el hardware sigue la fase en turnos.
 - La API acepta fases entre **−1 y 1** turnos.
-- QViz usa **radianes** para las fases y **turnos** para `angle` (ver `spec.md` §5.1). La conversión se hace en el borde: φ_rad = 2π·φ_turnos.
+- QViz usa **radianes** para las fases y **turnos** para `angle` (ver *Units and conventions* en el libro). La conversión se hace en el borde: φ_rad = 2π·φ_turnos.
 
 ## 2. El gateset
 
@@ -59,7 +59,7 @@ $$
 - La rotación se suma a **todas** las compuertas de 1 qubit que vienen después en ese qubit, no solo a la siguiente.
 - **Signo de la propagación.** Con las matrices de arriba, **RZ(λ) seguido de GPi(φ) ≡ GPi(φ − λ) seguido de RZ(λ)**, y lo mismo vale para GPi2. **[verificado]**
   - El ejemplo de la doc (`RZ(θ)–GPi(0.5)–GPi2(0) = GPi(θ+0.5)–GPi2(θ+0)`) usa el signo **+**. **[error en la doc, o convención opuesta no explicitada]**
-  - QViz usa el signo verificado: fase física del láser = φ − virtual_z[q] (`spec.md` §6.1).
+  - QViz usa el signo verificado: fase física del láser = φ − virtual_z[q].
 - RZ conmuta con ZZ. Para MS, la doc solo dice que tener dos fases simplifica la contabilidad de VirtualZ por qubit; la regla está en §3.
 
 ### 2.4 MS(φ0, φ1, θ): Mølmer–Sørensen (solo Aria)
@@ -87,7 +87,7 @@ $$
 $$
 
 - La doc **no define rango ni valor por defecto** para θ de ZZ. La API lista `angle` para `zz`, pero el rango 0–0.25 lo enuncia solo para MS.
-- QViz normaliza ZZ a [0, 0.25] igual que MS, porque así lo pide el contrato (`spec.md` M2 §2c).
+- QViz normaliza ZZ a [0, 0.25] igual que MS, porque así lo pide el contrato del JSON.
 
 ---
 
@@ -113,7 +113,7 @@ La regla de CNOT es la descomposición CNOT → XX que da la doc (RY(π/2)_c · 
 4. Para unitarias de 2 qubits arbitrarias, usar KAK, `cirq.kak_decomposition` o `qiskit.synthesis.TwoQubitBasisDecomposer` (no siempre óptimos).
 5. Reescribir RX/RY/RZ/XX como GPi/GPi2/MS, en turnos.
 
-Es el mismo esquema que sigue `spec.md` M2.
+Es el mismo esquema que sigue el traductor de QViz.
 
 ---
 
@@ -149,7 +149,7 @@ Es el mismo esquema que sigue `spec.md` M2.
 }
 ```
 
-Es probable que `job.compiled_circuit(lang="native")` (`spec.md` M1) devuelva algo con esta forma. **[a verificar en Qollab]**. El translator tiene que aceptar este formato además de un `QuantumCircuit`.
+Es probable que `job.compiled_circuit(lang="native")` devuelva algo con esta forma. **[a verificar en Qollab]**. El translator tiene que aceptar este formato además de un `QuantumCircuit`.
 
 ### 4.2 Qiskit (qiskit-ionq)
 
@@ -194,13 +194,13 @@ qc_native = transpile(qc_abstract, backend=backend_native)   # local, sin job
 
 | Tema | Qué hace QViz | Dónde |
 | --- | --- | --- |
-| Turnos ↔ radianes | Fases en rad en la representación intermedia y en el JSON; `angle` en turnos | `spec.md` §5.1 |
-| Signo de la propagación de VirtualZ | Fase del láser = φ − virtual_z[q] (verificado; la doc dice +) | `spec.md` §6.1 |
-| Rango de ZZ | Se normaliza a [0, 0.25] como MS (la doc no lo define) | `spec.md` M2 §2c |
-| CNOT con MS | Descomposición de Maslov en 5 ops nativas | `spec.md` M2 §2b |
-| Formato de IonQ | El translator acepta el JSON nativo de la API, además de `QuantumCircuit` | `spec.md` M2 §2b |
-| Transpilación nativa local | Estrategia candidata para IonQ que no gasta el único job: `transpile(qc, backend=<backend con gateset="native">)`. Hay que verificar si en Qollab se puede obtener un backend nativo (qollab_context §8.4) | `spec.md` M1 §1c |
-| Tomografía (M8) | Si se mandan prefijos nativos, IonQ no recompila ni mitiga: el estado medido corresponde exactamente a los ops visualizados | `spec.md` M8 |
+| Turnos ↔ radianes | Fases en rad en la representación intermedia y en el JSON; `angle` en turnos | *Units and conventions* |
+| Signo de la propagación de VirtualZ | Fase del láser = φ − virtual_z[q] (verificado; la doc dice +) | *JSON contract* |
+| Rango de ZZ | Se normaliza a [0, 0.25] como MS (la doc no lo define) | *Translator* |
+| CNOT con MS | Descomposición de Maslov en 5 ops nativas | *Translator* |
+| Formato de IonQ | El translator acepta el JSON nativo de la API, además de `QuantumCircuit` | *Translator* |
+| Transpilación nativa local | Estrategia candidata para IonQ que no gasta el único job: `transpile(qc, backend=<backend con gateset="native">)`. Hay que verificar si en Qollab se puede obtener un backend nativo | *Transpiler* |
+| Tomografía (M8) | Si se mandan prefijos nativos, IonQ no recompila ni mitiga: el estado medido corresponde exactamente a los ops visualizados | *Tomography* |
 | Precisión de θ | El hardware respeta ~3 decimales; el JSON usa 6. No afecta a la visualización | — |
 
 ---

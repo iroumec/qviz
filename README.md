@@ -130,8 +130,8 @@ Open the viewer, choose an example from the list or press **Cargar circuito**
 steps with the arrows and the circuit strip, and press **Medir** to measure the
 current step. `make server` runs the same Python code as Qollab. The viewer has
 no calculation of its own: compiling and measuring go through Python. `make demo
-M=translator` runs the demo of one module; the pipeline is described in
-[`spec.md`](documentation/prompts/spec.md).
+M=translator` runs the demo of one module; the pipeline is described in the
+[Quarto book](documentation/docs/concepts/pipeline-overview.qmd).
 
 ### Reading the viewer
 
@@ -152,7 +152,6 @@ choice is remembered in the browser. See
 | `qollab_api.py`, `main.py`, `resources/scripts/package_qollab.py` | What Qollab runs and the script that builds the project to upload.                         |
 | `resources/examples/`                                             | Example circuits in Python and OpenQASM.                                                   |
 | `source/tests/`                                                   | The test suite (no network, IonQ is mocked).                                               |
-| `documentation/prompts/spec.md`                                   | The architecture, the JSON contract and the plan by module.                                |
 | `documentation/`                                                  | The Quarto book (English), the schema and the references.                                  |
 
 ## Versions

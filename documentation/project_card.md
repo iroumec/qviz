@@ -99,7 +99,7 @@ measure the current step.
   Audio API and Quarto.
 - **Limits:** up to 16 qubits; IonQ and the built-in simulator only; one IonQ job
   per run on Qollab (loaded circuits never spend it).
-- **Documentation:** the Quarto book in `documentation/`, and `documentation/prompts/spec.md` for the
-  architecture and the JSON contract.
+- **Documentation:** the Quarto book in `documentation/`, with the architecture
+  and the JSON contract.
 - **License:** MIT. Dependencies: Qiskit, qiskit-ionq and qiskit-qasm3-import
   (Apache-2.0), NumPy (BSD-3-Clause).
