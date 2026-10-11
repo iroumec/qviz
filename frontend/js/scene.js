@@ -12,6 +12,7 @@ import { createPhononBus, updatePhonon } from "./phonon.js";
 import { createIonTrap, updateTrap } from "./trap.js";
 import { createHorizontalLayer, updateHorizontal } from "./horizontal.js";
 import { createMeasurement, updateMeasurement } from "./measurement.js";
+import { applyAtmosphere, createEnvironment } from "./environment.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -82,7 +83,7 @@ export function buildScene(n) {
     if (state.three.laserMesh) state.three.laserMesh.setMatrixAt(i, dummy.matrix);
 
     const label = makeLabel("q" + i);
-    label.position.set(x, 3.5, 0);
+    label.position.set(x, 4.3, 0);
     state.three.world.add(label);
 
     if (state.laser.template) {
@@ -123,14 +124,17 @@ export function buildScene(n) {
   // The measurement animation (flares, photons and state badges).
   state.three.world.add(createMeasurement(n));
 
+  // The laboratory environment: the vacuum chamber and the optical table.
+  state.three.world.add(createEnvironment(n));
+
   computeFitRadius();
 }
 
 /** Fit the camera distance to the length of the chain. */
 function computeFitRadius() {
   if (!state.three.camera || state.qubits.length === 0) return;
-  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 4.5;
-  const halfY = 2.9;
+  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 8;
+  const halfY = 4.3;
   const vFov = (state.three.camera.fov * Math.PI) / 180;
   const hFov = 2 * Math.atan(Math.tan(vFov / 2) * state.three.camera.aspect);
   state.orbit.fitRadius = Math.max(
@@ -284,10 +288,10 @@ export async function initThree() {
   state.three.scene.environment = pmremGenerator.fromScene(roomEnvironment).texture;
   roomEnvironment.dispose();
 
-  state.three.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  applyAtmosphere(state.three.scene);
 
-  const directionalLight = new THREE.DirectionalLight(0xaabbff, 1.5);
-  directionalLight.position.set(5, 10, 7);
+  const directionalLight = new THREE.DirectionalLight(0xaabbff, 1.2);
+  directionalLight.position.set(5, 12, 7);
   state.three.scene.add(directionalLight);
 
   state.laser.movingLight = new THREE.PointLight(0xffffff, 20.0, 20);

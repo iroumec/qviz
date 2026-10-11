@@ -134,6 +134,21 @@ At the height of the chain there is a second layer of optics
 - The **side optics** close the layer: a readout objective lens at one end of the
   chain and a mirror mount at the other.
 
+## The laboratory environment {.unnumbered}
+
+The scene is set inside an ultra-high-vacuum chamber on an optical table
+(`frontend/js/environment.js`):
+
+- A dark anodised **optical breadboard** with a grid of threaded holes sits
+  below everything.
+- Two thick **copper Helmholtz coils** (above and below the trap) give the
+  static magnetic field that defines the quantisation axis; steel posts hold
+  them to the table.
+- Every vertical laser is born from a black **collimator head**.
+- A polished **viewport ring** frames the scene, so the viewer feels inside the
+  chamber.
+- **Fog** (`FogExp2`) and a blue ambient light give the chamber its depth.
+
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
@@ -326,6 +341,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/trap.js` | Builds the surface-trap chip (substrate, gold pads and field rings) and lights the active electrodes. |
 | `js/horizontal.js` | Builds the horizontal layer (global beam sheet, guide rail, side optics) and animates it. |
 | `js/measurement.js` | Runs the state-dependent fluorescence animation (readout beam, flares, photons and state badges). |
+| `js/environment.js` | Builds the vacuum chamber and optical table (breadboard, coils, collimators, viewport) and sets the fog and lights. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The readouts, the detail of the step, the fidelity panel and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
