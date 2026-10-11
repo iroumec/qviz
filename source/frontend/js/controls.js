@@ -6,6 +6,7 @@ import { state } from "./state.js";
 import { reportError } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { refreshPlayButton, runMeasurement } from "./panels.js";
+import { stopGateSounds } from "./sound.js";
 import { initTimeline } from "./timeline.js";
 
 // The wait before the next step: the base interval, or the laser pulse of the
@@ -105,7 +106,12 @@ export function initControls() {
     stopPlay();
     updateStep(Number(event.target.value));
   });
-  document.getElementById("measure").addEventListener("click", runMeasurement);
+  // Measuring stops the simulation: the circuit is read at the step on screen.
+  document.getElementById("measure").addEventListener("click", () => {
+    stopPlay();
+    stopGateSounds();
+    runMeasurement();
+  });
 
   // The `-` and `+` of the shots field, so the native number spinner is not used.
   const shots = document.getElementById("shots");

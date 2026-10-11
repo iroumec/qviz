@@ -26,7 +26,25 @@ const TEXT = isEnglish()
     };
 
 // The elements of the current circuit, rebuilt by `buildTimeline`.
-const view = { gates: [], names: [], wires: [], playhead: null, scroll: null };
+const view = { gates: [], names: [], wires: [], playhead: null, scroll: null, holdUntil: 0, picked: false };
+
+// While the user drives the strip (its scrollbar, a drag or the wheel), playing
+// must not pull it back to the current step; the strip is left alone until a
+// moment after the last gesture.
+const HOLD_MS = 2500;
+function holdScroll(ms = HOLD_MS) {
+  view.holdUntil = performance.now() + ms;
+}
+
+/** Select a step because the user clicked it in the strip. */
+function pick(step) {
+  view.picked = true;
+  try {
+    onSelect(step);
+  } finally {
+    view.picked = false;
+  }
+}
 let onSelect = () => {};
 
 function readStored(key) {
@@ -160,7 +178,7 @@ export function buildTimeline(data) {
     head.className = "tl-index" + (step.step % 5 === 0 ? " m5" : "") + (step.step % 10 === 0 ? " m10" : "");
     head.textContent = String(step.step);
     head.title = `${TEXT.jump} ${step.step}`;
-    head.addEventListener("click", () => onSelect(index + 1));
+    head.addEventListener("click", () => pick(index + 1));
     head.style.gridArea = `1 / ${column}`;
     grid.appendChild(head);
 
@@ -179,7 +197,7 @@ export function buildTimeline(data) {
       button.textContent = operation.short;
       button.title = describe(step);
       button.style.gridArea = `${row} / ${column}`;
-      button.addEventListener("click", () => onSelect(index + 1));
+      button.addEventListener("click", () => pick(index + 1));
       button.addEventListener("mouseenter", () => highlightWires(step.targets, true));
       button.addEventListener("mouseleave", () => highlightWires(step.targets, false));
       button.addEventListener("focus", () => highlightWires(step.targets, true));
@@ -197,6 +215,87 @@ export function buildTimeline(data) {
   view.scroll = scroll;
   view.playhead = playhead;
   enablePan(scroll);
+  enableBar(body, scroll, grid);
+}
+
+// The horizontal scrollbar of the strip is drawn by the viewer and not by the
+// browser: the native one is not the same in every browser and system (and some
+// of them do not let a page keep its press), so dragging and clicking it would
+// not always work. The strip itself only scrolls vertically by itself; this bar
+// moves it sideways: drag the thumb, or press the track to go a page that way.
+function enableBar(body, scroll, grid) {
+  const bar = document.createElement("div");
+  bar.className = "tl-bar";
+  bar.setAttribute("role", "scrollbar");
+  bar.setAttribute("aria-orientation", "horizontal");
+  const thumb = document.createElement("div");
+  thumb.className = "tl-thumb";
+  bar.appendChild(thumb);
+  body.appendChild(bar);
+
+  /** Place and size the thumb after the strip, its width or the zoom changed. */
+  const sync = () => {
+    const total = scroll.scrollWidth;
+    const shown = scroll.clientWidth;
+    bar.hidden = total <= shown + 1;
+    if (bar.hidden) return;
+    const track = bar.clientWidth;
+    const width = Math.max(32, (track * shown) / total);
+    const left = ((track - width) * scroll.scrollLeft) / (total - shown);
+    thumb.style.width = `${width}px`;
+    thumb.style.transform = `translateX(${Math.max(0, left)}px)`;
+  };
+  scroll.addEventListener("scroll", sync);
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(sync);
+    observer.observe(scroll);
+    observer.observe(grid);
+  }
+  window.requestAnimationFrame(sync);
+
+  let drag = null;
+  thumb.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    holdScroll(8000);
+    thumb.setPointerCapture(event.pointerId);
+    drag = { x: event.clientX, left: scroll.scrollLeft };
+    bar.classList.add("dragging");
+  });
+  thumb.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    const travel = bar.clientWidth - thumb.offsetWidth;
+    if (travel <= 0) return;
+    const ratio = (scroll.scrollWidth - scroll.clientWidth) / travel;
+    scroll.scrollLeft = drag.left + (event.clientX - drag.x) * ratio;
+  });
+  const release = () => {
+    if (!drag) return;
+    drag = null;
+    holdScroll();
+    bar.classList.remove("dragging");
+  };
+  thumb.addEventListener("pointerup", release);
+  thumb.addEventListener("pointercancel", release);
+  thumb.addEventListener("lostpointercapture", release);
+
+  bar.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || event.target !== bar) return;
+    event.preventDefault();
+    holdScroll();
+    const box = thumb.getBoundingClientRect();
+    const direction = event.clientX < box.left ? -1 : 1;
+    scroll.scrollBy({ left: direction * scroll.clientWidth * 0.9, behavior: "auto" });
+  });
+}
+
+/** True when the press landed on a scrollbar of the element (not on its content). */
+function onScrollbar(element, event) {
+  const box = element.getBoundingClientRect();
+  const x = event.clientX - box.left - element.clientLeft;
+  const y = event.clientY - box.top - element.clientTop;
+  return x >= element.clientWidth || y >= element.clientHeight;
 }
 
 // Long circuits: drag the background of the strip to pan it, and let the wheel
@@ -205,6 +304,13 @@ function enablePan(scroll) {
   let drag = null;
   scroll.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || event.target.closest("button, .tl-index")) return;
+    // The native scrollbars belong to the browser: a press on one must not start
+    // a pan, or capturing the pointer would break dragging the scrollbar thumb.
+    if (onScrollbar(scroll, event)) {
+      holdScroll(8000);
+      return;
+    }
+    holdScroll();
     drag = { x: event.clientX, left: scroll.scrollLeft };
     scroll.setPointerCapture(event.pointerId);
     scroll.classList.add("panning");
@@ -213,14 +319,20 @@ function enablePan(scroll) {
     if (drag) scroll.scrollLeft = drag.left - (event.clientX - drag.x);
   });
   const stop = () => {
+    holdScroll();
     drag = null;
     scroll.classList.remove("panning");
   };
   scroll.addEventListener("pointerup", stop);
+  // A drag of a native scrollbar may end outside the strip, or without an event.
+  window.addEventListener("pointerup", () => {
+    if (view.holdUntil > performance.now()) holdScroll();
+  });
   scroll.addEventListener("pointercancel", stop);
   scroll.addEventListener("wheel", (event) => {
     if (scroll.scrollHeight > scroll.clientHeight + 1 || event.shiftKey) return;
     event.preventDefault();
+    holdScroll();
     scroll.scrollLeft += event.deltaY;
   }, { passive: false });
 }
@@ -250,8 +362,17 @@ export function highlightStep(index) {
 // Scroll so that the current column is in the middle and its first wire is
 // visible. Only the strip scrolls, never the page.
 function centerStep(index, mode) {
+  if (mode !== "auto" && performance.now() < view.holdUntil) return;
   const current = view.gates[index - 1][0];
   const scroll = view.scroll;
+  // A click on a gate that is already in view must not move the strip under the
+  // pointer: it only scrolls when the column is cut off.
+  if (view.picked) {
+    const left = current.offsetLeft;
+    const right = left + current.offsetWidth;
+    const visible = left >= scroll.scrollLeft + 60 && right <= scroll.scrollLeft + scroll.clientWidth;
+    if (visible) return;
+  }
   const reduced = state.view.reducedMotion;
   const behavior = reduced || mode === "auto" ? "auto" : "smooth";
   const left = current.offsetLeft + current.offsetWidth / 2 - scroll.clientWidth / 2;

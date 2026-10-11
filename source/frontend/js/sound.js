@@ -4,6 +4,7 @@
 //                 beam; the GPI is lower and twice as long
 //   MS and ZZ     a long, detuned two-tone swell, as long as the pulse
 //   VirtualZ      a click (it is a software phase: no laser, no tone)
+//   Measure       a thin readout beam and a shower of photon ticks, one per |1> ion
 // The length of every tone follows the pulse of the gate (`laserPulseFor`), so
 // the sound ends when the beam does. Browsers only allow audio after a gesture,
 // so the context is created on the first sound and a failure is ignored: the
@@ -129,7 +130,7 @@ function entanglerSwell(start, seconds) {
 }
 
 /** A VirtualZ: a click, a few milliseconds of filtered noise that dies at once. */
-function click(start) {
+function click(start, hz = 2800, level = PEAK * 4) {
   const length = Math.round(context.sampleRate * 0.02);
   const buffer = context.createBuffer(1, length, context.sampleRate);
   const data = buffer.getChannelData(0);
@@ -140,15 +141,47 @@ function click(start) {
   source.buffer = buffer;
   const filter = context.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.value = 2800;
+  filter.frequency.value = hz;
   filter.Q.value = 1.2;
   const gain = context.createGain();
-  gain.gain.value = PEAK * 4;
+  gain.gain.value = level;
   source.connect(filter);
   filter.connect(gain);
   gain.connect(master);
   source.start(start);
   return [source, gain];
+}
+
+/**
+ * The readout: a steady, thin beam that swells in, holds and fades out with the
+ * animation of the measurement (``measurement.js``), and a shower of tiny ticks,
+ * the photons, that is as dense as the number of ions found in |1>. Ions in |0>
+ * stay dark, so a register measured as all zeros has no ticks.
+ */
+function readoutSound(start, ones) {
+  const seconds = 1.3;
+  const end = start + seconds;
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(PEAK * 0.7, start + 0.2);
+  gain.gain.setValueAtTime(PEAK * 0.7, start + 1.0);
+  gain.gain.linearRampToValueAtTime(0, end);
+  gain.connect(master);
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.Q.value = 5;
+  filter.frequency.setValueAtTime(700, start);
+  filter.frequency.exponentialRampToValueAtTime(1300, start + 0.2);
+  filter.connect(gain);
+  const beam = tone("sawtooth", 650, 1300, start, start + 0.2, filter, end);
+  const hum = tone("sine", 2600, 2600, start, end, gain);
+  const voices = [beam, hum, gain];
+
+  const ticks = ones > 0 ? Math.min(40, 8 + 8 * ones) : 0;
+  for (let i = 0; i < ticks; i++) {
+    voices.push(...click(start + 0.45 + Math.random() * 0.55, 4500 + Math.random() * 1500, PEAK * 2.5));
+  }
+  return voices;
 }
 
 /** Silence what is still sounding, with a short fade so it does not pop. */
@@ -187,6 +220,24 @@ export function playGateSound(operation, ms) {
     else if (operation === "gpi2") voices = laserTone(start, seconds, 3000, 1600);
     else if (operation === "ms" || operation === "zz") voices = entanglerSwell(start, seconds);
     else if (operation === "virtual_z") voices = click(start);
+  } catch (error) {
+    voices = [];
+  }
+}
+
+/**
+ * Play the sound of the readout for a measurement whose outcome is ``outcome``
+ * (an array with 1 for an ion found in |1> and 0 for |0>).
+ */
+export function playMeasureSound(outcome) {
+  if (!state.view.sound) return;
+  const audio = audioContext();
+  if (!audio) return;
+  try {
+    stopGateSounds();
+    if (audio.state === "suspended") audio.resume().catch(() => {});
+    master.gain.value = state.view.soundVolume;
+    voices = readoutSound(audio.currentTime + 0.01, outcome.reduce((sum, bit) => sum + bit, 0));
   } catch (error) {
     voices = [];
   }

@@ -4,6 +4,7 @@
 import { OPERATIONS } from "./config.js";
 import { sampleStep } from "./host.js";
 import { clearMeasurement, startMeasurement } from "./measurement.js";
+import { playMeasureSound } from "./sound.js";
 import { state } from "./state.js";
 import { ketMath, probCorrectionMath, probOneMath, qubitMath, setError } from "./utils.js";
 
@@ -141,7 +142,7 @@ const TEXT = ENGLISH
       close: "Close", correction: "The probability is corrected with the fidelity",
       more: (n) => `… and ${n} more results.`, adjusted: "adjusted", measured: "measured",
       loadCircuit: "Load circuit", measure: "Measure",
-      title: "QViz · trapped ions",
+      title: "QViz Trapped Ions",
       legend: "drag: rotate · right click: move · wheel: zoom · WASD + space/ctrl: move",
       play: "Play", pause: "Pause", resume: "Resume", restart: "Restart", stepWord: "step",
       initial: `Initial state: every ion in ${ketMath(0)}.`,
@@ -162,7 +163,7 @@ const TEXT = ENGLISH
       close: "Cerrar", correction: "La probabilidad se corrige con la fidelidad",
       more: (n) => `… y ${n} resultados más.`, adjusted: "ajustado", measured: "medido",
       loadCircuit: "Cargar circuito", measure: "Medir",
-      title: "QViz · iones atrapados",
+      title: "QViz Trapped Ions",
       legend: "arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover",
       play: "Play", pause: "Pausa", resume: "Reanudar", restart: "Reiniciar", stepWord: "paso",
       initial: `Estado inicial: todos los iones en ${ketMath(0)}.`,
@@ -308,6 +309,7 @@ export async function runMeasurement() {
   const outcome = [];
   for (let q = 0; q < n; q++) outcome[q] = top[n - 1 - q] === "1" ? 1 : 0;
   startMeasurement(outcome);
+  playMeasureSound(outcome);
 
   renderMeasurement(sorted, shots, p1, ones, fidelity, n, at);
 }
