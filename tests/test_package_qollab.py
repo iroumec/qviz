@@ -76,6 +76,19 @@ def test_the_viewer_package_is_the_real_viewer(packaged):
     assert 'import("./js' not in js and "from './" not in js
 
 
+def test_the_timeline_strip_reaches_the_package_without_import_cycles(packaged):
+    out, _ = packaged
+    html = (out / "index.html").read_text(encoding="utf-8")
+    assert 'id="timeline"' in html and 'id="timelineToggle"' in html
+    assert ".tl-gate" in (out / "main.css").read_text(encoding="utf-8")
+    assert "function buildTimeline" in (out / "main.js").read_text(encoding="utf-8")
+
+    # The strip is wired by the controls: importing them back would make a cycle.
+    source = (_ROOT / "frontend" / "js" / "timeline.js").read_text(encoding="utf-8")
+    imported = set(re.findall(r"from \"\./(\w+)\.js\"", source))
+    assert imported <= {"config", "state", "utils"}
+
+
 def test_the_viewer_gets_its_shaders_and_the_qollab_services(packaged):
     out, _ = packaged
     js = (out / "main.js").read_text(encoding="utf-8")

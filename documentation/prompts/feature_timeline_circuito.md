@@ -1,6 +1,6 @@
 # Feature: línea de tiempo del circuito transpilado (franja inferior)
 
-> Prompt para la próxima sesión de código. **Estado: planificada, sin implementar y sin código tocado.** Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
+> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/timeline.js`, markup y CSS en `index.html`, cableado en `controls.js`/`data.js`/`scene.js`. Queda por probar en Qollab, y no se hizo el realce de las esferas 3D al pasar el mouse ni el clic en el nombre del qubit (opcionales). Prompt original: Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
 
 ## Objetivo
 

@@ -60,3 +60,10 @@ export function setStatus(message) {
   line.classList.add("status");
   line.textContent = message;
 }
+
+/** True when the page language (`<html lang>`) is English. */
+export function isEnglish() {
+  const lang = (typeof document !== "undefined" && document.documentElement
+    && document.documentElement.lang) || "es";
+  return lang.toLowerCase().startsWith("en");
+}

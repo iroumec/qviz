@@ -8,6 +8,7 @@ import { DEMO } from "./demo.js";
 import { state } from "./state.js";
 import { setError, setStatus } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
+import { buildTimeline, highlightStep } from "./timeline.js";
 import {
   buildReadouts,
   closeMeasurement,
@@ -33,6 +34,7 @@ export function loadData(obj) {
   buildScene(state.data.total_qubits);
   buildReadouts(state.data.total_qubits);
   updateSimulationDetails();
+  buildTimeline(state.data);
   const slider = document.getElementById("slider");
   slider.max = String(state.data.steps.length);
   slider.value = "0";
@@ -130,6 +132,7 @@ export function updateStep(index, instant = false) {
     if (instant) qubit.current = vector.slice();
   }
   updateReadouts(step);
+  highlightStep(state.stepIndex);
   renderDetails(step);
   updateHealth(step);
 }

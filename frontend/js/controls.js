@@ -6,6 +6,7 @@ import { state } from "./state.js";
 import { setError } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { refreshPlayButton, runMeasurement } from "./panels.js";
+import { initTimeline } from "./timeline.js";
 
 // The wait before the next step: the base interval, or the laser pulse of the
 // current step (plus a margin) when the gate fires one, so a long MS or ZZ
@@ -50,7 +51,26 @@ function readFile(file) {
   loadCircuitFile(file);
 }
 
+/** True when the focus is in a field that uses the arrow keys itself. */
+function isEditing() {
+  const tag = document.activeElement && document.activeElement.tagName;
+  return tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
+}
+
 export function initControls() {
+  initTimeline((step) => {
+    stopPlay();
+    updateStep(step);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (!state.data || isEditing() || event.ctrlKey || event.altKey || event.metaKey) return;
+    const last = state.data.steps.length;
+    const target = { ArrowLeft: state.stepIndex - 1, ArrowRight: state.stepIndex + 1, Home: 0, End: last }[event.key];
+    if (target === undefined) return;
+    event.preventDefault();
+    stopPlay();
+    updateStep(target);
+  });
   document.getElementById("file").addEventListener("change", (event) => {
     readFile(event.target.files[0]);
     event.target.value = "";

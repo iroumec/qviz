@@ -116,3 +116,13 @@ export const SAMPLE_URL = "../api/sample";
 
 export const OBJ_URL = "../models/laser_lens.obj";
 export const MTL_URL = "../models/laser_lens.mtl";
+
+// The readable name, the short label (for the timeline boxes) and the family of
+// each native operation.
+export const OPERATIONS = {
+  gpi: { name: "GPI", short: "GPI", kind: "1q" },
+  gpi2: { name: "GPI2", short: "GPI2", kind: "1q" },
+  ms: { name: "MS", short: "MS", kind: "2q" },
+  zz: { name: "ZZ", short: "ZZ", kind: "2q" },
+  virtual_z: { name: "VirtualZ", short: "Z", kind: "vz" },
+};

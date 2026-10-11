@@ -277,6 +277,26 @@ Step 0 is the initial state, in which every qubit is in `|0⟩`. It is not part 
 the JSON; it is added by the viewer, in the same way as the frontend is expected
 to do.
 
+## The circuit timeline {.unnumbered}
+
+A strip between the scene and the playback bar shows the **transpiled circuit**:
+one wire per qubit and one column per step, with the native gates in order
+(GPI, GPI2, MS, ZZ and VirtualZ as a dashed `Z`). A two-qubit gate is a box on
+each target joined by a vertical line, which crosses the wires in between when
+the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
+`step`, so the JSON contract is not changed.
+
+- The gates that were applied are filled, the current one has a yellow border,
+  and the ones to come are dimmed. A blue column marks the current step.
+- A click on a gate goes to its step and stops the play. The strip scrolls by
+  itself to keep the current step in the middle. A tooltip gives the step, the
+  operation, the qubits and the accumulated fidelity.
+- The keys left and right change the step, and Home and End go to the first and
+  the last one (unless the focus is in a field).
+- It is open at the start. The **Hide** button (with a chevron) in its header
+  closes it, and the choice is remembered in `localStorage` when the page allows
+  it. The scene resizes with a `ResizeObserver`. Below 860 px wide it is hidden.
+
 ## The measurement {.unnumbered}
 
 The `Medir` button draws a number of shots from the probabilities of the current
@@ -364,6 +384,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The panels (probabilities, simulation details, step details), the fidelity and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
+| `js/timeline.js` | The circuit timeline strip: builds the wires and gates, and marks the current step. It does not import `data.js` or `controls.js` (the controls wire the click). |
 | `js/controls.js` | The playback bar (step buttons, play, reset, slider) and the drag and drop. |
 
 No module imports a module that imports it back, so the dependency graph is easy

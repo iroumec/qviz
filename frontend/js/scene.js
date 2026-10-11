@@ -301,6 +301,10 @@ export async function initThree() {
 
   addCameraControls();
   window.addEventListener("resize", onResize);
+  // The stage also changes size when a strip around it opens or closes.
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(onResize).observe(document.getElementById("stage"));
+  }
   onResize();
   return true;
 }

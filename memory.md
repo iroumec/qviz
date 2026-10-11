@@ -46,7 +46,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 
 ## Pendientes (en orden)
 
--3. **Próxima feature (diseño aprobado, sin código): línea de tiempo del circuito transpilado**, franja inferior plegable, abierta por defecto con botón visible, sin ángulo ni fase en las cajas. Prompt completo en `documentation/prompts/feature_timeline_circuito.md`. Solo frontend; coordinar con el compañero antes de tocar `index.html`.
+-3. **Línea de tiempo del circuito transpilado: implementada (2026-10-11), sin commitear ni probar en Qollab.** Franja inferior plegable (`timeline.js`). Pendiente: probarla en Qollab y, si el equipo lo quiere, el realce 3D al pasar el mouse. Prompt en `documentation/prompts/feature_timeline_circuito.md`.
 ~~-2. README y project card~~ hecho (2026-10-11, sin commitear): `README.md` (qué hace, usar en Qollab y en local, limitaciones) y `documentation/project_card.md`.
 -1. **Plazo: domingo 2026-10-11, 7 PM ET.** Probar en Qollab el paquete actual (`make qollab`): trampa, capa horizontal, entorno, medición y MathML son nuevos del 11 y no se probaron ahí. Completar la tabla de `documentation/prompts/qollab_pruebas.md` §4 (falta confirmar `qiskit-qasm3-import`, los addons de three, Medir en IonQ y los tiempos con 16 qubits).
 1. **Después del plazo:** auditoría anti-slop de Python, clase C (de a uno, con aprobación; tras cada "aplicalo", commit + push): #16 unificar `bell`/`ghz3` repetidos (`qollab_api._bell`, `generate_outputs._bell`, `scripts/_common`) usando `qollab_api.build_circuit` y `examples.ghz`; #18 compartir `_angles` y el acumulado de `virtual_z` entre `tomography.py` y `simulator.py` (ojo: el simulador corrige `phi >= 2π` y la tomografía recorta `r > 1`, así que unificar cambia casos borde).
@@ -68,6 +68,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-11 · Línea de tiempo implementada: `frontend/js/timeline.js` (un hilo por qubit, una columna por paso, clic para saltar, auto-scroll, plegable con `localStorage`), markup/CSS en `index.html`, flechas/Inicio/Fin en `controls.js`, `ResizeObserver` en `scene.js`, `OPERATIONS` movido a `config.js`, `isEnglish` en `utils.js`. Verificado con Chromium headless (`bell`, `layered16`). 420 passed, lint y `make qollab` en verde. Docs en `viewer.qmd`. **Sin commitear.**
 - 2026-10-11 · El usuario probó Qollab: todo bien. Plan de la línea de tiempo guardado en `documentation/prompts/feature_timeline_circuito.md` (sin tocar código). Merge (rebase) con `0944af5` del compañero (solo escena 3D): sin conflictos, 419 passed, lint y `make qollab` en verde; nota para la feature: avisar a la escena al plegar la franja (`onResize`).
 - 2026-10-11 · Entorno local creado con uv (`.venv`, Python 3.13.16; el `python3` del sistema es 3.11 y `pip` lo rechaza). 419 passed, 1 skipped, lint en verde. Versionado escrito en el README ("Versions") y en `installation.qmd`. **Sin commitear.**
 - 2026-10-11 · README ampliado (qué hace, cómo usarlo en Qollab y en local, limitaciones) y `documentation/project_card.md` (tarjeta del proyecto en inglés), a partir de `qollab.qmd`. **Sin commitear.** Falta que el usuario pruebe el paquete en Qollab (pendiente -1).

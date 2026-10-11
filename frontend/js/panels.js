@@ -1,6 +1,7 @@
 // The panels around the scene: the readouts, the detail of the step, the
 // fidelity panel and the measurement.
 
+import { OPERATIONS } from "./config.js";
 import { sampleStep } from "./host.js";
 import { clearMeasurement, startMeasurement } from "./measurement.js";
 import { state } from "./state.js";
@@ -131,15 +132,6 @@ const TEXT = ENGLISH
       virtualZ: "VirtualZ", inactivity: "Inact.", fidelity: "Fidel.", vibration: "Vibr.",
       op1q: "compuerta de un qubit", op2q: "compuerta entrelazadora de dos qubits", opvz: "rotación virtual de fase",
     };
-
-// The readable name and family of each native operation.
-const OPERATIONS = {
-  gpi: { name: "GPI", kind: "1q" },
-  gpi2: { name: "GPI2", kind: "1q" },
-  ms: { name: "MS", kind: "2q" },
-  zz: { name: "ZZ", kind: "2q" },
-  virtual_z: { name: "VirtualZ", kind: "vz" },
-};
 
 /** Translate the panel titles and wire the collapse of each panel. */
 export function initPanels() {
