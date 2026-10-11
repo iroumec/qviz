@@ -190,9 +190,13 @@ of the page (*Detalles de la simulación* / *Simulation details*, *Probabilidade
 The `+z` axis is drawn upwards, and `|0⟩` is at the top. This follows the
 standard convention that is used by the backend.
 
-The qubit labels and the kets are written in the LaTeX style: the index of a
-qubit is a subscript (`q₀`, `q₁`, …) and a ket uses the angle bracket (`|0⟩`,
-`|1⟩`). The helper `qubitLabel` in `frontend/js/utils.js` builds the labels.
+The expressions in the panels (the qubit labels, the kets, `p(|1⟩)` and the
+readout correction) are written in the LaTeX style as **inline MathML**, so the
+browser typesets them natively, with no maths library and nothing fetched at run
+time. The helpers `qubitMath`, `ketMath`, `probOneMath` and `probCorrectionMath`
+in `frontend/js/utils.js` build them. On the 3D canvas, where MathML cannot be
+drawn, the same expressions use the Unicode subscripts and angle brackets (`q₀`,
+`|0⟩`) from `qubitLabel` and `ket`.
 
 ## How a file is loaded {.unnumbered}
 
@@ -290,7 +294,9 @@ illumination.
 4. The outcome is resolved: a **`|0⟩` or `|1⟩` badge** appears above every ion.
 
 The animation uses the most likely outcome of the sampled shots, and runs next to
-the histogram when the `Medir` button is pressed.
+the histogram when the `Medir` button is pressed. The panel shows the **step** and
+the number of **shots** as two clear blocks at the top, and every expression (the
+qubit labels, `p(|1⟩)` and the readout correction) is typeset as MathML.
 
 The fidelity of each qubit is taken into account. The probability `p` of a qubit
 is pulled towards `0.5` by its fidelity `f`:

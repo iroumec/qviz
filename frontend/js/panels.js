@@ -4,7 +4,7 @@
 import { sampleStep } from "./host.js";
 import { clearMeasurement, startMeasurement } from "./measurement.js";
 import { state } from "./state.js";
-import { qubitLabel, setError } from "./utils.js";
+import { ketMath, probCorrectionMath, probOneMath, qubitMath, setError } from "./utils.js";
 
 // The step of the last fidelity number that was popped, so a number is shown
 // once per step and not again while the same step is redrawn.
@@ -18,7 +18,7 @@ export function buildReadouts(n) {
   for (let q = 0; q < n; q++) {
     const row = document.createElement("div");
     row.className = "readout";
-    row.innerHTML = `<b>${qubitLabel(q)}</b><div class="bar"><span></span></div><span class="p1">0.00</span>`;
+    row.innerHTML = `<b>${qubitMath(q)}</b><div class="bar"><span></span></div><span class="p1">0.00</span>`;
     container.appendChild(row);
   }
 }
@@ -48,7 +48,7 @@ export function renderDetails(step) {
   let html = `<div class="op-line"><span class="op-badge op-${operation.kind}">${operation.name}</span></div>` +
     `<p class="op-detail">${detail}</p>` +
     `<table class="kv"><tr><td>${TEXT.targets}</td><td>` +
-    step.targets.map((t) => `<span class="qchip">${qubitLabel(t)}</span>`).join(" ") + "</td></tr>";
+    step.targets.map((t) => `<span class="qchip">${qubitMath(t)}</span>`).join(" ") + "</td></tr>";
   if (step.phases) {
     html += `<tr><td>${TEXT.phases}</td><td>${step.phases.map((p) => p.toFixed(4)).join(", ")}</td></tr>`;
   }
@@ -62,7 +62,7 @@ export function renderDetails(step) {
   html += `<table class="qubits"><thead><tr><th></th><th>${TEXT.virtualZ}</th>` +
     `<th>${TEXT.inactivity}</th><th>${TEXT.fidelity}</th><th>${TEXT.vibration}</th></tr></thead><tbody>`;
   for (let q = 0; q < count; q++) {
-    html += `<tr><td>${qubitLabel(q)}</td><td>${step.virtual_z[q].toFixed(2)}</td>` +
+    html += `<tr><td>${qubitMath(q)}</td><td>${step.virtual_z[q].toFixed(2)}</td>` +
       `<td>${step.inactivity[q]}</td><td>${step.fidelities[q].toFixed(2)}</td>` +
       `<td>${step.vibration[q].toFixed(3)}</td></tr>`;
   }
@@ -103,11 +103,13 @@ const FIDELITY_LABEL = ENGLISH ? "Fidelity" : "Fidelidad";
 const TEXT = ENGLISH
   ? {
       probabilities: "Probabilities",
-      probabilitiesHint: "p(|1\u27e9) = probability of measuring 1 on each qubit.",
+      probabilitiesHint: `${probOneMath()} = probability of measuring 1 on each qubit.`,
       details: "Step details",
+      zAxis: `z (${ketMath(0)} up)`,
       simulation: "Simulation details",
       model: "Model", initialFidelity: "Initial fidelity", qubits: "Qubits", steps: "Steps",
-      initial: "Initial state: every ion in |0\u27e9.",
+      measurementTitle: "Measurement", step: "Step", shots: "Shots",
+      initial: `Initial state: every ion in ${ketMath(0)}.`,
       targets: "Target qubits",
       phases: "Phases (rad)", angle: "Angle (turns)",
       cumFidelity: "Accumulated fidelity", cumCost: "Accumulated cost",
@@ -116,11 +118,13 @@ const TEXT = ENGLISH
     }
   : {
       probabilities: "Probabilidades",
-      probabilitiesHint: "p(|1\u27e9) = probabilidad de medir 1 en cada qubit.",
+      probabilitiesHint: `${probOneMath()} = probabilidad de medir 1 en cada qubit.`,
       details: "Detalle del paso",
+      zAxis: `z (${ketMath(0)} arriba)`,
       simulation: "Detalles de la simulación",
       model: "Modelo", initialFidelity: "Fidelidad inicial", qubits: "Qubits", steps: "Pasos",
-      initial: "Estado inicial: todos los iones en |0\u27e9.",
+      measurementTitle: "Medición", step: "Paso", shots: "Shots",
+      initial: `Estado inicial: todos los iones en ${ketMath(0)}.`,
       targets: "Qubits objetivo",
       phases: "Fases (rad)", angle: "Ángulo (turnos)",
       cumFidelity: "Fidelidad acumulada", cumCost: "Costo acumulado",
@@ -141,7 +145,7 @@ const OPERATIONS = {
 export function initPanels() {
   for (const node of document.querySelectorAll("[data-i18n]")) {
     const key = node.getAttribute("data-i18n");
-    if (TEXT[key]) node.textContent = TEXT[key];
+    if (TEXT[key]) node.innerHTML = TEXT[key];
   }
   for (const head of document.querySelectorAll(".panel-head")) {
     head.addEventListener("click", () => {
@@ -273,16 +277,19 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, n, step) {
   for (let q = 0; q < n; q++) {
     const measured = ones[q] / shots;
     qubitRows.push(
-      `<tr><td>${qubitLabel(q)}</td><td>p(|1⟩) ajustado ${p1[q].toFixed(3)} · ` +
+      `<tr><td>${qubitMath(q)}</td><td>${probOneMath()} ajustado ${p1[q].toFixed(3)} · ` +
       `medido ${measured.toFixed(3)} · fid ${(100 * fidelity[q]).toFixed(2)}%</td></tr>`
     );
   }
 
   document.getElementById("measurePanel").innerHTML =
     `<button class="close" id="measureClose">Cerrar</button>` +
-    `<h2>Medición · paso ${step} · ${shots} shots</h2>` +
-    `<p class="hint">La probabilidad se corrige con la fidelidad: ` +
-    `p → 0.5 + (p − 0.5)·f.</p>` +
+    `<h2>${TEXT.measurementTitle}</h2>` +
+    `<div class="measure-meta">` +
+    `<div class="measure-stat"><span>${TEXT.step}</span><b>${step} / ${state.data.steps.length}</b></div>` +
+    `<div class="measure-stat"><span>${TEXT.shots}</span><b>${shots}</b></div>` +
+    `</div>` +
+    `<p class="hint">La probabilidad se corrige con la fidelidad: ${probCorrectionMath()}.</p>` +
     `<div>${rows}</div>` +
     (sorted.length > top.length
       ? `<p class="hint">… y ${sorted.length - top.length} resultados más.</p>`

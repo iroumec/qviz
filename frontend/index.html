@@ -97,7 +97,18 @@
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
   }
   .measure-panel.hidden { display: none; }
-  .measure-panel h2 { font-size: 13px; margin: 0 0 6px; }
+  .measure-panel h2 { font-size: 14px; margin: 0 0 8px; }
+  .measure-meta { display: flex; gap: 8px; margin: 0 0 10px; }
+  .measure-stat {
+    flex: 1; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 9px;
+  }
+  .measure-stat span {
+    display: block; color: var(--muted); font-size: 10px;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .measure-stat b { font-size: 14px; font-variant-numeric: tabular-nums; }
+  math { font-size: 1.06em; }
   .measure-panel .close { float: right; padding: 2px 8px; }
   .measure-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
   .measure-row .bits { font-family: ui-monospace, monospace; letter-spacing: 1px; }
@@ -201,7 +212,7 @@
     <div class="measure-panel hidden" id="measurePanel"></div>
     <legend>
       <span><i style="background:#ff6b6b"></i>x</span>
-      <span><i style="background:#4dabf7"></i>z (|0⟩ arriba)</span>
+      <span><i style="background:#4dabf7"></i><span data-i18n="zAxis">z (|0⟩ arriba)</span></span>
       <span><i style="background:#51cf66"></i>y</span>
       <span>arrastrar: rotar · rueda: zoom · WASD + espacio/ctrl: mover</span>
     </legend>
