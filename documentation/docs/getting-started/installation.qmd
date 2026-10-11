@@ -38,9 +38,14 @@ and `make lint` had no findings. A machine whose `python3` is older than 3.12
 with `requires a different Python`. Create the environment with a newer
 interpreter, for example `uv venv --python 3.13 .venv`.
 
-The viewer loads three.js from a CDN and does not install it: 0.160.0 when it is
-served alone (import map of `frontend/index.html`) and 0.186.1 on Qollab. Qollab
-runs Python 3.14 (Pyodide v314.0.7).
+The viewer loads three.js from a CDN and does not install it, so it is not in
+`requirements.txt` (that file is for Python). On Qollab the platform provides
+three.js 0.186.1, and the import map of `frontend/index.html` pins the same
+version, so the standalone viewer looks like the one on Qollab. Until 2026-10-11
+it pinned 0.160.0, and the scene looked much brighter on Qollab: three.js 0.163
+and later light the scene with the environment map more strongly. The scene is
+calibrated for 0.186.1 with `ENVIRONMENT_INTENSITY` in `frontend/js/config.js`.
+Qollab runs Python 3.14 (Pyodide v314.0.7).
 On Qollab, the page of the test project prints the versions that are really
 installed (see `documentation/prompts/qollab_pruebas.md`).
 
