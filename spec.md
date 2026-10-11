@@ -509,7 +509,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 ### M8 — Tomografía por prefijos (`strategy="tomography"`)
 
-**Objetivo:** el requerimiento "Toma de mediciones": obtener los vectores **midiendo** en el backend en vez de calcularlos, para ver el efecto del ruido real. El statevector de M3 queda como referencia ideal para comparar.
+**Objetivo:** el requerimiento "Toma de mediciones": obtener los vectores **midiendo** en el backend en vez de calcularlos, para ver el efecto del ruido real. Una corrida con `strategy="tomography"` solo mide: no calcula también el statevector de M3 ni incluye una comparación. Para ver el error del equipo se compila el mismo circuito con las dos estrategias y se comparan las salidas.
 
 - Para k = 1 … N (la cantidad de ops), el prefijo es `to_qiskit(native, upto=k)`. El requerimiento dice k ∈ [0, N): eso deja afuera el estado posterior al último gate, así que se usa 1 … N. k = 0 es |0…0⟩ y solo se mide opcionalmente, como calibración de SPAM.
 - Por cada prefijo, 3 circuitos: base Z (`measure_all`), base X (`h` en todos y luego medir) y base Y (`sdg` + `h` en todos y luego medir). En total son **3N circuitos**.
@@ -630,6 +630,7 @@ _Resultados de la sonda (M1a) y de las pruebas de M7 y M8. Completar a medida qu
 | 2026-10-10 | Built-in, página de diagnóstico (retirada el 2026-10-10) | — | `basic_simulator` | Versiones de Qollab: qiskit 2.5.2, **qiskit-ionq 1.0.2**, numpy 2.4.6 (Pyodide v314.0.7). `Object.keys(api)` devuelve vacío pero `api.run`, `api.sample_step` y `api.versions` se llaman bien con `callPromising`. Compile de un Bell: 78 ms; cada paso de los checks: 4–9 ms. `ALL CHECKS PASS` (correlaciones: 1.9 % de resultados que no son 00 ni 11, esperado 1.6 %). 8 mediciones seguidas sin error. |
 | 2026-10-10 | _qiskit-ionq de Qollab_ | — | — | **No tiene `helpers.native_2q_gate`** (existe desde 1.0.3): `import backend` fallaba con `ImportError` al cargar `provider.py`. Se reemplazó por una función propia. El código se probó con qiskit-ionq 1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.1.0 y 1.1.1 (y NumPy 2.0.2). Limitación conocida: con las versiones anteriores a 1.0.3 la tomografía sobre un backend que no es IonQ no se puede transpilar (`HighLevelSynthesis is unable to synthesize "gpi2"`), porque las compuertas nativas no traen definición; `tomography.measure` lo convierte en un `TranspilationError` que lo explica. |
 | 2026-10-10 | IonQ Forte Enterprise 1 (sim) | — | `ionq_simulator` | `options.noise_model` de familia `forte-enterprise-1` → **ZZ**. |
+| 2026-10-11 | IBM y AWS Braket local (visor real) | — | — | Desde que solo se aceptan `ionq` y `local` (§5.5), se clasifican `unsupported` y el visor muestra el mensaje de máquina no soportada, igual que con cualquier otra máquina. Ya no se queda en "loading" con IBM. |
 
 > **Hallazgo clave:** todos los IonQ comparten el nombre `ionq_simulator`. El nombre no dice si la máquina es Aria o Forte. La familia se lee de `backend.options.noise_model` (`aria-2`, `forte-1`, …), y `provider.native_2q_gate` la convierte en `ms`/`zz`. `provider._machine_hints` implementa esto.
 

@@ -68,7 +68,8 @@ Two points are important.
   prelude removes the Python traceback and shows only this text.
 
 In Qollab, this means that the IBM noisy simulators, the AWS Braket local
-simulator and any unrecognised backend are rejected with this error.
+simulator and any unrecognised backend are rejected with this error. This was
+checked in Qollab on 2026-10-11 with IBM Boston and AWS Braket local.
 
 ### How the width limit is used {.unnumbered}
 

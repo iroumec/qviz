@@ -72,7 +72,7 @@ En Forte (ZZ) los pasos intermedios son otros (hay más `virtual_z`); solo el ú
 | Built-in | Los 10 puntos; `layered16` para los tiempos | Todo bien. |
 | IonQ Aria 2 (simulador) | 1, 2, 5, 6, 9 y 10 | Lo mismo. La primera compilación (el ejemplo del arranque) gasta el único job; los `.qasm` no. |
 | IonQ Forte 1 y Forte Enterprise 1 (simuladores) | 1, 2, 5, 6 y 9 | Lo mismo, con pasos `zz`. |
-| AWS Braket local, IBM (Boston…) | Mirar el arranque | El visor muestra `This machine is not currently supported (detected: default (BraketLocalBackend)). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (sin el traceback). |
+| AWS Braket local, IBM (Boston…) o cualquier otra máquina | Mirar el arranque | El visor muestra `This machine is not currently supported (detected: …). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (sin el traceback). Verificado el 2026-10-11. |
 | Hardware de IonQ | **No correr** | Gasta créditos. |
 
 Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
@@ -97,8 +97,8 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 | | IonQ Aria 2 (sim) | 1, 2, 5, 6, 9, 10 | | |
 | | IonQ Forte 1 (sim) | 1, 2, 5, 6, 9 | | |
 | | IonQ Forte Enterprise 1 (sim) | 1, 2, 5, 6, 9 | | |
-| | AWS Braket local | arranque | | esperado: `ProviderDisabledError` |
-| | IBM Boston | arranque | | esperado: `ProviderDisabledError` (hoy se queda en "loading", ver `memory.md`) |
+| 2026-10-11 | AWS Braket local | arranque | Sí | `UnsupportedProviderError` con el mensaje de máquina no soportada. |
+| 2026-10-11 | IBM Boston | arranque | Sí | `UnsupportedProviderError` con el mensaje de máquina no soportada (antes se quedaba en "loading"). |
 
 ## 5. Cómo decidir con los resultados
 

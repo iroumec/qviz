@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import importlib.util
 import json
 import threading
@@ -76,6 +77,19 @@ def test_a_bad_parameter_is_a_400(base):
 def test_a_huge_file_is_rejected(base):
     status, data = _post(base + "/api/compile", " " * 500_000)
     assert status == 413
+
+
+@pytest.mark.parametrize("length", ["-1", "abc"])
+def test_a_bad_content_length_is_a_400(base, length):
+    host, port = base.removeprefix("http://").split(":")
+    connection = http.client.HTTPConnection(host, int(port), timeout=10)
+    connection.putrequest("POST", "/api/compile")
+    connection.putheader("Content-Length", length)
+    connection.endheaders()
+    response = connection.getresponse()
+    assert response.status == 400
+    assert "Content-Length" in json.loads(response.read())["error"]
+    connection.close()
 
 
 def test_other_services_do_not_exist(base):

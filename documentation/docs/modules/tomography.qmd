@@ -10,9 +10,12 @@ The tomography is selected with `strategy="tomography"` in `compile`.
 ## Why the state is measured, and not computed {.unnumbered}
 
 The exact simulator gives the ideal state. It cannot show the error of the real
-device. The tomography is used when the effect of the noise is of interest. The
-measured result can be compared with the ideal result, and the difference is the
-error of the device. The exact statevector is therefore kept as the reference.
+device. The tomography is used when the effect of the noise is of interest.
+
+A run with `strategy="tomography"` only measures: it does not compute the ideal
+state as well, and the output has no comparison between the two. To see the
+error of the device, the same circuit is compiled twice, once with each
+strategy, and the two outputs are compared.
 
 ## `measure(native, backend, info, *, shots=1024, allow_paid=False)` {.unnumbered}
 

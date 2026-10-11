@@ -71,6 +71,25 @@ def test_tomography_uses_a_single_run_call():
     backend.run.assert_called_once()
 
 
+def test_tomography_rejects_a_missing_result():
+    native, info = _native()
+    ionq_info = BackendInfo(
+        provider="ionq",
+        name=info.name,
+        display_name=info.display_name,
+        entangler=info.entangler,
+        is_hardware=False,
+        profile=info.profile,
+    )
+    backend = MagicMock()
+    backend.run.return_value.result.return_value.get_counts.return_value = [
+        {"00": _SHOTS}
+        for _ in range(3 * len(native.ops) - 1)
+    ]
+    with pytest.raises(QVizError, match="results"):
+        tomography.measure(native, backend, ionq_info, shots=_SHOTS)
+
+
 def test_tomography_hardware_guard():
     native, info = _native()
     hardware_info = BackendInfo(

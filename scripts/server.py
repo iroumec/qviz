@@ -71,7 +71,13 @@ class Handler(SimpleHTTPRequestHandler):
             self._reply(HTTPStatus.NOT_FOUND, {"error": f"no such service: {url.path}"})
             return
         compiling = url.path == COMPILE_PATH
-        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = -1
+        if length < 0:
+            self._reply(HTTPStatus.BAD_REQUEST, {"error": "bad Content-Length"})
+            return
         if length > (2 * config.MAX_QASM_CHARS if compiling else MAX_SAMPLE_BYTES):
             self._reply(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "body too big"})
             return

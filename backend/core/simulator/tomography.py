@@ -123,8 +123,13 @@ def measure(
     )
     job = backend.run(circuits, shots=shots)
     counts_list = job.result().get_counts()
+    if len(counts_list) != len(keys):
+        raise QVizError(
+            f"the backend returned {len(counts_list)} results for "
+            f"{len(keys)} tomography circuits"
+        )
 
-    by_key = dict(zip(keys, counts_list))
+    by_key = dict(zip(keys, counts_list, strict=True))
     steps: list[SimulatedStep] = []
 
     for k in range(1, num_ops + 1):

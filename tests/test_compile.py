@@ -20,7 +20,7 @@ _SCHEMA_PATH = (
     / "schema"
     / "visualization.schema.json"
 )
-_SCHEMA = json.loads(_SCHEMA_PATH.read_text())
+_SCHEMA = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
 _GOLDEN = Path(__file__).parent / "golden" / "bell_basic.json"
 
 
@@ -60,7 +60,7 @@ def test_schema_width_matches_the_qubit_cap():
 
 def test_bell_golden(basic_backend):
     data = compile(basic_backend, bell())
-    assert data == json.loads(_GOLDEN.read_text())
+    assert data == json.loads(_GOLDEN.read_text(encoding="utf-8"))
 
 
 def test_export_roundtrip(basic_backend):
