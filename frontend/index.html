@@ -35,8 +35,9 @@
   select { cursor: pointer; max-width: 280px; }
   input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
   .step-label { color: var(--muted); min-width: 96px; text-align: right; }
-  main { flex: 1; display: grid; grid-template-columns: 1fr 300px; min-height: 0; }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  main { flex: 1; display: grid; grid-template-columns: 260px 1fr 300px; min-height: 0; }
+  @media (max-width: 1120px) { main { grid-template-columns: 1fr 300px; } .aside-left { display: none; } }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } .aside-right { display: none; } }
   .stage-wrap { position: relative; min-height: 0; }
   #stage { position: absolute; inset: 0; }
   #stage canvas { display: block; width: 100%; height: 100%; }
@@ -60,12 +61,26 @@
   .panel-hint { color: var(--muted); font-size: 11px; margin: 0 0 9px; }
   legend { position: absolute; bottom: 8px; left: 8px; z-index: 2; display: flex; gap: 12px; font-size: 11px; color: var(--muted); }
   legend i { display: inline-block; width: 10px; height: 3px; margin-right: 4px; vertical-align: middle; }
-  aside { background: var(--panel); border-left: 1px solid var(--border); padding: 14px; overflow: auto; }
+  aside { background: var(--panel); padding: 14px; overflow: auto; }
+  .aside-left { border-right: 1px solid var(--border); }
+  .aside-right { border-left: 1px solid var(--border); }
   aside h2 { margin: 0 0 10px; font-size: 14px; }
   aside table { width: 100%; border-collapse: collapse; font-size: 12px; }
   aside td { padding: 3px 0; vertical-align: top; }
   aside td:first-child { color: var(--muted); padding-right: 8px; white-space: nowrap; }
-  .op-badge { display: inline-block; background: var(--accent); color: #fff; border-radius: 4px; padding: 1px 7px; font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  .kv td:last-child { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+  .op-line { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .op-badge { display: inline-block; background: var(--accent); color: #fff; border-radius: 4px; padding: 2px 9px; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .5px; }
+  .op-badge.op-1q { background: #2b6cb0; }
+  .op-badge.op-2q { background: #b7791f; }
+  .op-badge.op-vz { background: #6b46c1; }
+  .op-detail { color: var(--muted); font-size: 11px; margin: 0 0 10px; }
+  .qchip { display: inline-block; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 6px; margin-right: 4px; font-variant-numeric: tabular-nums; }
+  .qubits { margin-top: 10px; font-size: 11px; }
+  .qubits th { color: var(--muted); font-weight: 600; text-align: right; padding: 0 0 4px; }
+  .qubits th:first-child { text-align: left; }
+  .qubits td { text-align: right; padding: 2px 0; font-variant-numeric: tabular-nums; }
+  .qubits td:first-child { text-align: left; color: var(--text); }
   .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
   .drop { outline: 2px dashed var(--accent); outline-offset: -8px; }
   .error { color: var(--x); font-size: 13px; padding: 0 20px; }
@@ -94,11 +109,8 @@
   .measure-panel td { padding: 1px 0; }
   .measure-panel td:first-child { color: var(--muted); white-space: nowrap; padding-right: 8px; }
   .fidelity {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    z-index: 3; width: min(340px, 46%); pointer-events: none;
-    background: rgba(19, 26, 43, 0.85); border: 1px solid var(--border);
-    border-radius: 9px; padding: 6px 12px 7px; text-align: center;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
+    position: relative; margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border);
   }
   .fidelity .fidelity-head {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -148,7 +160,6 @@
 <body>
 <header>
   <h1>QViz · iones atrapados</h1>
-  <div class="meta" id="backendMeta">cargando…</div>
   <div class="perf" id="perfMeta"></div>
 </header>
 
@@ -161,16 +172,32 @@
 <div class="error" id="error"></div>
 
 <main>
+  <aside class="aside-left">
+    <section class="panel">
+      <button class="panel-head" type="button" aria-expanded="true">
+        <span data-i18n="simulation">Detalles de la simulación</span>
+        <span class="chevron">&#9662;</span>
+      </button>
+      <div class="panel-body">
+        <table class="kv">
+          <tr><td data-i18n="model">Modelo</td><td id="simModel">—</td></tr>
+          <tr><td data-i18n="initialFidelity">Fidelidad inicial</td><td id="simInitial">—</td></tr>
+          <tr><td data-i18n="qubits">Qubits</td><td id="simQubits">—</td></tr>
+          <tr><td data-i18n="steps">Pasos</td><td id="simSteps">—</td></tr>
+        </table>
+        <div class="fidelity" id="fidelity">
+          <div class="fidelity-head">
+            <span class="fidelity-label" id="fidelityLabel">Fidelidad</span>
+            <span class="fidelity-value" id="healthValue">100.00%</span>
+          </div>
+          <div class="fidelity-bar"><span id="healthFill"></span></div>
+          <div class="fidelity-error">error <b id="fidelityErrorValue">0.00%</b></div>
+        </div>
+      </div>
+    </section>
+  </aside>
   <section class="stage-wrap">
     <div id="stage"></div>
-    <div class="fidelity" id="fidelity">
-      <div class="fidelity-head">
-        <span class="fidelity-label" id="fidelityLabel">Fidelidad</span>
-        <span class="fidelity-value" id="healthValue">100.00%</span>
-      </div>
-      <div class="fidelity-bar"><span id="healthFill"></span></div>
-      <div class="fidelity-error">error <b id="fidelityErrorValue">0.00%</b></div>
-    </div>
     <div class="measure-panel hidden" id="measurePanel"></div>
     <legend>
       <span><i style="background:#ff6b6b"></i>x</span>
@@ -179,7 +206,7 @@
       <span>arrastrar: rotar · rueda: zoom · WASD + espacio/ctrl: mover</span>
     </legend>
   </section>
-  <aside id="details">
+  <aside class="aside-right" id="details">
     <section class="panel">
       <button class="panel-head" type="button" aria-expanded="true">
         <span data-i18n="probabilities">Probabilidades</span>

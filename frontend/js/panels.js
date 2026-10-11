@@ -33,55 +33,109 @@ export function updateReadouts(step) {
   }
 }
 
-/** Show every field of the current step in the side panel. */
+/** Show every field of the current step in the step-details panel. */
 export function renderDetails(step) {
   const content = document.getElementById("detailsContent");
   if (!step) {
-    content.innerHTML =
-      '<p class="hint">Estado inicial: todos los iones en |0⟩.</p>';
+    content.innerHTML = `<p class="hint">${TEXT.initial}</p>`;
     return;
   }
-  const rows = [
-    ["operación", `<span class="op-badge">${step.operation}</span>`],
-    ["targets", "[" + step.targets.join(", ") + "]"],
-  ];
+  const count = state.data.total_qubits;
+  const operation = OPERATIONS[step.operation] || { name: step.operation, kind: "1q" };
+  const detail = operation.kind === "2q" ? TEXT.op2q
+    : operation.kind === "vz" ? TEXT.opvz : TEXT.op1q;
+
+  let html = `<div class="op-line"><span class="op-badge op-${operation.kind}">${operation.name}</span></div>` +
+    `<p class="op-detail">${detail}</p>` +
+    `<table class="kv"><tr><td>${TEXT.targets}</td><td>` +
+    step.targets.map((t) => `<span class="qchip">q${t}</span>`).join(" ") + "</td></tr>";
   if (step.phases) {
-    rows.push(["phases (rad)", step.phases.map((p) => p.toFixed(4)).join(", ")]);
+    html += `<tr><td>${TEXT.phases}</td><td>${step.phases.map((p) => p.toFixed(4)).join(", ")}</td></tr>`;
   }
   if (typeof step.angle === "number") {
-    rows.push(["angle (turnos)", step.angle.toFixed(4)]);
+    html += `<tr><td>${TEXT.angle}</td><td>${step.angle.toFixed(4)}</td></tr>`;
   }
-  rows.push(["fid. acumulada", step.cumulative_fidelity.toFixed(4) + " %"]);
-  rows.push(["costo acum.", "$" + step.cumulative_cost.toFixed(6)]);
-  rows.push(["virtual_z", "[" + step.virtual_z.map((v) => v.toFixed(3)).join(", ") + "]"]);
-  rows.push(["inactividad", "[" + step.inactivity.join(", ") + "]"]);
-  rows.push(["fidelidades", "[" + step.fidelities.map((f) => f.toFixed(2)).join(", ") + "]"]);
-  rows.push(["vibración", "[" + step.vibration.map((v) => v.toFixed(3)).join(", ") + "]"]);
-  content.innerHTML = "<table>" +
-    rows.map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`).join("") +
-    "</table>";
+  html += `<tr><td>${TEXT.cumFidelity}</td><td>${step.cumulative_fidelity.toFixed(4)} %</td></tr>`;
+  html += `<tr><td>${TEXT.cumCost}</td><td>$${step.cumulative_cost.toFixed(6)}</td></tr>`;
+  html += "</table>";
+
+  html += `<table class="qubits"><thead><tr><th></th><th>${TEXT.virtualZ}</th>` +
+    `<th>${TEXT.inactivity}</th><th>${TEXT.fidelity}</th><th>${TEXT.vibration}</th></tr></thead><tbody>`;
+  for (let q = 0; q < count; q++) {
+    html += `<tr><td>q${q}</td><td>${step.virtual_z[q].toFixed(2)}</td>` +
+      `<td>${step.inactivity[q]}</td><td>${step.fidelities[q].toFixed(2)}</td>` +
+      `<td>${step.vibration[q].toFixed(3)}</td></tr>`;
+  }
+  html += "</tbody></table>";
+  content.innerHTML = html;
+}
+
+/** Fill the simulation details (model, initial fidelity, size) in the left panel. */
+export function updateSimulationDetails() {
+  if (!state.data) return;
+  document.getElementById("simModel").textContent = state.data.backend;
+  document.getElementById("simInitial").textContent = state.data.initial_fidelity + "%";
+  document.getElementById("simQubits").textContent = String(state.data.total_qubits);
+  document.getElementById("simSteps").textContent = String(state.data.steps.length);
+}
+
+/**
+ * Refresh the label of the play button: *Pausa* while it plays, *Reiniciar*
+ * when the simulation is over (it makes no sense to resume it), *Reanudar* in
+ * the middle, and *Play* at the start.
+ */
+export function refreshPlayButton() {
+  const button = document.getElementById("play");
+  if (!button) return;
+  if (state.playing) button.textContent = "Pausa";
+  else if (state.data && state.stepIndex >= state.data.steps.length) button.textContent = "Reiniciar";
+  else button.textContent = state.stepIndex > 0 ? "Reanudar" : "Play";
 }
 
 // The word for the fidelity, in the language of the page (`<html lang>`).
 const PAGE_LANG =
   (typeof document !== "undefined" && document.documentElement
     && document.documentElement.lang) || "es";
-const FIDELITY_LABEL = PAGE_LANG.toLowerCase().startsWith("en")
-  ? "Fidelity"
-  : "Fidelidad";
+const ENGLISH = PAGE_LANG.toLowerCase().startsWith("en");
+const FIDELITY_LABEL = ENGLISH ? "Fidelity" : "Fidelidad";
 
-// The texts of the side panels, in the language of the page.
-const TEXT = PAGE_LANG.toLowerCase().startsWith("en")
+// The texts of the panels, in the language of the page.
+const TEXT = ENGLISH
   ? {
       probabilities: "Probabilities",
       probabilitiesHint: "p(|1\u27e9) = probability of measuring 1 on each qubit.",
       details: "Step details",
+      simulation: "Simulation details",
+      model: "Model", initialFidelity: "Initial fidelity", qubits: "Qubits", steps: "Steps",
+      initial: "Initial state: every ion in |0\u27e9.",
+      targets: "Target qubits",
+      phases: "Phases (rad)", angle: "Angle (turns)",
+      cumFidelity: "Accumulated fidelity", cumCost: "Accumulated cost",
+      virtualZ: "VirtualZ", inactivity: "Inact.", fidelity: "Fid.", vibration: "Vibr.",
+      op1q: "single-qubit gate", op2q: "two-qubit entangling gate", opvz: "virtual phase rotation",
     }
   : {
       probabilities: "Probabilidades",
       probabilitiesHint: "p(|1\u27e9) = probabilidad de medir 1 en cada qubit.",
       details: "Detalle del paso",
+      simulation: "Detalles de la simulación",
+      model: "Modelo", initialFidelity: "Fidelidad inicial", qubits: "Qubits", steps: "Pasos",
+      initial: "Estado inicial: todos los iones en |0\u27e9.",
+      targets: "Qubits objetivo",
+      phases: "Fases (rad)", angle: "Ángulo (turnos)",
+      cumFidelity: "Fidelidad acumulada", cumCost: "Costo acumulado",
+      virtualZ: "VirtualZ", inactivity: "Inact.", fidelity: "Fidel.", vibration: "Vibr.",
+      op1q: "compuerta de un qubit", op2q: "compuerta entrelazadora de dos qubits", opvz: "rotación virtual de fase",
     };
+
+// The readable name and family of each native operation.
+const OPERATIONS = {
+  gpi: { name: "GPI", kind: "1q" },
+  gpi2: { name: "GPI2", kind: "1q" },
+  ms: { name: "MS", kind: "2q" },
+  zz: { name: "ZZ", kind: "2q" },
+  virtual_z: { name: "VirtualZ", kind: "vz" },
+};
 
 /** Translate the panel titles and wire the collapse of each panel. */
 export function initPanels() {

@@ -6,14 +6,16 @@ import { laserColorFor, laserPulseFor } from "./laser.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
-import { escapeHtml, setError, setStatus } from "./utils.js";
+import { setError, setStatus } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
 import {
   buildReadouts,
   closeMeasurement,
+  refreshPlayButton,
   renderDetails,
   updateHealth,
   updateReadouts,
+  updateSimulationDetails,
 } from "./panels.js";
 
 /** The initial state: every qubit in |0>. It is step 0, which is not in the JSON. */
@@ -30,9 +32,7 @@ export function loadData(obj) {
   state.stepIndex = 0;
   buildScene(state.data.total_qubits);
   buildReadouts(state.data.total_qubits);
-  document.getElementById("backendMeta").innerHTML =
-    `<b>${escapeHtml(state.data.backend)}</b> · fidelidad inicial ` +
-    `<b>${state.data.initial_fidelity}%</b>`;
+  updateSimulationDetails();
   const slider = document.getElementById("slider");
   slider.max = String(state.data.steps.length);
   slider.value = "0";
@@ -73,8 +73,7 @@ export function updateStep(index, instant = false) {
   document.getElementById("slider").value = String(state.stepIndex);
   document.getElementById("stepLabel").textContent =
     `paso ${state.stepIndex} / ${state.data.steps.length}`;
-  document.getElementById("play").textContent =
-    state.playing ? "Pausa" : (state.stepIndex > 0 ? "Reanudar" : "Play");
+  refreshPlayButton();
 
   const step = state.stepIndex === 0 ? null : state.data.steps[state.stepIndex - 1];
   const states = step ? step.states : initialState(state.data.total_qubits);

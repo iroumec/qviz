@@ -5,7 +5,7 @@ import { PLAY_INTERVAL_MS, PLAY_MARGIN_MS } from "./config.js";
 import { state } from "./state.js";
 import { setError } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
-import { runMeasurement } from "./panels.js";
+import { refreshPlayButton, runMeasurement } from "./panels.js";
 
 // The wait before the next step: the base interval, or the laser pulse of the
 // current step (plus a margin) when the gate fires one, so a long MS or ZZ
@@ -29,15 +29,19 @@ function schedulePlay() {
 function startPlay() {
   if (!state.data) return;
   state.playing = true;
-  document.getElementById("play").textContent = "Pausa";
+  refreshPlayButton();
   schedulePlay();
 }
 
 function stopPlay() {
   state.playing = false;
-  document.getElementById("play").textContent =
-    state.stepIndex > 0 ? "Reanudar" : "Play";
+  refreshPlayButton();
   clearTimeout(state.playTimer);
+}
+
+/** True when the last step has been reached, so nothing is left to resume. */
+function isFinished() {
+  return Boolean(state.data) && state.stepIndex >= state.data.steps.length;
 }
 
 function readFile(file) {
@@ -66,7 +70,14 @@ export function initControls() {
     updateStep(state.stepIndex + 1);
   });
   document.getElementById("play").addEventListener("click", () => {
-    state.playing ? stopPlay() : startPlay();
+    if (state.playing) {
+      stopPlay();
+    } else if (isFinished()) {
+      updateStep(0);
+      startPlay();
+    } else {
+      startPlay();
+    }
   });
   document.getElementById("reset").addEventListener("click", () => {
     stopPlay();

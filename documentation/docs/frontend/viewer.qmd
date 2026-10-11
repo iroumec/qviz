@@ -163,24 +163,29 @@ The scene is set inside an ultra-high-vacuum chamber on an optical table
   lasts three times longer (see the laser paragraph above).
 - The probability `p(|1⟩)` of each qubit — the probability of measuring **1**,
   not 0 — is shown with a bar in the **Probabilities** panel.
-- A small **fidelity panel** at the top of the scene shows the accumulated
-  fidelity of the current step: the word for it (*Fidelidad* or *Fidelity*, from
-  the language of the page), the percentage, a bar and the **total error** (the
-  fidelity that was lost, `100 − fidelity`). The bar is green above 99 %, amber
-  above 95 % and red below, and the error value takes the same colour.
+- A **Simulation details** panel on the left shows the model (the backend), the
+  initial fidelity, the number of qubits and the number of steps, and the
+  accumulated fidelity of the current step: the word for it (*Fidelidad* or
+  *Fidelity*, from the language of the page), the percentage, a bar and the
+  **total error** (the fidelity that was lost, `100 − fidelity`). The bar is
+  green above 99 %, amber above 95 % and red below, and the error value takes the
+  same colour.
 - When a gate is applied, the fidelity that it subtracted (the difference with
   the previous step, for example `−0.53`) is popped over the panel as a red
   number that floats up and fades, like a damage number in a game. At step 0 the
   panel shows the initial fidelity of the backend.
-- The full detail of the step is shown in the **Step details** panel: the
-  operation, the targets, the phases, the angle, the accumulated fidelity, the
-  accumulated cost, the virtual Z rotation, the inactivity, the fidelities and
-  the vibration.
+- The **Step details** panel shows a large **operation badge** (colour-coded by
+  gate family) with a one-line description, the target qubits, and the fields of
+  the step with readable names (*VirtualZ*, *Fidelidad acumulada*, *Costo
+  acumulado*, …). The per-qubit fields (VirtualZ, inactivity, fidelity and
+  vibration) are shown as a table with one row per qubit, so every value is read
+  at a glance.
 
-The **Probabilities** and **Step details** panels live in the sidebar on the
-right. Each one is collapsible: its title is a button, and clicking it shows or
-hides the body. The titles follow the language of the page (*Probabilidades* /
-*Probabilities* and *Detalle del paso* / *Step details*).
+The **Simulation details** panel is on the left; the **Probabilities** and
+**Step details** panels are on the right. Each one is collapsible: its title is a
+button, and clicking it shows or hides the body. The titles follow the language
+of the page (*Detalles de la simulación* / *Simulation details*, *Probabilidades*
+/ *Probabilities* and *Detalle del paso* / *Step details*).
 
 The `+z` axis is drawn upwards, and `|0⟩` is at the top. This follows the
 standard convention that is used by the backend.
@@ -243,7 +248,7 @@ page; the file selector, the load button and the measurement are at the top.
 | Load circuit | Opens the file selector for an OpenQASM file (`.qasm`). |
 | Example | Loads the small example that is embedded in the page. |
 | Left arrow | Moves to the previous step. |
-| Play / Pause | Plays the steps automatically, or pauses. When it is paused in the middle it reads *Reanudar*. |
+| Play / Pause | Plays the steps automatically, or pauses. It reads *Reanudar* when paused in the middle and *Reiniciar* once the last step is reached. |
 | Right arrow | Moves to the next step. |
 | Reset | Stops the play and returns to step 0. |
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
@@ -343,7 +348,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/measurement.js` | Runs the state-dependent fluorescence animation (readout beam, flares, photons and state badges). |
 | `js/environment.js` | Builds the vacuum chamber and optical table (breadboard, coils, collimators, viewport) and sets the fog and lights. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
-| `js/panels.js` | The readouts, the detail of the step, the fidelity panel and the measurement. |
+| `js/panels.js` | The panels (probabilities, simulation details, step details), the fidelity and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
 | `js/controls.js` | The playback bar (step buttons, play, reset, slider) and the drag and drop. |
 
