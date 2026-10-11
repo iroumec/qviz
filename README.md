@@ -21,8 +21,6 @@ It runs entirely in the browser on [Qollab](documentation/docs/frontend/qollab.q
 (Python through Pyodide, the viewer in JavaScript with three.js), and also on
 your own computer with one command.
 
-![The Mølmer–Sørensen gate: the orange phonon bus joins the two ions, and the fidelity drops](documentation/images/viewer-ms.png)
-
 ## Why it matters and who it is for
 
 A quantum program is written with logical gates (`h`, `cx`, `rz`). A trapped-ion
