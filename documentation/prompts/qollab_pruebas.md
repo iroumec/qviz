@@ -47,7 +47,7 @@ Elegí un backend en *Select QPU* (empezá con **Built-in**), apretá Run y abr�
 | 10 | Cargar un `.qasm` con un `if`, un `reset`, una compuerta `opaque`, una inexistente (`rzz`) o 17 qubits | La línea roja de errores dice por qué no se puede (`control flow … is not supported`, `reset … not supported`, `opaque gates have no definition`, `gate 'rzz' is not defined`, `maximum is 16`). |
 | 11 | Botón **Vista** (arriba a la derecha): perfil *Enfoque en el vector*, luego *Daltonismo*, luego *Restablecer* | El panel abre y cierra (clic, Esc, clic afuera). Con *Enfoque* quedan solo las esferas y se ve bien el vector; con *Daltonismo* cambian los colores de los ejes y de la leyenda; *Restablecer* vuelve al defecto. |
 | 12 | Recargar la página después de elegir un perfil | Si Qollab deja usar `localStorage`, recuerda el perfil; si no, arranca con el defecto sin errores. |
-| 13 | Botones de la cámara (abajo a la derecha de la escena): mantener apretado girar, subir/bajar, +/− y centrar | La cámara se mueve sin usar WASD. (La D ya se confirmó que anda.) |
+| 13 | Cámara solo con el mouse: botones de abajo a la derecha de la escena (girar, inclinar, mover, zoom, centrar) manteniendo apretado, y arrastrar con el botón derecho | La cámara gira, se mueve y hace zoom sin usar el teclado; el clic derecho no abre el menú del navegador. |
 
 **Si el 9 falla con OpenQASM 3** y dice `OpenQASM 3 needs the package qiskit-qasm3-import`, Qollab no instaló `qiskit-qasm3-import` (ni `openqasm3`, `antlr4-python3-runtime`). OpenQASM 2 sigue funcionando; hay que decidir qué hacer con el 3 y pegar el mensaje exacto.
 

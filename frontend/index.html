@@ -50,10 +50,11 @@
   .view-foot { display: flex; justify-content: flex-end; padding-top: 10px; border-top: 1px solid var(--border); }
   .camera-pad {
     position: absolute; right: 12px; bottom: 32px; z-index: 2; display: grid;
-    grid-template-columns: repeat(4, 34px); gap: 5px; padding: 6px;
+    grid-template-columns: auto repeat(4, 34px); gap: 5px; padding: 6px; align-items: center;
     background: rgba(33, 24, 36, 0.82); border: 1px solid var(--border); border-radius: var(--radius);
   }
   .camera-pad[hidden] { display: none; }
+  .pad-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-right: 4px; }
   .camera-pad button { padding: 0; height: 32px; font-size: 15px; line-height: 1; touch-action: none; user-select: none; }
   .camera-pad button:active { border-color: var(--accent); background: var(--panel-2); }
   * { box-sizing: border-box; }
@@ -335,16 +336,27 @@
       <span><i style="background:var(--ax)"></i>x</span>
       <span><i style="background:var(--az)"></i><span data-i18n="zAxis">z (|0⟩ arriba)</span></span>
       <span><i style="background:var(--ay)"></i>y</span>
-      <span>arrastrar: rotar · rueda: zoom · WASD + espacio/ctrl: mover</span>
+      <span>arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover</span>
     </legend>
     <div class="camera-pad" id="cameraPad" role="group" aria-label="Cámara">
+      <span class="pad-label" data-cam-label="rotate">Girar</span>
       <button type="button" data-cam="rotateLeft" aria-label="Girar a la izquierda">&#10226;</button>
-      <button type="button" data-cam="tiltUp" aria-label="Subir la vista">&#9650;</button>
-      <button type="button" data-cam="zoomIn" aria-label="Acercar">+</button>
-      <button type="button" data-cam="reset" aria-label="Centrar la cámara">&#8962;</button>
       <button type="button" data-cam="rotateRight" aria-label="Girar a la derecha">&#10227;</button>
+      <i></i><i></i>
+      <span class="pad-label" data-cam-label="tilt">Inclinar</span>
+      <button type="button" data-cam="tiltUp" aria-label="Subir la vista">&#9650;</button>
       <button type="button" data-cam="tiltDown" aria-label="Bajar la vista">&#9660;</button>
+      <i></i><i></i>
+      <span class="pad-label" data-cam-label="move">Mover</span>
+      <button type="button" data-cam="left" aria-label="Mover a la izquierda">&larr;</button>
+      <button type="button" data-cam="right" aria-label="Mover a la derecha">&rarr;</button>
+      <button type="button" data-cam="up" aria-label="Mover hacia arriba">&uarr;</button>
+      <button type="button" data-cam="down" aria-label="Mover hacia abajo">&darr;</button>
+      <span class="pad-label" data-cam-label="zoom">Zoom</span>
+      <button type="button" data-cam="zoomIn" aria-label="Acercar">+</button>
       <button type="button" data-cam="zoomOut" aria-label="Alejar">&minus;</button>
+      <button type="button" data-cam="reset" aria-label="Centrar la cámara">&#8962;</button>
+      <i></i>
     </div>
     <div class="sr-only" id="stepLive" role="status" aria-live="polite"></div>
   </section>

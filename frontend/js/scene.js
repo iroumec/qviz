@@ -386,24 +386,52 @@ export function resetCamera() {
   updateCamera();
 }
 
-/** Drag to rotate the chain, the wheel to zoom, the keyboard to move. */
+// How far the target moves for each pixel of a right-button drag, as a fraction of
+// the distance of the camera (about one pixel of the scene).
+const PAN_PER_PIXEL = 0.0016;
+
+/** Slide the orbit target in the plane of the screen by a drag of (dx, dy) pixels. */
+function panCamera(dx, dy) {
+  const camera = state.three.camera;
+  camera.updateMatrixWorld();
+  const scale = state.orbit.fitRadius * state.orbit.zoom * PAN_PER_PIXEL;
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  const target = state.orbit.target;
+  // The scene follows the pointer: dragging to the right moves the target left.
+  target.x += (-right.x * dx + up.x * dy) * scale;
+  target.y += (-right.y * dx + up.y * dy) * scale;
+  target.z += (-right.z * dx + up.z * dy) * scale;
+  updateCamera();
+}
+
+/**
+ * Drag with the left button to rotate the chain and with the right button to move
+ * it, the wheel to zoom, and the keyboard or the camera pad to do the same.
+ */
 function addCameraControls() {
   const canvas = state.three.renderer.domElement;
-  let dragging = false;
+  let dragging = null; // "rotate", "pan" or null
   let previous = { x: 0, y: 0 };
 
   canvas.addEventListener("pointerdown", (event) => {
-    dragging = true;
+    dragging = event.button === 2 ? "pan" : "rotate";
     previous = { x: event.clientX, y: event.clientY };
   });
-  window.addEventListener("pointerup", () => { dragging = false; });
+  // The right button moves the camera: the menu of the browser would be in the way.
+  canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  window.addEventListener("pointerup", () => { dragging = null; });
   window.addEventListener("pointermove", (event) => {
     if (!dragging) return;
-    state.orbit.azimuth -= (event.clientX - previous.x) * 0.008;
-    state.orbit.elevation = Math.max(
-      -1.4, Math.min(1.4, state.orbit.elevation + (event.clientY - previous.y) * 0.008)
-    );
+    const dx = event.clientX - previous.x;
+    const dy = event.clientY - previous.y;
     previous = { x: event.clientX, y: event.clientY };
+    if (dragging === "pan") {
+      panCamera(dx, dy);
+      return;
+    }
+    state.orbit.azimuth -= dx * 0.008;
+    state.orbit.elevation = Math.max(-1.4, Math.min(1.4, state.orbit.elevation + dy * 0.008));
     updateCamera();
   });
   canvas.addEventListener("wheel", (event) => {

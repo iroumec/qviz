@@ -282,7 +282,8 @@ page; the file selector, the load button and the measurement are at the top.
 | Step counter | Shows the current step and the total (`paso 3 / 24`). |
 | Medir | Measures the current step and shows the distribution of the results. |
 | shots | The number of shots used by Medir (1024 by default). |
-| Drag | Rotates the camera around the chain. |
+| Drag (left button) | Rotates the camera around the chain. |
+| Drag (right button) | Moves the camera in the plane of the screen; the menu of the browser does not open. |
 | Wheel | Zooms in and out. |
 | `W`, `A`, `S`, `D` | Moves the camera on the horizontal plane. |
 | Space | Flies the camera up. |
@@ -334,10 +335,13 @@ holds the values and imports no module of the scene; `scene.js` applies them
 (`applyViewToScene`: the uniforms of the sphere shader, the visibility of the
 groups, the lights and the exposure) and `viewpanel.js` draws the panel.
 
-**Camera buttons.** The pad at the bottom right of the scene rotates, tilts,
-zooms and centres the camera while a button is held, with the mouse, the touch
-screen or the keyboard (Enter or Space on a focused button). The camera can be
-moved without the letter keys. The step is announced to screen readers in a
+**The camera with the mouse alone.** Everything that the keyboard does can be
+done with the pointer: the left button drags to rotate, the right button drags
+to move, and the wheel zooms. The pad at the bottom right of the scene repeats
+it with buttons, in four rows: rotate, tilt, move (left, right, up, down) and
+zoom with the centre button. A button keeps acting while it is held, with the
+mouse, the touch screen or the keyboard (Enter or Space on a focused button), so
+the camera can be moved without the letter keys and without a right button. The step is announced to screen readers in a
 polite live region (*Paso 3 de 7: GPI2 en q0. Fidelidad 99.44 %.*).
 
 ## The circuit timeline {.unnumbered}

@@ -1,4 +1,4 @@
-// The on-screen camera buttons: rotate, tilt, zoom and center. They work with the
+// The on-screen camera buttons: rotate, tilt, move, zoom and center. They work with the
 // pointer (hold to keep moving), with the touch screen and with the keyboard
 // (Enter or Space), so the camera can be moved without the letter keys.
 
@@ -10,11 +10,16 @@ const LABELS = isEnglish()
       rotateLeft: "Rotate left", rotateRight: "Rotate right", tiltUp: "Tilt up",
       tiltDown: "Tilt down", zoomIn: "Zoom in", zoomOut: "Zoom out",
       reset: "Center the camera", group: "Camera",
+      left: "Move left", right: "Move right", up: "Move up", down: "Move down",
+      rotate: "Rotate", tilt: "Tilt", move: "Move", zoom: "Zoom",
     }
   : {
       rotateLeft: "Girar a la izquierda", rotateRight: "Girar a la derecha",
       tiltUp: "Subir la vista", tiltDown: "Bajar la vista", zoomIn: "Acercar",
       zoomOut: "Alejar", reset: "Centrar la cámara", group: "Cámara",
+      left: "Mover a la izquierda", right: "Mover a la derecha",
+      up: "Mover hacia arriba", down: "Mover hacia abajo",
+      rotate: "Girar", tilt: "Inclinar", move: "Mover", zoom: "Zoom",
     };
 
 /** Wire the buttons of the camera pad and give them their text. */
@@ -23,6 +28,9 @@ export function initCameraPad() {
   if (!pad) return;
   pad.setAttribute("aria-label", LABELS.group);
 
+  for (const label of pad.querySelectorAll("[data-cam-label]")) {
+    label.textContent = LABELS[label.getAttribute("data-cam-label")];
+  }
   for (const button of pad.querySelectorAll("[data-cam]")) {
     const action = button.getAttribute("data-cam");
     button.setAttribute("aria-label", LABELS[action]);
