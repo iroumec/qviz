@@ -11,6 +11,10 @@ import {
   LASER_MIN_Y,
   LASER_MAX_Y,
   LASER_PULSE_SPEED,
+  LASER_PULSE_MS,
+  LASER_GPI_FACTOR,
+  LASER_ENTANGLER_FACTOR,
+  LASER_ENTANGLER_COLOR,
 } from "./config.js";
 import { state } from "./state.js";
 
@@ -115,6 +119,31 @@ export function laserColorFor(backend) {
     return new THREE.Color(0.8, 0.1, 1.0);
   }
   return new THREE.Color(0.5, 0.0, 0.8);
+}
+
+/**
+ * The pulse of one native operation, or ``null`` when it fires no laser.
+ *
+ * The colour is the species colour of the backend (see ``laserColorFor``) for
+ * the single-qubit gates, and the entangler colour (neon orange) for the
+ * two-qubit gates. The length is ``LASER_PULSE_MS`` for a GPI2,
+ * ``LASER_GPI_FACTOR`` times that for a GPI, and ``LASER_ENTANGLER_FACTOR``
+ * times that for MS and ZZ. The virtual Z fires nothing.
+ */
+export function laserPulseFor(operation, backend) {
+  if (operation === "gpi") {
+    return { color: laserColorFor(backend), ms: LASER_PULSE_MS * LASER_GPI_FACTOR };
+  }
+  if (operation === "gpi2") {
+    return { color: laserColorFor(backend), ms: LASER_PULSE_MS };
+  }
+  if (operation === "ms" || operation === "zz") {
+    return {
+      color: new THREE.Color(...LASER_ENTANGLER_COLOR),
+      ms: LASER_PULSE_MS * LASER_ENTANGLER_FACTOR,
+    };
+  }
+  return null;
 }
 
 /**

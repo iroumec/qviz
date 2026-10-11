@@ -44,13 +44,33 @@ violet when the species is unknown. The beam is cut by the two uniforms
 `uLaserMinY` and `uLaserMaxY`, which are set from `frontend/js/config.js`
 (`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly.
 
-A beam is **dark by default**. It is fired only for the target ions of a GPI or
-GPI2 step, and only while the step is applied: the pulse rises and falls in
-`LASER_PULSE_MS` (650 ms, in `frontend/js/config.js`), so the gate is seen as a
-laser pulse and no beam is left on. The two-qubit entanglers (MS and ZZ) and the
-virtual Z do not fire it. Each instance carries its own intensity in the
-`instanceActive` attribute, and moving to a step that does not fire the laser
-cancels a pulse that is still fading.
+A beam is **dark by default**. It is fired only for the target ions of a native
+gate, and only while the step is applied, so no beam is left on. Each instance
+carries its own intensity in the `instanceActive` attribute, and moving to a step
+that does not fire the laser cancels a pulse that is still fading.
+
+The pulse depends on the gate. The two-qubit entanglers fire both targets for
+three times the length of a GPI2, with a colour of their own (neon orange), so a
+two-qubit gate is told apart from a single-qubit one.
+
+| Gate | Ions | Colour | Duration |
+| --- | --- | --- | --- |
+| GPI2 | target | species colour | `LASER_PULSE_MS` (650 ms) |
+| GPI | target | species colour | `LASER_GPI_FACTOR × LASER_PULSE_MS` (2 ×, 1300 ms) |
+| MS, ZZ | both targets | `LASER_ENTANGLER_COLOR` (neon orange) | `LASER_ENTANGLER_FACTOR × LASER_PULSE_MS` (3 ×, 1950 ms) |
+| VirtualZ | none | — | — |
+
+The species colour is magenta for ytterbium (Aria, Harmony), green for barium
+(Forte) and violet when the species is unknown; it is returned by `laserColorFor`
+in `frontend/js/laser.js`. The length and the colour of every pulse are returned
+by `laserPulseFor` in the same file, from the constants in
+`frontend/js/config.js`. The pulse has a flat top: it rises and falls in the
+first and last 15 % of its length.
+
+The automatic play waits for the pulse to finish before it moves to the next
+step, so a long MS or ZZ pulse is never cut in the middle. The wait is
+`PLAY_INTERVAL_MS` (700 ms) between steps, or the length of the pulse plus
+`PLAY_MARGIN_MS` (150 ms) when the gate fires one.
 
 ## What is shown {.unnumbered}
 
@@ -61,13 +81,19 @@ cancels a pulse that is still fading.
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
 - A volumetric **laser beam** above each ion, from the lens down to the ion. It
-  is dark by default and fires only for the target ions of a GPI or GPI2 step.
-  Its colour is the one of the species of the backend (see above).
+  is dark by default and fires only for the target ions of a native gate: the
+  species colour for GPI and GPI2, and a neon-orange colour for MS and ZZ, which
+  lasts three times longer (see the laser paragraph above).
 - The probability `p(|1⟩)` of each qubit is shown with a small bar.
-- A **health bar** in the header shows the health of the circuit: the
-  accumulated fidelity of the current step, as a percentage. It is green above
-  99%, amber above 95%, and red below. At step 0 it shows the initial fidelity of
-  the backend.
+- A small **fidelity panel** at the top of the scene shows the accumulated
+  fidelity of the current step: the word for it (*Fidelidad* or *Fidelity*, from
+  the language of the page), the percentage, a bar and the **total error** (the
+  fidelity that was lost, `100 − fidelity`). The bar is green above 99 %, amber
+  above 95 % and red below, and the error value takes the same colour.
+- When a gate is applied, the fidelity that it subtracted (the difference with
+  the previous step, for example `−0.53`) is popped over the panel as a red
+  number that floats up and fades, like a damage number in a game. At step 0 the
+  panel shows the initial fidelity of the backend.
 - The full detail of the step is shown in a side panel: the operation, the
   targets, the phases, the angle, the accumulated fidelity, the accumulated
   cost, the virtual Z rotation, the inactivity, the fidelities and the

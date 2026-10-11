@@ -31,13 +31,29 @@ export const LASER_FRAG_URL = "../shaders/laser.frag";
 // to contain the glow around the thin core. These are the values to calibrate
 // by hand so that the beam meets the lens exactly.
 //
-// The beam is off by default. It is fired only for the target ions of a GPI or
-// GPI2 step, for LASER_PULSE_MS, so that the gate is shown as a laser pulse.
+// The beam is off by default. It is fired only for the target ions of a native
+// gate, and only while the step is applied, so that the gate is seen as a laser
+// pulse. The length of the pulse depends on the gate: a GPI2 pulse lasts
+// LASER_PULSE_MS, a GPI pulse lasts LASER_GPI_FACTOR times that, and the
+// two-qubit entanglers (MS and ZZ) last LASER_ENTANGLER_FACTOR times that.
 export const LASER_MIN_Y = 0.0;
 export const LASER_MAX_Y = 2.5;
 export const LASER_BOX = 0.6;
 export const LASER_PULSE_SPEED = 0.0;
 export const LASER_PULSE_MS = 650;
+export const LASER_GPI_FACTOR = 2;
+export const LASER_ENTANGLER_FACTOR = 3;
+
+// The colour of the two-qubit entangler laser (MS and ZZ), in linear RGB: a
+// neon orange, so a two-qubit gate is told apart from the species colour of the
+// single-qubit gates.
+export const LASER_ENTANGLER_COLOR = [1.0, 0.5, 0.05];
+
+// The automatic play. It waits at least PLAY_INTERVAL_MS between steps, and
+// waits for the laser pulse of the step to finish (plus PLAY_MARGIN_MS) when
+// the gate fires one, so a long pulse (MS or ZZ) is never cut in the middle.
+export const PLAY_INTERVAL_MS = 700;
+export const PLAY_MARGIN_MS = 150;
 
 export const MANIFEST_URL = "../out/manifest.json";
 export const OUT_URL = "../out/";

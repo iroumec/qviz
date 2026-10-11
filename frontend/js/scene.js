@@ -221,15 +221,17 @@ function onResize() {
 }
 
 /**
- * The intensity of the laser of one ion at this time: a sine bump that starts
- * when the step fired it (``laserStart``) and returns to zero at ``laserEnd``.
- * It is zero when the ion was not fired, so the beam is dark at rest.
+ * The intensity of the laser of one ion at this time: a flat-top pulse that
+ * starts when the step fired it (``laserStart``) and returns to zero at
+ * ``laserEnd``. It rises and falls in the first and last 15 % of the pulse, and
+ * is zero when the ion was not fired, so the beam is dark at rest.
  */
 function laserIntensity(qubit, time) {
   const span = qubit.laserEnd - qubit.laserStart;
   if (span <= 0 || time >= qubit.laserEnd) return 0;
   const progress = Math.min(1, Math.max(0, (time - qubit.laserStart) / span));
-  return Math.sin(Math.PI * progress);
+  const ramp = 0.15;
+  return Math.min(1, progress / ramp, (1 - progress) / ramp);
 }
 
 export function animate(time) {

@@ -76,18 +76,47 @@
   .measure-panel table { width: 100%; border-collapse: collapse; font-size: 11px; }
   .measure-panel td { padding: 1px 0; }
   .measure-panel td:first-child { color: var(--muted); white-space: nowrap; padding-right: 8px; }
-  .health { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-  .health .health-bar {
-    width: 170px; height: 10px; background: #101728; border: 1px solid var(--border);
+  .fidelity {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    z-index: 3; width: min(340px, 46%); pointer-events: none;
+    background: rgba(19, 26, 43, 0.85); border: 1px solid var(--border);
+    border-radius: 9px; padding: 6px 12px 7px; text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
+  }
+  .fidelity .fidelity-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .fidelity .fidelity-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .fidelity .fidelity-value {
+    font-size: 17px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; color: var(--text);
+  }
+  .fidelity .fidelity-bar {
+    height: 9px; background: #101728; border: 1px solid var(--border);
     border-radius: 5px; overflow: hidden;
   }
-  .health .health-bar > span {
+  .fidelity .fidelity-bar > span {
     display: block; height: 100%; width: 100%; background: var(--y);
-    transition: width .2s ease, background .2s ease;
+    transition: width .25s ease, background .25s ease;
   }
-  .health .health-value {
-    color: var(--text); min-width: 54px; text-align: right;
-    font-variant-numeric: tabular-nums;
+  .fidelity .fidelity-error { margin-top: 5px; font-size: 11px; color: var(--muted); }
+  .fidelity .fidelity-error b {
+    color: var(--text); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+  .fidelity .fidelity-float {
+    position: absolute; left: 50%; top: 0; z-index: 1;
+    font-size: 20px; font-weight: 800; color: var(--x);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7); pointer-events: none;
+    animation: fidelity-float 1.1s ease-out forwards;
+  }
+  @keyframes fidelity-float {
+    0%   { opacity: 0; transform: translate(-50%, 8px) scale(0.7); }
+    18%  { opacity: 1; transform: translate(-50%, -2px) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -36px) scale(1); }
   }
 </style>
 <script type="importmap">
@@ -103,11 +132,6 @@
 <header>
   <h1>QViz · iones atrapados</h1>
   <div class="meta" id="backendMeta">cargando…</div>
-  <div class="health" id="health">
-    <span>salud del circuito</span>
-    <div class="health-bar"><span id="healthFill"></span></div>
-    <span class="health-value" id="healthValue">100.00%</span>
-  </div>
   <div class="perf" id="perfMeta"></div>
 </header>
 
@@ -128,6 +152,14 @@
   <section class="stage-wrap">
     <div class="readouts" id="readouts"></div>
     <div id="stage"></div>
+    <div class="fidelity" id="fidelity">
+      <div class="fidelity-head">
+        <span class="fidelity-label" id="fidelityLabel">Fidelidad</span>
+        <span class="fidelity-value" id="healthValue">100.00%</span>
+      </div>
+      <div class="fidelity-bar"><span id="healthFill"></span></div>
+      <div class="fidelity-error">error <b id="fidelityErrorValue">0.00%</b></div>
+    </div>
     <div class="measure-panel hidden" id="measurePanel"></div>
     <legend>
       <span><i style="background:#ff6b6b"></i>x</span>

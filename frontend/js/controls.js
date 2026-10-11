@@ -1,28 +1,42 @@
 // The controls of the viewer: the buttons, the slider, and the loading of a
 // circuit file (OpenQASM) with the button or by dropping it.
 
+import { PLAY_INTERVAL_MS, PLAY_MARGIN_MS } from "./config.js";
 import { state } from "./state.js";
 import { setError } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { runMeasurement } from "./panels.js";
 
-function startPlay() {
-  if (!state.data) return;
-  state.playing = true;
-  document.getElementById("play").textContent = "Pausa";
-  state.playTimer = setInterval(() => {
+// The wait before the next step: the base interval, or the laser pulse of the
+// current step (plus a margin) when the gate fires one, so a long MS or ZZ
+// pulse is not cut in the middle.
+function playDelay() {
+  return Math.max(PLAY_INTERVAL_MS, state.pulseMs + PLAY_MARGIN_MS);
+}
+
+function schedulePlay() {
+  state.playTimer = setTimeout(() => {
+    if (!state.playing) return;
     if (state.stepIndex >= state.data.steps.length) {
       stopPlay();
       return;
     }
     updateStep(state.stepIndex + 1);
-  }, 700);
+    schedulePlay();
+  }, playDelay());
+}
+
+function startPlay() {
+  if (!state.data) return;
+  state.playing = true;
+  document.getElementById("play").textContent = "Pausa";
+  schedulePlay();
 }
 
 function stopPlay() {
   state.playing = false;
   document.getElementById("play").textContent = "Play";
-  clearInterval(state.playTimer);
+  clearTimeout(state.playTimer);
 }
 
 function readFile(file) {

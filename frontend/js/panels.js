@@ -1,12 +1,17 @@
-// The panels around the scene: the readouts, the detail of the step, the health
-// bar, and the measurement of the current step.
+// The panels around the scene: the readouts, the detail of the step, the
+// fidelity panel and the measurement.
 
 import { sampleStep } from "./host.js";
 import { state } from "./state.js";
 import { setError } from "./utils.js";
 
+// The step of the last fidelity number that was popped, so a number is shown
+// once per step and not again while the same step is redrawn.
+let lastFidelityStep = 0;
+
 /** Build one readout row per qubit, below the scene. */
 export function buildReadouts(n) {
+  lastFidelityStep = 0;
   const container = document.getElementById("readouts");
   container.innerHTML = "";
   for (let q = 0; q < n; q++) {
@@ -56,16 +61,60 @@ export function renderDetails(step) {
     "</table>";
 }
 
-/** Show the health of the circuit, which is its accumulated fidelity. */
+// The word for the fidelity, in the language of the page (`<html lang>`).
+const PAGE_LANG =
+  (typeof document !== "undefined" && document.documentElement
+    && document.documentElement.lang) || "es";
+const FIDELITY_LABEL = PAGE_LANG.toLowerCase().startsWith("en")
+  ? "Fidelity"
+  : "Fidelidad";
+
+/**
+ * Show the fidelity of the circuit: the accumulated fidelity of the step, a
+ * bar and the total error (the fidelity that was lost). The bar is green above
+ * 99 %, amber above 95 % and red below; the error value takes the same colour.
+ */
 export function updateHealth(step) {
   if (!state.data) return;
   const value = step ? step.cumulative_fidelity : state.data.initial_fidelity;
   const clamped = Math.max(0, Math.min(100, value));
+  const color = clamped >= 99 ? "#51cf66" : clamped >= 95 ? "#ffd166" : "#ff6b6b";
+
+  document.getElementById("fidelityLabel").textContent = FIDELITY_LABEL;
+  document.getElementById("healthValue").textContent = clamped.toFixed(2) + "%";
+
   const fill = document.getElementById("healthFill");
   fill.style.width = clamped + "%";
-  fill.style.background =
-    clamped >= 99 ? "#51cf66" : clamped >= 95 ? "#ffd166" : "#ff6b6b";
-  document.getElementById("healthValue").textContent = clamped.toFixed(2) + "%";
+  fill.style.background = color;
+
+  const error = document.getElementById("fidelityErrorValue");
+  error.textContent = (100 - clamped).toFixed(2) + "%";
+  error.style.color = color;
+
+  // What this step subtracted from the fidelity: the difference with the
+  // previous step (or with the initial fidelity for the first step). It is
+  // popped over the panel, like a damage number, when a gate is applied.
+  const previous = state.stepIndex <= 1
+    ? state.data.initial_fidelity
+    : state.data.steps[state.stepIndex - 2].cumulative_fidelity;
+  const loss = step ? Math.max(0, previous - clamped) : 0;
+  if (step && loss > 0 && state.stepIndex > lastFidelityStep) {
+    showFidelityLoss(loss);
+  }
+  lastFidelityStep = state.stepIndex;
+}
+
+/** Pop the fidelity that this step subtracted, over the panel, like damage. */
+function showFidelityLoss(loss) {
+  const panel = document.getElementById("fidelity");
+  const float = document.createElement("div");
+  float.className = "fidelity-float";
+  float.textContent = "\u2212" + loss.toFixed(2);
+  panel.appendChild(float);
+  float.addEventListener("animationend", () => {
+    if (typeof float.remove === "function") float.remove();
+    else if (typeof panel.removeChild === "function") panel.removeChild(float);
+  });
 }
 
 export function closeMeasurement() {

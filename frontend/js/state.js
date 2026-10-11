@@ -7,6 +7,10 @@ export const state = {
   data: null,
   stepIndex: 0,
 
+  // The duration of the laser pulse of the current step, in milliseconds. The
+  // automatic play waits for it, so a long pulse is not cut.
+  pulseMs: 0,
+
   // The automatic play of the steps.
   playing: false,
   playTimer: null,
