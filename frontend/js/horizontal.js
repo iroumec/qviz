@@ -140,13 +140,16 @@ export function updateHorizontal(time) {
   const layer = state.three.horizontal;
   if (!layer) return;
 
-  // The global beam flashes with any gate (single- or two-qubit).
-  let intensity = 0;
-  for (const qubit of state.qubits) {
-    intensity = Math.max(intensity, pulseIntensity(qubit.laserStart, qubit.laserEnd, time));
+  // The global beam flashes with any gate (single- or two-qubit). While a
+  // measurement runs, the measurement animation drives the beam instead.
+  if (!state.measure.active) {
+    let intensity = 0;
+    for (const qubit of state.qubits) {
+      intensity = Math.max(intensity, pulseIntensity(qubit.laserStart, qubit.laserEnd, time));
+    }
+    const wanted = intensity * GLOBAL_BEAM_OPACITY;
+    layer.beam.material.opacity += (wanted - layer.beam.material.opacity) * 0.2;
   }
-  const wanted = intensity * GLOBAL_BEAM_OPACITY;
-  layer.beam.material.opacity += (wanted - layer.beam.material.opacity) * 0.2;
 
   // The guide rail and the wave rings belong to a two-qubit gate.
   const gate = state.gate;

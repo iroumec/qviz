@@ -11,6 +11,7 @@ import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
 import { createIonTrap, updateTrap } from "./trap.js";
 import { createHorizontalLayer, updateHorizontal } from "./horizontal.js";
+import { createMeasurement, updateMeasurement } from "./measurement.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -118,6 +119,9 @@ export function buildScene(n) {
   // The horizontal optical layer: the global beam sheet, the phonon guide rail
   // and the side optics at the ends of the chain.
   state.three.world.add(createHorizontalLayer(n));
+
+  // The measurement animation (flares, photons and state badges).
+  state.three.world.add(createMeasurement(n));
 
   computeFitRadius();
 }
@@ -376,6 +380,7 @@ export function animate(time) {
   updatePhonon(time);
   updateTrap(time);
   updateHorizontal(time);
+  updateMeasurement(time);
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

@@ -246,6 +246,22 @@ step, and shows the distribution of the resulting bitstrings. The measurement is
 done in the browser, from the fields of the JSON, so no job is sent to a
 backend.
 
+The measurement is also shown in the scene as **state-dependent fluorescence**
+(`frontend/js/measurement.js`), the way a trapped-ion measurement really works.
+The individual vertical lasers are not fired; the horizontal layer does the
+illumination.
+
+1. A broad **readout beam** floods the whole chain (the global beam sheet turns
+   green and bright).
+2. An ion in `|1⟩` is on resonance and scatters photons, so it **glows**; an ion
+   in `|0⟩` is off resonance and **stays dark**.
+3. The photons are collected by the **side readout lens**: a stream of particles
+   flies from every `|1⟩` ion into the lens.
+4. The outcome is resolved: a **`|0⟩` or `|1⟩` badge** appears above every ion.
+
+The animation uses the most likely outcome of the sampled shots, and runs next to
+the histogram when the `Medir` button is pressed.
+
 The fidelity of each qubit is taken into account. The probability `p` of a qubit
 is pulled towards `0.5` by its fidelity `f`:
 
@@ -303,6 +319,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/phonon.js` | Builds the phonon bus, and runs the jiggle and the synchronized halo of a two-qubit gate. |
 | `js/trap.js` | Builds the surface-trap chip (substrate, gold pads and field rings) and lights the active electrodes. |
 | `js/horizontal.js` | Builds the horizontal layer (global beam sheet, guide rail, side optics) and animates it. |
+| `js/measurement.js` | Runs the state-dependent fluorescence animation (readout beam, flares, photons and state badges). |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The readouts, the detail of the step, the fidelity panel and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |

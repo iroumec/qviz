@@ -22,6 +22,10 @@ export const state = {
   // window. Empty when the step is not a two-qubit gate.
   gate: { targets: [], start: 0, end: 0 },
 
+  // The measurement animation: whether it runs, when it started, the outcome
+  // (0 or 1 per ion) and whether the state badges are shown.
+  measure: { active: false, start: 0, outcome: [], showBadges: false },
+
   // The shader sources, loaded once.
   shaders: {
     vert: null, frag: null, lensVert: null, lensFrag: null,
@@ -44,6 +48,7 @@ export const state = {
     trapRings: [],
     trapGlow: [],
     horizontal: null,
+    measure: null,
   },
 
   // The laser model and its materials.

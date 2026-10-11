@@ -2,6 +2,7 @@
 // fidelity panel and the measurement.
 
 import { sampleStep } from "./host.js";
+import { clearMeasurement, startMeasurement } from "./measurement.js";
 import { state } from "./state.js";
 import { setError } from "./utils.js";
 
@@ -119,6 +120,7 @@ function showFidelityLoss(loss) {
 
 export function closeMeasurement() {
   document.getElementById("measurePanel").classList.add("hidden");
+  clearMeasurement();
 }
 
 /**
@@ -162,6 +164,13 @@ export async function runMeasurement() {
   for (const [bits, count] of sorted) {
     for (let q = 0; q < n; q++) if (bits[n - 1 - q] === "1") ones[q] += count;
   }
+
+  // Play the 3D measurement animation with the most likely outcome: the |1>
+  // ions glow and send photons to the readout lens, the |0> ions stay dark.
+  const top = sorted[0][0];
+  const outcome = [];
+  for (let q = 0; q < n; q++) outcome[q] = top[n - 1 - q] === "1" ? 1 : 0;
+  startMeasurement(outcome);
 
   renderMeasurement(sorted, shots, p1, ones, fidelity, n, at);
 }
