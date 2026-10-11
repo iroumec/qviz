@@ -36,6 +36,7 @@ make server            # el visor en local, con compilar y medir en Python (scri
 - Compatibilidad: `qiskit-ionq >= 1.0.0` (Qollab trae la 1.0.2); `requirements.txt` igual a `pyproject.toml` (lo comprueba un test).
 - **El aspecto y las funciones del visor (`frontend/index.html`) no se cambian sin aprobación.** Lo de Qollab entra como hooks opcionales (`window.QVIZ_HOST`) y como código generado. El usuario aprobó (2026-10-10) ocultar la nota de "qubits entrelazados" cuando mide el backend.
 - Láser volumétrico (aprobado por el usuario, 2026-10-10): `LASER_MIN_Y`/`LASER_MAX_Y` y `LASER_BOX` en `frontend/js/config.js`; `LASER_RADIUS`/`ENERGY_AMPLITUDE` en `shaders/laser.frag` son los valores a calibrar a mano. `uLaserActive` (maestro) queda en 1.0; cada haz lleva su intensidad en `instanceActive`. El pulso por gate lo decide `laserPulseFor` (`frontend/js/laser.js`): GPI2 = `LASER_PULSE_MS`, GPI = 2×, MS/ZZ = 3× en naranja neón y ambos targets; VirtualZ no dispara. El Play espera al pulso (`state.pulseMs`) para no cortar los MS/ZZ.
+- **Siempre se pushea a `development`** (pedido del usuario, 2026-10-11); `main` no se toca salvo que lo pida.
 - Los módulos del pipeline no se importan entre sí; `compiler` solo orquesta.
 
 ## Qollab (medido el 2026-10-10)
@@ -52,7 +53,7 @@ Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. Verificado en Bu
 -1. **Plazo: domingo 2026-10-11, 7 PM ET.** Probar en Qollab el paquete actual (`make qollab`): trampa, capa horizontal, entorno, medición y MathML son nuevos del 11 y no se probaron ahí. Completar la tabla de `documentation/prompts/qollab_pruebas.md` §4 (falta confirmar `qiskit-qasm3-import`, los addons de three, Medir en IonQ y los tiempos con 16 qubits).
 1. ~~Auditoría anti-slop, clase C~~ #16 hecho (2026-10-11, sin commitear): `bell`/`distant_bell` viven en `examples/bell.py` y los usan `qollab_api`, `generate_outputs` y los demos. #18 **descartado** por decisión del usuario (unificar cambia casos borde de `virtual_z`).
 2. Tomografía: con qiskit-ionq < 1.0.3 la tomografía sobre un backend que no es IonQ da un `TranspilationError` (las compuertas nativas no traen definición). La comparación con el statevector no está implementada: se compila dos veces (documentado en `tomography.qmd` y `spec.md` §M8).
-3. `errors.md` y `documentation.md` son notas sueltas que conviene llevar a `spec.md` §10 o `documentation/prompts/`.
+3. ~~`errors.md` y `documentation.md`~~ ya no existen (el compañero los borró en `877cfe2`; su contenido está en `spec.md` §10, README y Quarto).
 4. Validar los módulos con el equipo (todos están en "Listo para validar") y correr M7 y M8 en Qollab (IonQ Aria y Forte).
 
 ## Ideas a futuro (sin aprobar)
@@ -69,6 +70,7 @@ El usuario trabaja el backend y la documentación con este agente; un compañero
 
 ## Historial (lo último arriba; borrá lo viejo)
 
+- 2026-10-11 · Pendiente 3 cerrado: las notas sueltas ya no existían; se corrigió la referencia en `decision_transpilacion_no_ionq.md`. Regla anotada: siempre se pushea a `development`. Subido junto con #16.
 - 2026-10-11 · Auditoría clase C: #16 aplicado (`examples/bell.py`, `ghz(3)` en `scripts/_common`); #18 descartado a pedido del usuario. 422 passed, lint y `make qollab` en verde. **Sin commitear.**
 - 2026-10-11 · IBM/AWS siguen **rechazados** (`compile` lanza `UnsupportedProviderError`; los tests lo cubren). Mejora del aviso: el visor abre igual y muestra una **tarjeta sobre la escena** ("Máquina no soportada", qué hacer y el detalle del backend) además de la línea roja; el prelude de Qollab guarda la clase del error en `error.kind` (`reportError`/`clearErrorCard` en `utils.js`). Cualquier otro error muestra una tarjeta genérica. Probado en Chromium con un `HOST` que falla; falta verlo en Qollab con IBM/AWS. También se corrigió `make serverr` → `make server` en los mensajes de `host.js` y `config.js`. 422 passed.
 - 2026-10-11 · La franja del circuito pasa a la paleta nueva (sin azules ni amarillos fijos): fondo `--bg`, 1 qubit en ciruela `#5c3f63`, MS/ZZ en rosa neón como el badge del detalle, VirtualZ punteado en lila, paso actual con borde blanco cálido y columna lila; los arcos de selección 3D, en rosa neón (`SELECTION_COLOR`). Verificado con Chromium. Docs al día.

@@ -175,7 +175,7 @@ Usar `final_index_layout()` para permutar los qubits al final.
 
 ## 6. Qué hay que verificar en Qollab
 
-El código local no puede reemplazar a Qollab: por ejemplo, según `errors.md`, el IBM Boston de Qollab tiene `rx` y `rzz` en su base y un `NoiseModel` en `options`, y el `FakeBoston` que se usó aquí no. Además, en `spec.md` §10 la columna `type(backend)` quedó en "—". Hay que ver el objeto real: puede que no tenga mapa de conexiones, y entonces el problema no aparecería (o aparecería distinto).
+El código local no puede reemplazar a Qollab: por ejemplo, según las notas de `spec.md` §10, el IBM Boston de Qollab tiene `rx` y `rzz` en su base y un `NoiseModel` en `options`, y el `FakeBoston` que se usó aquí no. Además, en `spec.md` §10 la columna `type(backend)` quedó en "—". Hay que ver el objeto real: puede que no tenga mapa de conexiones, y entonces el problema no aparecería (o aparecería distinto).
 
 ### 6.1 Cómo correr la sonda
 
