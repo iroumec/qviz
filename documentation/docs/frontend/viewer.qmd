@@ -146,7 +146,8 @@ At the height of the chain there is a second layer of optics
   is dark by default and fires only for the target ions of a native gate: the
   species colour for GPI and GPI2, and a neon-orange colour for MS and ZZ, which
   lasts three times longer (see the laser paragraph above).
-- The probability `p(|1⟩)` of each qubit is shown with a small bar.
+- The probability `p(|1⟩)` of each qubit — the probability of measuring **1**,
+  not 0 — is shown with a bar in the **Probabilities** panel.
 - A small **fidelity panel** at the top of the scene shows the accumulated
   fidelity of the current step: the word for it (*Fidelidad* or *Fidelity*, from
   the language of the page), the percentage, a bar and the **total error** (the
@@ -156,10 +157,15 @@ At the height of the chain there is a second layer of optics
   the previous step, for example `−0.53`) is popped over the panel as a red
   number that floats up and fades, like a damage number in a game. At step 0 the
   panel shows the initial fidelity of the backend.
-- The full detail of the step is shown in a side panel: the operation, the
-  targets, the phases, the angle, the accumulated fidelity, the accumulated
-  cost, the virtual Z rotation, the inactivity, the fidelities and the
-  vibration.
+- The full detail of the step is shown in the **Step details** panel: the
+  operation, the targets, the phases, the angle, the accumulated fidelity, the
+  accumulated cost, the virtual Z rotation, the inactivity, the fidelities and
+  the vibration.
+
+The **Probabilities** and **Step details** panels live in the sidebar on the
+right. Each one is collapsible: its title is a button, and clicking it shows or
+hides the body. The titles follow the language of the page (*Probabilidades* /
+*Probabilities* and *Detalle del paso* / *Step details*).
 
 The `+z` axis is drawn upwards, and `|0⟩` is at the top. This follows the
 standard convention that is used by the backend.

@@ -3,9 +3,11 @@
 
 import { initControls } from "./controls.js";
 import { loadManifest } from "./data.js";
+import { initPanels } from "./panels.js";
 import { animate, initThree } from "./scene.js";
 
 initControls();
+initPanels();
 
 (async function start() {
   const ready = await initThree();

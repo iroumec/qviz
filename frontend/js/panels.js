@@ -35,10 +35,10 @@ export function updateReadouts(step) {
 
 /** Show every field of the current step in the side panel. */
 export function renderDetails(step) {
-  const aside = document.getElementById("details");
+  const content = document.getElementById("detailsContent");
   if (!step) {
-    aside.innerHTML = '<h2>Detalle del paso</h2><p class="hint">' +
-      "Estado inicial: todos los iones en |0⟩.</p>";
+    content.innerHTML =
+      '<p class="hint">Estado inicial: todos los iones en |0⟩.</p>';
     return;
   }
   const rows = [
@@ -57,7 +57,7 @@ export function renderDetails(step) {
   rows.push(["inactividad", "[" + step.inactivity.join(", ") + "]"]);
   rows.push(["fidelidades", "[" + step.fidelities.map((f) => f.toFixed(2)).join(", ") + "]"]);
   rows.push(["vibración", "[" + step.vibration.map((v) => v.toFixed(3)).join(", ") + "]"]);
-  aside.innerHTML = "<h2>Detalle del paso</h2><table>" +
+  content.innerHTML = "<table>" +
     rows.map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`).join("") +
     "</table>";
 }
@@ -69,6 +69,33 @@ const PAGE_LANG =
 const FIDELITY_LABEL = PAGE_LANG.toLowerCase().startsWith("en")
   ? "Fidelity"
   : "Fidelidad";
+
+// The texts of the side panels, in the language of the page.
+const TEXT = PAGE_LANG.toLowerCase().startsWith("en")
+  ? {
+      probabilities: "Probabilities",
+      probabilitiesHint: "p(|1\u27e9) = probability of measuring 1 on each qubit.",
+      details: "Step details",
+    }
+  : {
+      probabilities: "Probabilidades",
+      probabilitiesHint: "p(|1\u27e9) = probabilidad de medir 1 en cada qubit.",
+      details: "Detalle del paso",
+    };
+
+/** Translate the panel titles and wire the collapse of each panel. */
+export function initPanels() {
+  for (const node of document.querySelectorAll("[data-i18n]")) {
+    const key = node.getAttribute("data-i18n");
+    if (TEXT[key]) node.textContent = TEXT[key];
+  }
+  for (const head of document.querySelectorAll(".panel-head")) {
+    head.addEventListener("click", () => {
+      const collapsed = head.nextElementSibling.classList.toggle("collapsed");
+      head.setAttribute("aria-expanded", String(!collapsed));
+    });
+  }
+}
 
 /**
  * Show the fidelity of the circuit: the accumulated fidelity of the step, a

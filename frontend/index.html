@@ -40,11 +40,24 @@
   .stage-wrap { position: relative; min-height: 0; }
   #stage { position: absolute; inset: 0; }
   #stage canvas { display: block; width: 100%; height: 100%; }
-  .readouts { position: absolute; top: 8px; left: 8px; z-index: 2; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
-  .readout { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
-  .readout b { color: var(--text); width: 44px; }
-  .readout .bar { width: 70px; height: 6px; border-radius: 3px; background: #101728; overflow: hidden; }
+  .readouts { display: flex; flex-direction: column; gap: 7px; }
+  .readout { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+  .readout b { color: var(--text); width: 26px; }
+  .readout .bar { flex: 1; height: 7px; border-radius: 4px; background: #101728; overflow: hidden; }
   .readout .bar > span { display: block; height: 100%; background: var(--accent); width: 0; }
+  .readout .p1 { width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+  .panel { border-bottom: 1px solid var(--border); }
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+    background: transparent; border: none; color: var(--text); cursor: pointer;
+    font-size: 13px; font-weight: 600; letter-spacing: .3px; padding: 11px 2px; text-align: left;
+  }
+  .panel-head:hover { color: var(--accent); }
+  .panel-head .chevron { transition: transform .2s ease; color: var(--muted); font-size: 11px; }
+  .panel-head[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+  .panel-body { padding: 0 2px 12px; }
+  .panel-body.collapsed { display: none; }
+  .panel-hint { color: var(--muted); font-size: 11px; margin: 0 0 9px; }
   legend { position: absolute; bottom: 8px; left: 8px; z-index: 2; display: flex; gap: 12px; font-size: 11px; color: var(--muted); }
   legend i { display: inline-block; width: 10px; height: 3px; margin-right: 4px; vertical-align: middle; }
   aside { background: var(--panel); border-left: 1px solid var(--border); padding: 14px; overflow: auto; }
@@ -149,7 +162,6 @@
 
 <main>
   <section class="stage-wrap">
-    <div class="readouts" id="readouts"></div>
     <div id="stage"></div>
     <div class="fidelity" id="fidelity">
       <div class="fidelity-head">
@@ -168,9 +180,26 @@
     </legend>
   </section>
   <aside id="details">
-    <h2>Detalle del paso</h2>
-    <p class="hint">Elegí un circuito de la lista o cargá el tuyo en OpenQASM
-      (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.</p>
+    <section class="panel">
+      <button class="panel-head" type="button" aria-expanded="true">
+        <span data-i18n="probabilities">Probabilidades</span>
+        <span class="chevron">&#9662;</span>
+      </button>
+      <div class="panel-body">
+        <p class="panel-hint" data-i18n="probabilitiesHint">p(|1&rang;) = probabilidad de medir 1 en cada qubit.</p>
+        <div class="readouts" id="readouts"></div>
+      </div>
+    </section>
+    <section class="panel">
+      <button class="panel-head" type="button" aria-expanded="true">
+        <span data-i18n="details">Detalle del paso</span>
+        <span class="chevron">&#9662;</span>
+      </button>
+      <div class="panel-body" id="detailsContent">
+        <p class="hint">Elegí un circuito de la lista o cargá el tuyo en OpenQASM
+          (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.</p>
+      </div>
+    </section>
   </aside>
 </main>
 
