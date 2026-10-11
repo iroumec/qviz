@@ -7,6 +7,16 @@ the real noise is therefore seen.
 
 The tomography is selected with `strategy="tomography"` in `compile`.
 
+::: {.callout-note}
+## Not part of the delivery
+The code and its tests are kept, but the tomography is **out of scope** for the
+delivery. The viewer, `qollab_api.py` and `main.py` do not call it; it has never
+been run in Qollab; with the `qiskit-ionq` 1.0.2 that Qollab ships it fails on
+the built-in simulator (`TranspilationError`); and on IonQ hardware it spends
+credits (the `allow_paid` guard). The team chose to keep it instead of deleting
+it so close to the deadline. Do not rely on it for the demo.
+:::
+
 ## Why the state is measured, and not computed {.unnumbered}
 
 The exact simulator gives the ideal state. It cannot show the error of the real

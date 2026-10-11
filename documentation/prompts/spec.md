@@ -509,6 +509,8 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 
 ### M8 — Tomografía por prefijos (`strategy="tomography"`)
 
+> **Estado (2026-10-11): fuera del alcance de la entrega.** El código y sus tests se conservan, pero la tomografía **no está conectada** al visor, a `qollab_api` ni a `main.py`, **no se corrió nunca en Qollab** y, con el `qiskit-ionq` 1.0.2 de Qollab, falla en el simulador integrado (`TranspilationError`). En hardware gasta créditos (guarda `allow_paid`). El equipo decidió no borrarla por la cercanía de la entrega; no hay que contar con ella en la demo.
+
 **Objetivo:** el requerimiento "Toma de mediciones": obtener los vectores **midiendo** en el backend en vez de calcularlos, para ver el efecto del ruido real. Una corrida con `strategy="tomography"` solo mide: no calcula también el statevector de M3 ni incluye una comparación. Para ver el error del equipo se compila el mismo circuito con las dos estrategias y se comparan las salidas.
 
 - Para k = 1 … N (la cantidad de ops), el prefijo es `to_qiskit(native, upto=k)`. El requerimiento dice k ∈ [0, N): eso deja afuera el estado posterior al último gate, así que se usa 1 … N. k = 0 es |0…0⟩ y solo se mide opcionalmente, como calibración de SPAM.
@@ -592,7 +594,7 @@ Identidades de base, verificadas numéricamente contra las matrices oficiales el
 | M5 Metrics                    | Listo para validar | development |              |
 | M6 Formatter + Exporter + API | Listo para validar | development |              |
 | M7 Integración Qollab         | Listo para validar | development |              |
-| M8 Tomografía                 | Listo para validar | development |              |
+| M8 Tomografía                 | Fuera de alcance (código conservado) | development |              |
 | M9 Sampler (medición)         | Listo para validar | development |              |
 | M10 Importer (OpenQASM)       | Listo para validar | development |              |
 
