@@ -1,12 +1,14 @@
-"""Tests for the local server of the viewer (scripts/server.py)."""
+"""Tests for the local server of the viewer (resources/scripts/server.py)."""
 
 from __future__ import annotations
 
 import http.client
 import importlib.util
 import json
+import re
 import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -145,3 +147,14 @@ def test_a_bad_measurement_is_a_400(base):
         assert status == 400 and reply["error"]
     status, reply = _post(base + "/api/sample?step=1&shots=10", "not json")
     assert status == 400
+
+
+def test_the_urls_of_the_viewer_reach_the_services_of_the_server():
+    # The viewer is served from /source/frontend/, so its relative URLs must climb
+    # two levels to reach /api/... (a reorganization of the folders broke this).
+    config_js = _SCRIPT.parents[2] / "source" / "frontend" / "js" / "config.js"
+    config = config_js.read_text(encoding="utf-8")
+    page = "http://localhost/source/frontend/index.html"
+    for name, path in (("COMPILE_URL", "/api/compile"), ("SAMPLE_URL", "/api/sample")):
+        relative = re.search(rf'export const {name} = "([^"]+)"', config).group(1)
+        assert urllib.parse.urljoin(page, relative) == "http://localhost" + path

@@ -25,10 +25,11 @@ that are needed are defined where they first appear.
 | Introduction | Why the project exists, and the pedagogical idea behind it. |
 | Getting started | Installation, a first example and the test and demo commands. |
 | Core concepts | The pipeline, the units and the JSON contract. |
+| Architecture | How the parts connect, the structure of the repository, the entry points and the engineering practices. |
 | Backend modules | One page per module, with every function and parameter. |
 | Examples | Complete circuits, such as the QFT adder and the performance tests. |
-| Frontend | The viewer that reads the JSON file, and its use on Qollab. |
-| Development | Tests, demos and the coding style. |
+| Frontend | The architecture of the viewer, the viewer itself and its use on Qollab. |
+| Development | Tests, demos, the coding style, the tooling and the workflow. |
 
 ## Conventions used in this book {.unnumbered}
 

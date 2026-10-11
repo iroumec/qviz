@@ -1,0 +1,105 @@
+# System architecture {#sec-system}
+
+QViz is made of four parts: a Python library, the adapters that expose it, a
+browser viewer and the hosts that run them. This page shows what each part does
+and how a request travels through them. The pipeline inside the library is
+described in [Pipeline overview](../concepts/pipeline-overview.qmd), and the
+layout of the files in [Project structure](project-structure.qmd).
+
+## The four parts {.unnumbered}
+
+| Part | Where it lives | What it does |
+| --- | --- | --- |
+| **Library** | `source/backend/` | Turns a Qiskit circuit and a backend into the JSON of the contract, and measures a step of that JSON. It has no knowledge of any host. |
+| **Adapters** | `main.py`, `qollab_api.py`, `resources/scripts/server.py` | Expose the library to a host: a form in Qollab, functions called by JavaScript, or HTTP routes on a local machine. They contain no physics. |
+| **Viewer** | `source/frontend/`, `source/shaders/` | Reads the JSON and draws the ions. It performs no calculation of its own; compiling and measuring always go back to Python. |
+| **Hosts** | Qollab, or a local browser | Provide the browser, Pyodide and (on Qollab) the `backend` object. |
+
+Two decisions shape everything else.
+
+1. **The contract is the only coupling.** The library produces a JSON document
+   (see [JSON contract](../concepts/json-contract.qmd)), and the viewer consumes
+   it. Neither side imports anything from the other.
+2. **The viewer works alone.** What Qollab needs is added through optional hooks
+   and generated code, never by rewriting the viewer (see
+   [The viewer on Qollab](../frontend/qollab.qmd)).
+
+## How the parts are connected {.unnumbered}
+
+```
+                 ┌──────────────────────────── host ────────────────────────────┐
+                 │                                                              │
+  Qollab         │  main.py ──┐                                                 │
+  (Python        │            ├──► qollab_api.py ──► backend  (the library)     │
+  project)       │  form      │        ▲                  │                      │
+                 │            │        │ callPromising    │ JSON text            │
+  Qollab         │  main.js ──┘        │                  ▼                      │
+  (JS project)   │  prelude ──► window.QVIZ_HOST ──► viewer (source/frontend)    │
+                 │                                                              │
+  local          │  server.py ──► POST /api/compile, /api/sample ──► viewer     │
+  machine        │                                                              │
+                 └──────────────────────────────────────────────────────────────┘
+```
+
+Each adapter calls the same functions of `qollab_api.py`, which in turn call the
+four public functions of the library. For this reason, a circuit gives the same
+JSON on Qollab and on a local machine, as long as the backend is the same.
+
+### Three ways to run {.unnumbered}
+
+| Mode | Entry point | The viewer is | Python is reached through | Typical use |
+| --- | --- | --- | --- | --- |
+| Qollab, Python project | `main.py` | absent | the form of the QPU dialog | Checking a backend and reading the JSON in the console. |
+| Qollab, JS project | `qollab/` (built by `make qollab`) | the real viewer, bundled in `main.js` | `window.QVIZ_HOST`, which calls `qollab_api` with `callPromising` | The product: the viewer with the backend chosen by the user. |
+| Local machine | `make server` | the real viewer, served from the repository | `POST /api/compile` and `POST /api/sample` | Developing the viewer and the library without Qollab. |
+
+The viewer can also be opened with `python -m http.server`. In that mode the
+Python services are missing, so it can show the files of `out/` but it cannot
+compile a loaded circuit or measure; it says so in its error line.
+
+## A request from end to end {.unnumbered}
+
+The most common request is a person loading an OpenQASM file in the viewer.
+
+1. The viewer reads the file and calls `compileQasm(text)` (`js/host.js`).
+2. On Qollab, `HOST.compileQasm` calls `qollab_api.run_qasm(backend, qasm, …)`
+   through `callPromising`. Locally, the same call is a `POST /api/compile`.
+3. `run_qasm` calls `load_circuit(qasm)` (the `importer` module), which returns a
+   `QuantumCircuit`.
+4. `run_qasm` calls `compile(backend, circuit, allow_remote=False)`. The
+   `compiler` module runs the pipeline: `provider`, `transpiler`, `translator`,
+   `simulator`, `vectorizer`, `metrics` and `formatter`.
+5. `run_qasm` calls `export(data)` and returns JSON text. A dictionary is never
+   returned, because Pyodide would turn it into a `Map` that `JSON.stringify`
+   cannot print.
+6. The viewer parses the text, adds the circuit to its selector and draws the
+   first step (`js/data.js`).
+7. When the person presses **Medir**, the viewer calls `sampleStep`. This reaches
+   `qollab_api.sample_step`, which calls `sample(data, step, shots)` on the same
+   JSON. No job is sent to IonQ.
+
+Step 4 passes `allow_remote=False` on purpose. On Qollab, an IonQ backend allows
+one job per run, and a viewer that loads several files would use it up with the
+first one.
+
+## Where each rule is enforced {.unnumbered}
+
+| Rule | Enforced by |
+| --- | --- |
+| The library never imports the injected `backend`. | The `compile` signature takes the backend as an argument; `main.py` imports `from backend import …` and never `import backend`. |
+| Only one IonQ job per run. | `compile` validates its arguments before the transpiler runs, and `allow_remote` can disable the job. |
+| No job is sent to paid hardware by accident. | `tomography.measure` raises unless `allow_paid=True` for a hardware backend. |
+| Anything that Python returns to JavaScript is text. | `qollab_api` returns JSON strings, and a test checks the prelude against the functions that exist. |
+| The viewer runs without Qollab. | Every Qollab service is read as `HOST.<name>` with a fallback. |
+| The project fits in Qollab. | `package_qollab.py` builds a project of 52 files (the limit is 100), and a test checks the limits. |
+
+## What is not connected {.unnumbered}
+
+Some links are absent on purpose.
+
+- **The pipeline modules do not import each other.** Only `compiler` knows all of
+  them. See [Engineering practices](engineering-practices.qmd).
+- **The viewer does not import Python code, and Python does not import the
+  viewer.** The JSON is the only thing that crosses.
+- **`main.py` is not part of the JS project.** It could compile a second time and
+  spend a second IonQ job.

@@ -269,7 +269,7 @@ files can be read.
 make outputs
 make server            # or: make server PORT=9000
 make open              # like server, but also opens the browser
-# then open http://localhost:8000/frontend/index.html
+# then open http://localhost:8000/source/frontend/index.html
 ```
 
 `make server` runs `resources/scripts/server.py`. It serves the repository like

@@ -22,6 +22,12 @@ book:
         - docs/concepts/pipeline-overview.qmd
         - docs/concepts/units-and-conventions.qmd
         - docs/concepts/json-contract.qmd
+    - part: "Architecture"
+      chapters:
+        - docs/architecture/system-overview.qmd
+        - docs/architecture/project-structure.qmd
+        - docs/architecture/entry-points.qmd
+        - docs/architecture/engineering-practices.qmd
     - part: "Backend modules"
       chapters:
         - docs/modules/config-and-errors.qmd
@@ -44,12 +50,14 @@ book:
         - docs/examples/performance.qmd
     - part: "Frontend"
       chapters:
+        - docs/frontend/architecture.qmd
         - docs/frontend/viewer.qmd
         - docs/frontend/qollab.qmd
     - part: "Development"
       chapters:
         - docs/development/tests.qmd
         - docs/development/demos.qmd
+        - docs/development/tooling.qmd
         - docs/development/style-and-conventions.qmd
 
 bibliography: references.bib

@@ -1,0 +1,211 @@
+# Engineering practices {#sec-practices}
+
+QViz was built as a hackathon project, but it follows the habits of a maintained
+codebase. This page lists those habits. For each one, the rule is stated, the place
+where it can be seen in the code is named, and the reason is given. The mechanical
+style rules (imports, docstrings, line length) are on
+[Style and conventions](../development/style-and-conventions.qmd).
+
+## Design {.unnumbered}
+
+### One responsibility per module {.unnumbered}
+
+Each pipeline stage does one thing and returns a new type. The translator knows
+nothing about simulation, and the simulator knows nothing about fidelity. A new
+metric is added in `metrics` and nowhere else.
+
+*Why.* A reader can open one file and understand one idea. A bug is located by
+asking which stage produced the first wrong object.
+
+### Modules do not import each other {.unnumbered}
+
+Only `compiler` imports the stages. The others import `model`, `errors`, `config`,
+`constants`, and, when a conversion is needed, `to_qiskit`. The full table is on
+[Project structure](project-structure.qmd).
+
+*Why.* There are no hidden dependencies and no cycles. A stage is tested with an
+object made by hand, as the tests of `simulator` and `vectorizer` do.
+
+### Orchestration is separate from logic {.unnumbered}
+
+The whole `compiler` module is 71 lines. `compile` validates the arguments, calls the stages in order and
+returns the result. It contains no physics. The decisions that look like logic
+(the unsupported provider, the tomography branch) are the choice of which stage to
+call, which is the job of an orchestrator.
+
+*Why.* The order of the pipeline is readable in one screen. Changing it never
+means searching for scattered calls.
+
+### Immutable data, pure functions {.unnumbered}
+
+Every object that crosses a stage boundary is a `@dataclass(frozen=True)` defined
+in `model.py`, and tuples are used instead of lists. The public functions return
+new objects and do not touch their input. There is no module-level state.
+
+*Why.* Purity makes the functions deterministic, so they are easy to test and safe
+to call twice. Immutability turns an accidental write into an exception at the
+moment it happens, rather than a wrong number several stages later.
+
+### Make illegal states hard to express {.unnumbered}
+
+Names such as the entangler and the gate are `Literal` types (`"ms" | "zz"`,
+`"gpi" | "gpi2" | "ms" | "zz" | "virtual_z"`). The functions that dispatch on a
+gate end with `assert_never`, in `simulator._matrix` and in `to_qiskit`.
+
+*Why.* If a new gate is added to the type and a function forgets it, `assert_never`
+raises at once (and a type checker would flag it before that), instead of the
+function silently skipping the gate.
+
+### Constants and configuration are different things {.unnumbered}
+
+`constants.py` holds values that are part of the definition (a full turn in
+radians). `config.py` holds values that are a policy (`MAX_QUBITS`, the number of
+decimals of the JSON, the timeout of the IonQ job). Each configuration value has a
+docstring that says why it has that number.
+
+*Why.* A maintainer who wants to change a limit finds it in one place, and knows
+that it is safe. Nobody changes a constant by mistake.
+
+## Correctness {.unnumbered}
+
+### Test against an independent oracle {.unnumbered}
+
+A test that compares code with a copy of itself proves little. The suite uses
+Qiskit as the reference instead.
+
+| What is checked | Oracle |
+| --- | --- |
+| The translation is correct | `Operator(source).equiv(Operator(to_qiskit(native)))` |
+| The simulation is correct | `Statevector` and `partial_trace` of Qiskit |
+| The JSON is valid | `documentation/schema/visualization.schema.json`, with `jsonschema` |
+| The JSON has not drifted | A golden file, `source/tests/golden/bell_basic.json` |
+
+When the documentation of IonQ and its own matrices disagreed, the matrices and the
+tests were taken as the authority. This is recorded in
+`documentation/references/ionq_native_gates.md`.
+
+### Tolerances are honest {.unnumbered}
+
+Numerical comparisons use `atol=1e-9`. A failing test is fixed at its cause; the
+tolerance is not loosened to make it pass. The statistical tests of the tomography use a looser tolerance, and the sampler
+tests pass a fixed `seed`, so a failure can be repeated.
+
+### Validate at the boundary {.unnumbered}
+
+Data that comes from outside is checked where it enters. `compile` rejects an
+unknown strategy or a non-positive number of shots before it touches the transpiler,
+so a typo cannot spend the single IonQ job of a run. `sample` receives a JSON that a
+web page may have modified, so it checks every field (finite numbers, valid targets,
+one value per qubit) and raises a `QVizError` that names the step and the reason.
+
+*Why.* Inside the library, the data is trusted. At the edge, it is not.
+
+### Fail with a precise error {.unnumbered}
+
+Every error is an instance of `QVizError` or one of its subclasses
+(`UnsupportedOperationError`, `CircuitTooLargeError`, `UnsupportedProviderError`,
+`CircuitParseError`, `TranspilationError`). Messages say what was found and what is
+accepted, for example `entangler must be 'auto', 'ms' or 'zz', got 'foo'`. A bad
+value is never replaced silently by a default. Where the library catches a broad
+`Exception` to fall back, the line carries a comment that says why.
+
+### Never fail where classification is enough {.unnumbered}
+
+`provider.detect` does not raise. A backend that is neither IonQ nor the built-in
+simulator is classified as `unsupported`, and `compile` decides what to do about
+it. The detection answers a question; the policy is somewhere else.
+
+## Safety and cost {.unnumbered}
+
+- **One IonQ job per run.** The rule comes from Qollab. `compile` makes at most one
+  `backend.run`, and `allow_remote=False` makes none.
+- **No paid hardware by accident.** The tomography sends many circuits, so it
+  refuses a hardware backend unless `allow_paid=True` is passed.
+- **No secrets.** There are no API keys or tokens in the repository, because the
+  published code is public.
+- **Dependencies are checked.** Each one has a permissive license (MIT, BSD,
+  Apache-2.0, ISC), and it is recorded in the specification. `requirements.txt` must
+  equal the dependencies of `pyproject.toml`, and a test compares them.
+
+## Maintainability {.unnumbered}
+
+### Logging, not printing {.unnumbered}
+
+Inside `source/backend/core`, messages go through
+`logging.getLogger(__name__)`. A caller decides whether to see them. `print` is used
+only in `main.py` and in the scripts.
+
+### Write the specification first {.unnumbered}
+
+`documentation/prompts/spec.md` defines the architecture, the units, the JSON
+contract and a plan by module. A module is built against its section, with its tests
+and a demo, and it is marked *ready to validate* only when `make test` and the demo
+pass. When the code shows that the specification is wrong, both are corrected in
+the same change.
+
+### One module at a time, with a stop {.unnumbered}
+
+The work proceeds in the order M0 to M10. After each module the author stops and
+reports what was done, how to validate it and what remains unverified on Qollab.
+The next module starts after the team agrees.
+
+*Why.* A pipeline fails far from its cause. Validating each stage before building
+the next keeps the failures local.
+
+### Document where the knowledge is lost {.unnumbered}
+
+Three kinds of knowledge would otherwise be forgotten, and each has a home.
+
+| Knowledge | Where it lives |
+| --- | --- |
+| Why a decision was made | The specification, and the decision notes in `documentation/prompts/`. |
+| What is true about Qollab | `qollab.qmd` and the test table in `documentation/prompts/qollab_pruebas.md`, with the date of each measurement. |
+| Where the project stands | `memory.md`, kept under 150 lines by a test. |
+
+### Units are stated, always {.unnumbered}
+
+An angle is radians or turns, and the unit is part of the name or the docstring.
+`qiskit-ionq` uses turns for the entangling angle; the conversion happens at the
+border, once. See [Units and conventions](../concepts/units-and-conventions.qmd).
+
+## Delivery {.unnumbered}
+
+- **Continuous integration** runs the linters and the tests on every push and
+  pull request, on Python 3.12 and 3.13.
+- **Branches** follow a simple flow: `main` is stable, `development` integrates, and
+  one `feature/<module>` branch per module. The commands are in `Makefile.git`.
+- **Commits** are made when the team asks, in English, with a short first line.
+  Hooks are never skipped and history is never rewritten on shared branches.
+- **Generated folders are not edited.** `qollab/` is rebuilt by `make qollab`, and
+  `out/` by `make outputs`.
+
+## Practices in the viewer {.unnumbered}
+
+The same ideas apply to the JavaScript, with the limits of the platform in mind.
+
+- **State in one place.** `js/state.js` holds all the mutable state of the viewer.
+  No value hides in the document or in a closure.
+- **Optional hooks with a fallback.** Everything Qollab adds is read as
+  `HOST.<name>` and has a default. The viewer runs without Qollab.
+- **A test per risk of the platform.** The packager has tests for each thing Qollab
+  broke: the 100-file limit, the missing `main.py`, import cycles in the bundled
+  modules, and the services that the prelude defines but the viewer does not read.
+- **Accessibility is a feature, not an afterthought.** The *View and accessibility*
+  panel offers profiles (focus, high contrast, colour-blind palettes, reduced
+  motion), camera buttons for people who do not use a keyboard, and an `aria-live`
+  announcement of each step.
+- **Bilingual interface.** Texts are chosen with `t(es, en)` according to
+  `<html lang>`.
+
+## Known limits {.unnumbered}
+
+These limits are known and still open.
+
+- The viewer has no automated browser test. It is checked by hand, and by headless
+  Chromium for the bundle, and its modules are exercised with a stub DOM.
+- The tomography with `qiskit-ionq` older than 1.0.3 fails on backends that are
+  not IonQ, because the native gates carry no definition.
+- The comparison of the tomography with the exact statevector is not implemented;
+  the circuit is compiled twice.
+- Only IonQ and the built-in simulator are supported. IBM and AWS backends are
+  rejected on purpose. See the [Compiler](../modules/compiler.qmd).

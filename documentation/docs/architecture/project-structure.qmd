@@ -1,0 +1,154 @@
+# Project structure {#sec-structure}
+
+This page is the map of the repository. It lists every folder, says what belongs
+in it, and shows which parts of the library may depend on which.
+
+## The repository {.unnumbered}
+
+```
+main.py                     Entry point of the Qollab Python project.
+qollab_api.py               The functions that Qollab pages call (they return text).
+requirements.txt            Dependencies for Qollab (kept equal to pyproject.toml).
+pyproject.toml              Packaging, dependencies and tool settings.
+Makefile                    The commands of the project (see Tooling and workflow).
+.flake8                     The style rules of flake8.
+.github/workflows/ci.yml    Continuous integration: lint and tests.
+README.md, LICENSE          The overview of the project and its MIT license.
+AGENTS.md, CLAUDE.md        The rules for code agents.
+memory.md                   The hand-over between work sessions.
+
+source/                     What is shipped: the library, the viewer and the tests.
+  backend/                  The Python library.
+    __init__.py             The public API: compile, export, load_circuit, sample.
+    core/                   The modules (see below).
+  frontend/                 The viewer.
+    index.html              Markup and style only.
+    js/                     The ES modules of the viewer.
+  shaders/                  GLSL: the Bloch spheres, laser, lens, phonon bus and rail.
+  tests/                    The pytest suite, the shared circuits and the golden file.
+
+resources/                  What supports the project.
+  examples/                 Worked circuits (Bell, GHZ, layers, the QFT adder) and .qasm files.
+  models/                   The laser model (OBJ and MTL).
+  scripts/                  The demos, the generator of out/, the packager and the server.
+  make/                     Makefile.git (branch workflow) and Makefile.quarto (this book).
+
+documentation/              The specification, the schema and this book.
+  _quarto.yml               The configuration of the book.
+  docs/                     The chapters.
+  diagrams/                 PlantUML sources and their SVG renders.
+  schema/                   The JSON schema of the contract.
+  prompts/                  spec.md and the working notes of the team.
+  references/               Notes on the native gates of IonQ.
+
+out/                        Generated: the example JSON files and their manifest.
+qollab/                     Generated: the project that is uploaded to Qollab.
+documentation/_book/        Generated: the rendered book.
+```
+
+The three generated folders are not committed. `make outputs`, `make qollab` and
+`make render` create them, and nothing in them is edited by hand.
+
+## Why `source/` and `resources/` are separate {.unnumbered}
+
+`source/` holds what the product is made of. `resources/` holds what is needed to
+build, demonstrate or document it. The split has a practical effect: the setuptools
+configuration looks in both (`where = ["source", "resources"]`), but it installs
+only the packages `backend*` and `examples*`. The demos, the packager and the
+server are therefore never installed with the library.
+
+## The modules of the library {.unnumbered}
+
+Everything under `source/backend/core/` follows one rule: a package per module, and
+a public function whose name is a verb.
+
+```
+core/
+  model.py          Frozen dataclasses that travel between the stages.
+  errors.py         The exception hierarchy.
+  constants.py      Values that never change (for example, a full turn).
+  config.py         Values that policy may change (limits, decimals, timeouts).
+  to_qiskit.py      A native circuit rebuilt as a QuantumCircuit.
+  provider/         detect → BackendInfo; profiles.py holds the noise profiles.
+  importer/         load_circuit: OpenQASM 2 or 3 → QuantumCircuit.
+  transpiler/       transpile: the circuit changed to the gates of the backend.
+  translator/       translate: normalize.py and rules.py produce only native gates.
+  simulator/        simulate: one file per gate matrix, and the tomography.
+  vectorizer/       vectorize: spherical angles to (x, y, z) vectors and probabilities.
+  metrics/          measure: fidelity, inactivity, vibration and cost.
+  formatter/        format: the dictionary of the contract.
+  exporter/         export: the dictionary as JSON text.
+  sampler/          sample: a simulated measurement of one step.
+  compiler/         compile: runs the stages in order.
+```
+
+Each package has an `__init__.py` with one line, and one module file whose name is
+the package name. Helpers sit next to it in the same package. For example, the
+translator keeps its rules in `rules.py` and its pre-processing in `normalize.py`,
+and the simulator keeps one matrix per file (`gpi.py`, `gpi2.py`, `ms.py`, `zz.py`,
+`virtualz.py`).
+
+## Module catalogue {.unnumbered}
+
+What each module does, and where it sits in the flow. The pipeline modules are
+those with an arrow in the last column.
+
+| Module | Function | Role | In → out | Page |
+| --- | --- | --- | --- | --- |
+| `model` | (dataclasses) | Defines every object that travels between modules. | | [Data model](../modules/model.qmd) |
+| `config`, `constants`, `errors` | | Limits and policy, fixed values, and the exception hierarchy. | | [Configuration and errors](../modules/config-and-errors.qmd) |
+| `importer` | `load_circuit` | Reads an OpenQASM 2 or 3 text and explains what cannot be loaded. | text → `QuantumCircuit` | [Importer](../modules/importer.qmd) |
+| `provider` | `detect` | Recognises IonQ Aria, IonQ Forte or the built-in simulator, picks the entangler and the noise profile. | backend → `BackendInfo` | [Provider](../modules/provider.qmd) |
+| `transpiler` | `transpile` | Changes the circuit to the gates the backend understands; the single IonQ dry-run job is sent here. | circuit → `TranspiledCircuit` | [Transpiler](../modules/transpiler.qmd) |
+| `translator` | `translate` | Rewrites every gate as GPI, GPI2, MS or ZZ, and virtual Z. | `TranspiledCircuit` → `NativeCircuit` | [Translator](../modules/translator.qmd) |
+| `simulator` | `simulate` | Computes the exact state after every native gate and reduces it to one Bloch state per qubit. | `NativeCircuit` → `SimulatedCircuit` | [Simulator](../modules/simulator.qmd) |
+| `simulator.tomography` | `measure` | Estimates those states from measurements instead of computing them. | `NativeCircuit` → `SimulatedCircuit` | [Tomography](../modules/tomography.qmd) |
+| `vectorizer` | `vectorize` | Spherical angles to `(x, y, z)` and the probabilities `[p0, p1]`. | `SimulatedCircuit` → `VectorizedCircuit` | [Vectorizer](../modules/vectorizer.qmd) |
+| `metrics` | `measure` | Adds fidelity, inactivity, vibration and cost. | `VectorizedCircuit` → `MeasuredCircuit` | [Metrics](../modules/metrics.qmd) |
+| `formatter` | `format` | Builds the dictionary of the JSON contract. | `MeasuredCircuit` → `dict` | [Formatter and exporter](../modules/formatter-and-exporter.qmd) |
+| `exporter` | `export` | Writes the dictionary as JSON text, or to a file. | `dict` → `str` | [Formatter and exporter](../modules/formatter-and-exporter.qmd) |
+| `sampler` | `sample` | Draws the result of measuring a step from the JSON; applies the readout error. | `dict` → counts | [Sampler](../modules/sampler.qmd) |
+| `to_qiskit` | `to_qiskit` | Rebuilds a native circuit as a `QuantumCircuit`; used by the tomography, the sampler and the tests. | `NativeCircuit` → `QuantumCircuit` | [Bridge to Qiskit](../modules/to-qiskit.qmd) |
+| `compiler` | `compile` | Runs the pipeline in order and checks the arguments. | circuit and backend → `dict` | [Compiler](../modules/compiler.qmd) |
+
+## Who may import whom {.unnumbered}
+
+The imports of the library form a shallow tree. The table is read row by row: the
+module in the first column may import the ones in the second column.
+
+| Module | May import |
+| --- | --- |
+| `model`, `errors`, `constants`, `config` | Nothing from `core`. `model` uses Qiskit types. |
+| `to_qiskit` | `model`, `constants` |
+| `provider` | `model` |
+| `importer` | `errors`, `config` |
+| `transpiler` | `model`, `errors`, `config` |
+| `translator` | `model`, `errors`, `constants` |
+| `simulator` (and the tomography) | `model`, `errors`, `config`, `constants`, `to_qiskit` |
+| `vectorizer` | `model` |
+| `metrics`, `formatter` | `model`, `config` |
+| `sampler` | `model`, `errors`, `config`, `constants`, `to_qiskit` |
+| `exporter` | Nothing from `core` |
+| `compiler` | Every stage, `model` and `errors` |
+
+No arrow points from one stage to another. The only module with a wide view is
+`compiler`. This has a direct benefit: a stage can be tested with a hand-made
+input, without running the stages that come before it.
+
+The adapters sit above the library and import only its public functions.
+
+```
+main.py ───────┐
+               ├──► qollab_api.py ──► backend (compile, export, load_circuit, sample)
+server.py ─────┘                          ▲
+                                          └── examples/ (the circuits shown in the selector)
+```
+
+## Where the tests are {.unnumbered}
+
+The suite lives in `source/tests/`, with one `test_<module>.py` per module. It
+also covers the adapters and the tools (`test_qollab_api.py`, `test_server.py`,
+`test_package_qollab.py`), the examples, the performance budget and the files that
+keep the project consistent (`test_requirements.py` compares `requirements.txt`
+with `pyproject.toml`, and `test_memory.py` keeps `memory.md` short). See
+[Tests](../development/tests.qmd).

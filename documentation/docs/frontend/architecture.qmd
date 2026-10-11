@@ -1,0 +1,171 @@
+# Viewer architecture {#sec-viewer-architecture}
+
+The viewer is plain JavaScript with ES modules and three.js. There is no build
+step and no framework. This page explains how the modules are layered, how a step
+reaches the screen, and what each shader draws. The list of files is on
+[Basic viewer](viewer.qmd), and the integration with the platform is on
+[The viewer on Qollab](qollab.qmd).
+
+## Layers {.unnumbered}
+
+The modules of `source/frontend/js` fall into five layers. Imports mostly point
+downwards, from the entry to the foundation.
+
+```
+  entry          main.js
+                   │
+  interface      controls.js   panels.js   timeline.js   viewpanel.js   camerapad.js
+                   │             │            │              │              │
+  data           data.js ─────── host.js ──────────────────  settings.js
+                   │
+  scene          scene.js ── laser.js  phonon.js  trap.js  horizontal.js
+                   │          measurement.js  selection.js  environment.js
+                   │
+  foundation     state.js   config.js   utils.js   shaders.js   three-addons.js   demo.js
+```
+
+| Layer | Modules | Responsibility |
+| --- | --- | --- |
+| Foundation | `state`, `config`, `utils`, `shaders`, `three-addons`, `demo` | Constants, shared state, small helpers and loading. They import almost nothing. |
+| Scene | `scene`, `laser`, `phonon`, `trap`, `horizontal`, `measurement`, `selection`, `environment` | Build the three.js objects and update them every frame. |
+| Data | `data`, `host`, `settings` | Load a visualization, talk to Python, and keep the view options. |
+| Interface | `controls`, `panels`, `timeline`, `viewpanel`, `camerapad` | The buttons, panels and the timeline strip. |
+| Entry | `main` | Wires everything at start-up. |
+
+Some imports go sideways or upwards, for example `data.js` imports `panels.js` and
+`timeline.js` to refresh them when the step changes, and `scene.js` imports
+`settings.js` for the palettes. The one rule that is kept strictly is that **there
+are no import cycles**. The bundler of the Qollab package depends on this, because
+it puts the modules in the order of their imports, and a test fails if a cycle
+appears (for the timeline and for the view panel).
+
+## Shared state {.unnumbered}
+
+`state.js` exports one object, `state`. Every module reads and writes it, and no
+state hides anywhere else. It is grouped by what it describes.
+
+| Field | Holds |
+| --- | --- |
+| `view` | The view options (palette, what is shown, light, motion), set by `settings.js`. |
+| `data`, `stepIndex` | The loaded visualization and the current position in it. |
+| `playing`, `playTimer`, `pulseMs` | The automatic play and the length of the current laser pulse. |
+| `qubits` | One entry per ion: the animated vector and its target. |
+| `gate` | The two-qubit gate that is running, its two ions and its time window. |
+| `measure`, `intro` | The measurement animation and the start-up pulse. |
+| `hovered` | The ions of the gate under the pointer in the timeline. |
+| `shaders` | The shader sources, loaded once. |
+| `three` | The three.js objects: renderer, scene, camera and the attributes that are updated each frame. |
+
+## From a file to the screen {.unnumbered}
+
+```
+JSON text ─► loadData(obj) ─► buildScene(n) ─► updateStep(0)
+                  │                               │
+                  │                    sets targets, laser pulse, gate,
+                  │                    entangled pair, panels, timeline
+                  ▼
+            state.data                  animate(time)  ◄── requestAnimationFrame
+                                           │
+                                  moves each vector toward its target,
+                                  writes the instance attributes,
+                                  updates the layers, renders
+```
+
+1. **`loadData`** (in `data.js`) stores the visualization, builds the scene for the
+   number of qubits, builds the timeline and starts the intro.
+2. **`updateStep`** (in `data.js`) runs when the step changes. It does not draw. It
+   sets the *targets*: where each Bloch vector must end, which ions are the targets
+   of the gate, the colour and length of the laser pulse (`laserPulseFor`), the
+   window of a two-qubit gate and the pair that is entangled. It also refreshes the
+   panels.
+3. **`animate`** (in `scene.js`) runs on every frame. It moves each vector 18 % of
+   the way to its target, writes the result into the instanced attribute of the
+   spheres, writes the intensity of each laser beam, calls the update function of
+   every layer, and renders.
+
+Separating the two means a step is a change of state, and the animation is a
+function of time. Playing, stepping back, jumping on the timeline and loading a
+file all use the same `updateStep`.
+
+## Coordinates {.unnumbered}
+
+The backend uses the standard Bloch convention, with `|0⟩` at `+z`. three.js has `y`
+up. The conversion happens in one place, in `animate`: the Bloch vector
+`(x, y, z)` is written to the shader as `(x, z, -y)`, so `|0⟩` points up. The
+chain of ions runs along `x` at `y = 0`.
+
+## The shaders {.unnumbered}
+
+The shaders are written in GLSL in `source/shaders/`, one pair per effect. They are
+loaded by `shaders.js` (over HTTP locally, or from the host on Qollab, where they
+are embedded in `main.js`).
+
+| Pair | Mesh | What it draws |
+| --- | --- | --- |
+| `bloch.vert` / `bloch.frag` | One `InstancedMesh`, one instance per ion | The Bloch sphere: shell, great circles, axes, the state vector and its tip, the halo of an entangled ion and the red tint of decoherence. Per-instance attributes: `instancePsi`, `instanceEntangled`, `instanceDecoherence`. |
+| `laser.vert` / `laser.frag` | One instanced box per ion | A volumetric laser beam, found by ray marching inside the box. `instanceActive` is the intensity of each beam; it is `0` unless the gate of the step fires on that ion. |
+| `lens.vert` / `lens.frag` | The lens of each laser head | Glass with a dark base and chromatic edges. |
+| `bus.vert` / `bus.frag` | A tube between the two targets of an MS or ZZ gate | The phonon bus: two waves of different frequency that travel along the tube. |
+| `rail.vert` / `rail.frag` | A thin thread along the chain | The guide rail: a faint blue line that glows amber between the two ions of a running two-qubit gate. |
+
+The options of the *View and accessibility* panel reach the sphere shader as
+uniforms (`uAxisX`, `uVecColor`, `uSphereGain`, `uVectorWidth`, `uDetail`,
+`uMotion`, `uHalo`, among others). A test fails if the shader declares a uniform
+that the scene does not set.
+
+Reserved words matter in GLSL. A variable called `active` stopped the guide rail
+from compiling once, and the shaders use `intensity` instead.
+
+## Layers of the scene {.unnumbered}
+
+Each file of the *scene* layer builds one group of objects and exposes a
+`create…` function, called once, and an `update…` function, called on every frame.
+
+| Module | Builds |
+| --- | --- |
+| `laser.js` | The laser heads that hang from a rail, the volumetric beams, and the colour and length of the pulse of each gate. |
+| `trap.js` | The chip of the surface trap: substrate, gold pads, field rings; lights the electrodes of the target ions. |
+| `phonon.js` | The phonon bus, the jiggle of the ions and the synchronized halo after a two-qubit gate. |
+| `horizontal.js` | The global beam, the guide rail and the side optics, and the intro pulse. |
+| `measurement.js` | The fluorescence animation: readout beam, flares of the ions in `|1⟩`, photons and state badges. |
+| `selection.js` | Four arcs around the ions of the gate under the pointer in the timeline. |
+| `environment.js` | The optical table, the coils, the viewport frame, the fog and the lights. |
+
+Laser pulses depend on the gate: GPI2 lasts one base pulse (650 ms), GPI two, and
+MS or ZZ three, with the entangling pair in neon orange. A virtual Z fires no laser,
+because it is a change of the reference frame and not a physical operation. The
+automatic play waits for the pulse to end, so a long entangling gate is not cut.
+
+## The host {.unnumbered}
+
+`config.js` reads `window.QVIZ_HOST` once, as `HOST`. `host.js` is the only module
+that talks to Python.
+
+```
+compileQasm(text) ─► HOST.compileQasm  or  POST /api/compile
+sampleStep(data, step, shots) ─► HOST.sample  or  POST /api/sample
+```
+
+With no `HOST` and no server, both functions fail with a message that the error
+line shows. The full table of hooks is on
+[The viewer on Qollab](qollab.qmd).
+
+## Testing without a browser {.unnumbered}
+
+The test suite has no browser. `test_package_qollab.py` checks the viewer through
+what is generated from it.
+
+- The package is built and inspected: the file count, the absence of `main.py`, the
+  license, the libraries, and that every service of the prelude is read by the
+  viewer.
+- The generated `main.js` and each module are checked for syntax with
+  `node --check`. These tests are skipped when `node` is not installed.
+- Small pieces of JavaScript are run with `node` on their own, for example the view
+  options (their profiles and their storage, with a stub of `localStorage`) and the
+  function that turns a Python traceback into a readable message.
+- Source checks keep the layers honest: the timeline may import only `config`,
+  `state` and `utils`, and every uniform that the sphere shader declares must be
+  set by the scene.
+
+Visual changes are checked by eye, locally and on Qollab, and with headless
+Chromium when a rendering problem has to be reproduced.

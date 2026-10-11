@@ -47,7 +47,7 @@ spheres and 676 steps.
 ```bash
 make outputs
 python -m http.server 8000
-# then open http://localhost:8000/frontend/index.html
+# then open http://localhost:8000/source/frontend/index.html
 ```
 
 The file `source/frontend/index.html` is connected to the generated files. It loads

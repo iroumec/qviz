@@ -190,10 +190,9 @@ Locally, the generated `main.js` was run with the real Python and a simulated
 page (jsdom, with no WebGL), and the measurement panel gave the expected results
 with the backend, without a sampler in the host, and when the backend fails.
 
-**Not verified yet** (it needs Qollab): that `three/addons/` resolves there, the 3D
-scene with the newer three.js (shaders, labels, laser, lens and colors), the size
-of the viewer inside the iframe, and the behavior on the IonQ simulators. Compare
-the scene with the standalone viewer.
+**Verified in Qollab (2026-10-11):** the team ran the current package and
+everything works: the `three/addons/` imports, the 3D scene, the timeline strip, the
+view and accessibility panel, measurement and loading circuits.
 
 ## Rules for future changes {.unnumbered}
 

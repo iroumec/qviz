@@ -10,9 +10,9 @@ circuit and the native gates that the machine really runs. By showing every
 native gate and the state of every ion, the gap is closed, and the physics of
 each gate can be explained. See [Why QViz](docs/concepts/motivation.qmd).
 
-This book is the documentation of the **backend** (Python). The frontend is
-described briefly, because a small viewer is included, but the main subject is
-the backend.
+This book documents the whole project. Its main subject is the **backend**
+(Python), which is described module by module. It also covers how the parts are
+connected, the **viewer** that draws the JSON, and its use on Qollab.
 
 The book is written in plain English. Short sentences and the passive voice are
 used, so that the reader is not required to be an expert. Every public function
@@ -23,10 +23,15 @@ The pages are grouped as follows.
 - **Introduction** explains why the project exists.
 - **Getting started** shows how the project is installed and run.
 - **Core concepts** explains the pipeline, the units and the JSON contract.
+- **Architecture** shows how the library, the adapters, the viewer and the hosts
+  are connected, how the repository is organised and which engineering practices
+  are followed.
 - **Backend modules** documents each module, function by function.
 - **Examples** shows complete circuits, such as the QFT adder.
-- **Frontend** documents the viewer and its use on Qollab.
-- **Development** explains the tests, the demo scripts and the style rules.
+- **Frontend** documents the architecture of the viewer, the viewer itself and its
+  use on Qollab.
+- **Development** explains the tests, the demo scripts, the style rules and the
+  tooling and workflow.
 
 The complete rendered book can be built with Quarto. See
 [Installation](docs/getting-started/installation.qmd) for the

@@ -71,7 +71,7 @@ The JSON that is produced can be inspected by hand, or with the viewer.
 ```bash
 make outputs
 make server
-# then open http://localhost:8000/frontend/index.html
+# then open http://localhost:8000/source/frontend/index.html
 ```
 
 The page `source/frontend/index.html` is connected to the files in `out/`. It reads the

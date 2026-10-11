@@ -1,6 +1,6 @@
 // The two services that need Python: compile a circuit and measure a step.
 // Each one asks the host (Qollab) when it gives the service, and the local server
-// (scripts/server.py, `make server`) otherwise. Both run the same Python code, so
+// (resources/scripts/server.py, `make server`) otherwise. Both run the same Python code, so
 // the results are the same. There is no JavaScript fallback: without Python the
 // viewer cannot compile or measure, and it says so.
 

@@ -12,7 +12,7 @@
 //            it is how the user loads a circuit
 //
 // The viewer needs Python for `compileQasm` and `sample`. Without a host that gives
-// them, host.js asks the local server of scripts/server.py (`make server`).
+// them, host.js asks the local server of resources/scripts/server.py (`make server`).
 
 export const HOST = window.QVIZ_HOST || {};
 
@@ -121,8 +121,8 @@ export const PLAY_MARGIN_MS = 150;
 export const MANIFEST_URL = "../../out/manifest.json";
 export const OUT_URL = "../../out/";
 
-export const COMPILE_URL = "../api/compile";
-export const SAMPLE_URL = "../api/sample";
+export const COMPILE_URL = "../../api/compile";
+export const SAMPLE_URL = "../../api/sample";
 
 export const OBJ_URL = "../../resources/models/laser_lens.obj";
 export const MTL_URL = "../../resources/models/laser_lens.mtl";

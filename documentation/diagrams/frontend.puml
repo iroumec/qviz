@@ -5,7 +5,7 @@
 title Frontend data flow
 
 rectangle "Backend (Python)\ncompile() -> JSON" as backend
-rectangle "Viewer (frontend/index.html)\nvanilla JavaScript" as viewer
+rectangle "Viewer (source/frontend/index.html)\nvanilla JavaScript" as viewer
 rectangle "Scene (three.js)\nshaders bloch.vert + bloch.frag\ninstanced chain of Bloch spheres" as scene
 rectangle "Panels\nhealth, details, p(|1), frames" as panels
 

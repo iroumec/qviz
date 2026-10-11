@@ -1,7 +1,7 @@
 uniform vec3 iResolution;
 uniform float iTime;
 
-// The look of the sphere, set from `frontend/js/scene.js` (the "Vista" panel).
+// The look of the sphere, set from `source/frontend/js/scene.js` (the "Vista" panel).
 // The colours come from a palette; the gains scale the glow of the shell and of
 // the state vector; `uDetail` is 0 for the outline only, 1 for the shell and the
 // great circles, 2 for everything; `uMotion` and `uHalo` are 0 or 1.

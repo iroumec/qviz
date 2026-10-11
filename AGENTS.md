@@ -5,7 +5,7 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 **Antes de tocar código leé:**
 
 - `memory.md`: el estado actual del proyecto, lo decidido y los pendientes. Es el traspaso entre sesiones (`CLAUDE.md` lo importa). Si algo contradice a `spec.md`, manda `spec.md` y se corrige `memory.md`.
-- `spec.md`: arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
+- `documentation/prompts/spec.md` (en adelante `spec.md`): arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
 

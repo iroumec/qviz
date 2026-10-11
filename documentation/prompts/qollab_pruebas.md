@@ -96,7 +96,7 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 
 | Fecha | Backend | # (de la tabla) | ¿Bien? | Observaciones |
 |---|---|---|---|---|
-| | Built-in | 1 a 13 | | |
+| 2026-10-11 | Built-in | 1 a 13 | Sí | El usuario lo probó y todo anda bien. |
 | | IonQ Aria 2 (sim) | 1, 2, 5, 6, 9, 10 | | |
 | | IonQ Forte 1 (sim) | 1, 2, 5, 6, 9 | | |
 | | IonQ Forte Enterprise 1 (sim) | 1, 2, 5, 6, 9 | | |

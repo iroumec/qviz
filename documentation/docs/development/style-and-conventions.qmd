@@ -5,54 +5,11 @@ checked by two tools, `flake8` and `pydocstyle`, which are run with `make lint`.
 
 ## The layout of the project {.unnumbered}
 
-```
-main.py                     Entry point for Qollab.
-qollab_api.py               The functions that Qollab pages call (they return text).
-requirements.txt            Dependencies for Qollab.
-pyproject.toml              Local development and packaging.
-Makefile                    The build and the convenience targets.
-.flake8                     The style rules of flake8.
-.github/workflows/ci.yml    The continuous integration (lint and tests).
-source/                     The Python library, the viewer and the tests.
-  backend/                  The library.
-    __init__.py             The public API: compile, export, __version__.
-    core/
-      model.py              The frozen dataclasses of the pipeline.
-      errors.py             The exception hierarchy.
-      constants.py          The fixed mathematical constants (never changed).
-      config.py             The tunable configuration parameters.
-      to_qiskit.py          The bridge from a native circuit to a Qiskit circuit.
-      provider/             Provider detection and noise profiles.
-      compiler/             The pipeline orchestration.
-      transpiler/           Transpilation for the backend.
-      translator/           Translation into the native gate set.
-      simulator/            The statevector, the gate matrices and the tomography.
-      vectorizer/           The Bloch vectors.
-      sampler/              The simulated measurement of a step.
-      metrics/              The didactic metrics.
-      formatter/            The JSON contract.
-      exporter/             The JSON serialization.
-  frontend/                 The viewers (index.html) and their ES modules (frontend/js).
-  shaders/                  The volumetric shaders of the spheres.
-  tests/                    The pytest suite.
-resources/                  The examples and the development tools.
-  examples/                 Worked circuits (for example the QFT adder).
-  models/                   The laser model (OBJ and MTL).
-  scripts/                  The demo scripts, the generator of out/ and the server.
-  make/                     The makefiles that the Makefile includes.
-    Makefile.git            The branch workflow.
-    Makefile.quarto         The build of this book.
-documentation/              The specification, the schema and this book.
-  _quarto.yml               The configuration of this book.
-  index.qmd                 The preface.
-  theme-light.scss          The light theme of the book (monochromatic).
-  theme-dark.scss           The dark theme of the book.
-  theme-rules.scss          The rules that both themes share.
-  docs/                     The chapters of this book.
-  diagrams/                 The PlantUML diagrams and their SVG renders.
-  prompts/                  spec.md, DESIGN.md and the working notes.
-  schema/                   The JSON schema of the contract.
-```
+The folders and files of the repository, and what belongs in each, are on
+[Project structure](../architecture/project-structure.qmd). In short, `source/`
+holds the library, the viewer, the shaders and the tests; `resources/` holds the
+examples, the scripts and the makefiles; and `documentation/` holds the
+specification and this book.
 
 ## One module per package {.unnumbered}
 
@@ -71,6 +28,7 @@ module, and it is a verb.
 | `exporter` | `export` |
 | `sampler` | `sample` |
 | `provider` | `detect` |
+| `importer` | `load_circuit` |
 | `compiler` | `compile` |
 
 ## Imports {.unnumbered}
@@ -155,7 +113,7 @@ decided, what is pending, and how to continue. `CLAUDE.md` imports it, and
 `AGENTS.md` asks every agent to read it at the start and to update it at the end
 of each change. `make resume` shows the branch, the last commits, the changes that
 are not pushed and the pending list. The file is kept short (a test checks that it
-stays under 150 lines), and the design stays in `spec.md`, which wins when the two
+stays under 150 lines), and the design stays in `documentation/prompts/spec.md`, which wins when the two
 disagree.
 
 ## Git {.unnumbered}

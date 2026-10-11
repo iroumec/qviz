@@ -1,0 +1,108 @@
+# Public API and entry points {#sec-entry-points}
+
+The library exposes four functions. Three small adapters wrap them for the places
+where QViz runs. This page lists both, with their signatures and the reason each
+adapter exists.
+
+## The public API {.unnumbered}
+
+`source/backend/__init__.py` is the only import that code outside the library
+needs.
+
+```python
+from backend import compile, export, load_circuit, sample
+```
+
+| Function | Module | Takes | Returns |
+| --- | --- | --- | --- |
+| `load_circuit(text)` | `importer` | OpenQASM 2 or 3 text | a `QuantumCircuit` |
+| `compile(backend, qc, *, entangler, strategy, shots, allow_paid, allow_remote)` | `compiler` | a backend object and a circuit | the dictionary of the JSON contract |
+| `export(data)` | `exporter` | that dictionary | JSON text |
+| `sample(data, step, shots)` | `sampler` | the dictionary and a step | a `dict` of bit strings and counts |
+
+`__version__` is also exported. Each function is documented on the page of its
+module.
+
+Two points are worth knowing before the adapters.
+
+- `compile` receives `backend` as an argument. It never imports or creates one,
+  because Qollab injects the object as a global of `main.py`.
+- `import backend` is never written in `main.py`. It would replace the injected
+  variable. The form `from backend import compile` is safe.
+
+## `qollab_api.py` {#sec-qollab-api .unnumbered}
+
+`qollab_api.py` holds the functions that both `main.py` and the pages of the
+viewer call. It exists so that the logic lives in one place. Its functions take
+and return plain values and **JSON text**, never dictionaries.
+
+| Function | Purpose |
+| --- | --- |
+| `CIRCUITS` | The example circuits by name: `bell`, `bell_distant`, `ghz3`, `ghz16`, `layered16`. |
+| `build_circuit(name)` | Builds one of them; an unknown name raises `QVizError`. |
+| `parse_entangler(value)` | Turns `"auto"`, `"ms"` or `"zz"` into `None`, `"ms"` or `"zz"`. Any other text is an error, never a silent default. |
+| `circuits()` | The selector entries as JSON: `[{"file": …, "label": …}]`. |
+| `run(backend, circuit, shots, entangler)` | Compiles an example and returns the JSON text. |
+| `run_qasm(backend, qasm, shots, entangler)` | Compiles an OpenQASM text, locally (`allow_remote=False`), and returns the JSON text. |
+| `sample_step(visualization, step, shots)` | Measures a step of a JSON text and returns `[[bitstring, count], …]` as JSON. |
+
+The reply of `sample_step` is a list of pairs and not an object. A JavaScript
+object reorders integer-like keys (`"10"` before `"11"`), which would lose the
+order from the most frequent outcome down.
+
+## `main.py` {.unnumbered}
+
+`main.py` is the entry point when the project is uploaded to Qollab as a Python
+project.
+
+```python
+def main(circuit: str = "bell", shots: int = 1024, entangler: str = "auto", step: int = 0) -> None:
+    ...
+```
+
+Because the parameters have strict annotations, Qollab draws a form for them in
+the QPU dialog. The function compiles an example circuit, prints the backend, the
+size, the time and the JSON (only its size if there are more than 30 steps), then
+measures one step and prints the most frequent outcomes. It is the only place in
+the project, apart from the scripts, that calls `print`.
+
+The signature is on one line because Qollab requires it. For that reason,
+`.flake8` ignores `E501` for this file only.
+
+## `resources/scripts/server.py` {.unnumbered}
+
+`make server` starts this file. It serves the repository like
+`python -m http.server`, and adds two routes that call the same functions as
+Qollab, on the built-in simulator.
+
+| Route | Body | Query | Reply |
+| --- | --- | --- | --- |
+| `POST /api/compile` | OpenQASM text | `shots`, `entangler` | the JSON of the visualization |
+| `POST /api/sample` | the JSON of a visualization | `step`, `shots` | the list of pairs of `sample_step` |
+
+A circuit that cannot be compiled answers `400` with `{"error": "…"}`, and an
+unexpected failure answers `500` with the same shape. A negative or non-numeric
+`Content-Length` answers `400`, and a body over the limit answers `413`. The server
+listens on `127.0.0.1` only, sends `Cache-Control: no-store`, and redirects `/` to
+`/source/frontend/index.html`.
+
+It is a development tool. Qollab never runs it.
+
+## The other tools {.unnumbered}
+
+| File | Purpose |
+| --- | --- |
+| `resources/scripts/package_qollab.py` | Builds `qollab/`, the JS project uploaded to Qollab. See [The viewer on Qollab](../frontend/qollab.qmd). |
+| `resources/scripts/generate_outputs.py` | Writes the JSON of the example circuits to `out/`, with `out/manifest.json`. |
+| `resources/scripts/demo_<module>.py` | A readable demonstration of one stage. See [Demos](../development/demos.qmd). |
+| `resources/scripts/_common.py` | The helpers that the demos share. |
+
+## Choosing the right entry point {.unnumbered}
+
+| If the goal is to… | Use |
+| --- | --- |
+| Compile a circuit from Python code | `compile` and `export` from `backend` |
+| Read a `.qasm` file | `load_circuit`, then `compile` |
+| Measure a step of a JSON already produced | `sample` |
+| Check a backend on Qollab and read the JSON | the Python project (`main.py`) |
+| Show the viewer to someone | the JS project (`make qollab`), or `make server` locally |

@@ -1,0 +1,162 @@
+# Tooling and workflow {#sec-tooling}
+
+This page lists the commands of the project, the automated checks, and the way the
+team and the code agents work together. Everything is run from the repository
+root.
+
+## The Makefile {.unnumbered}
+
+`Makefile` is the single entry for the commands of the project. It includes two
+smaller files: `resources/make/Makefile.git` for the branch workflow and
+`resources/make/Makefile.quarto` for this book.
+
+### Setting up and checking {.unnumbered}
+
+| Command | What it does |
+| --- | --- |
+| `make venv` | Creates `.venv`. |
+| `make install` | Installs the package in editable mode with the development extras (`pytest`, `jsonschema`, `flake8`, `pydocstyle`). |
+| `make install-requirements` | Installs `requirements.txt`, the list that Qollab reads. |
+| `make test` | Runs the whole suite with `pytest source/tests/ -v`. |
+| `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests. |
+| `make demo M=<module>` | Runs `resources/scripts/demo_<module>.py`. |
+
+### Producing and serving {.unnumbered}
+
+| Command | What it does |
+| --- | --- |
+| `make outputs` | Writes the example JSON files and `manifest.json` to `out/`. |
+| `make qollab` | Builds `qollab/`, the JS project to upload to Qollab. |
+| `make server` | Serves the viewer at `http://localhost:8000` with compiling and measuring in Python (`PORT=9000` changes the port). |
+| `make open` | Like `server`, and also opens the browser. |
+| `make resume` | Shows the branch, the last commits, the unpushed changes and the pending list of `memory.md`. |
+
+### Diagrams {.unnumbered}
+
+| Command | What it does |
+| --- | --- |
+| `make install-plantuml` | Installs PlantUML and Graphviz with `apt`. |
+| `make render-puml` | Renders `documentation/diagrams/*.puml` to `documentation/diagrams/svg/`. |
+
+The SVG files are committed, so building the book does not need PlantUML.
+
+### The book {.unnumbered}
+
+| Command | What it does |
+| --- | --- |
+| `make render` | Renders every format configured in `documentation/_quarto.yml`. |
+| `make html` | Renders the HTML book only. |
+| `make pdf-typst` | Renders the PDF with Typst. |
+| `make preview` | Serves the book on port 4321 and re-renders a chapter when it is saved. |
+| `make check` | Verifies the Quarto toolchain. |
+| `make clean` | Removes `documentation/_book` and the caches. |
+
+## The scripts {.unnumbered}
+
+The scripts in `resources/scripts/` are tools, not part of the library. They may use
+`print`.
+
+| Script | Purpose |
+| --- | --- |
+| `demo_<module>.py` | One per stage (`transpiler`, `translator`, `simulator`, `vectorizer`, `metrics`, `compile`, `adder`). It prints a result that a person can read. |
+| `generate_outputs.py` | Compiles the example circuits and writes `out/`. |
+| `package_qollab.py` | Builds `qollab/`. |
+| `server.py` | The local server of the viewer. |
+| `_common.py` | Helpers shared by the demos. |
+
+## Continuous integration {.unnumbered}
+
+`.github/workflows/ci.yml` has two jobs, on every push to `main` and `development`
+and on every pull request.
+
+| Job | Steps |
+| --- | --- |
+| Lint | `flake8` and `pydocstyle`, with the same arguments as `make lint`. |
+| Tests | `pip install -e ".[dev]"`, then `pytest`, on Python 3.12 and 3.13. |
+
+A new run of the same branch cancels the previous one. The token has read-only
+permissions. Because the workflow repeats the Makefile commands, a change that
+passes `make test` and `make lint` locally passes in CI.
+
+## Branches and commits {.unnumbered}
+
+`Makefile.git` encodes the branch workflow, so that nobody has to remember the
+commands.
+
+| Branch | Purpose | Created by |
+| --- | --- | --- |
+| `main` | Stable code. | `make git-init` |
+| `development` | Integration of the next version. Work is pushed here. | `make git-init`, `make development` |
+| `feature/<name>` | One module or feature. | `make feature NAME=<name>` |
+| `release/<version>` | Stabilising a version. | `make release VERSION=<x.y.z>` |
+| `hotfix/<version>` | An urgent fix of the published code. | `make hotfix VERSION=<x.y.z>` |
+
+A feature is merged back with `make finish-feature NAME=<name>`, which uses
+`--no-ff` so that the branch stays visible in the history. A release or a hotfix is
+tagged `v<version>` and merged into both `main` and `development`.
+
+The same file has short helpers for daily use: `status`, `log`, `diff`, `stage`,
+`unstage`, `commit MESSAGE="…"`, `amend`, `push`, `pull` (fast-forward only) and
+`fetch`.
+
+Commit messages are in English. The first line is a short summary, and a body with
+bullets is added when it helps.
+
+## How a module is built {.unnumbered}
+
+The specification defines the modules M0 to M10. For each one the same cycle is
+followed.
+
+1. Check in the status table of the specification that the previous module is
+   validated.
+2. Read the complete section of the module: objective, rules, tests and demo.
+3. Implement that module only, with its tests in `source/tests/test_<module>.py`
+   and its demo in `resources/scripts/demo_<module>.py`.
+4. Run `make test` and the demo. Both must pass.
+5. Mark the module *ready to validate* in the specification.
+6. Stop and report what was done, how to validate it (with exact commands and the
+   expected output), what is still unverified on Qollab and any deviation from the
+   specification.
+7. Continue with the next module when the team agrees.
+
+If the work shows that the specification is wrong, the code and the specification
+are corrected together and the report says so. A change to the JSON contract is not
+made without asking.
+
+## Working with code agents {.unnumbered}
+
+Three files in the root tell an agent how to work, and they are written in Spanish
+because the team is.
+
+| File | Content |
+| --- | --- |
+| `AGENTS.md` | The rules: architecture, Qollab restrictions, tests, commands, Git and the scope. |
+| `CLAUDE.md` | Imports `AGENTS.md` and `memory.md`, so that both are loaded at the start of a session. |
+| `memory.md` | The hand-over: current state, decisions, pending items and the history. It is updated after each change and a test keeps it under 150 lines. |
+
+At the start of a session the agent pulls, reads `memory.md` and runs
+`make resume`. At the end it runs `make test` and `make lint`, brings `memory.md`
+up to date and, only if the team asks, commits and pushes.
+
+## The tests of the project itself {.unnumbered}
+
+Some tests do not check behaviour. They check that the project stays coherent.
+
+| Test | Keeps in line |
+| --- | --- |
+| `test_requirements.py` | `requirements.txt` and the dependencies of `pyproject.toml`. |
+| `test_memory.py` | `memory.md`, which must have its sections and stay short. |
+| `test_package_qollab.py` | The Qollab package, its limits and its services. |
+| `test_smoke.py` | The public API of `backend`. |
+
+## Before closing a change {.unnumbered}
+
+A short list that applies to any change.
+
+- [ ] `make test` is green.
+- [ ] `make lint` is green.
+- [ ] If the viewer, `qollab_api.py` or the packager changed: `make qollab`.
+- [ ] The affected chapter of this book is updated.
+- [ ] `memory.md` has the new state and a line of history.
+- [ ] If the JSON contract changed, the schema, the golden file and
+      [JSON contract](../concepts/json-contract.qmd) agree, and the team knew.

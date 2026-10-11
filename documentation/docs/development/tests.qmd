@@ -62,6 +62,8 @@ No network is used and no credential is needed. Every IonQ backend is mocked.
 | `test_requirements.py` | `requirements.txt` equals the dependencies of `pyproject.toml`, and it uses only what Qollab accepts. |
 | `test_qollab_api.py` | The entry point and the functions that Qollab pages call: the `entangler` field, the example circuits, the JSON text that is returned, the order of the counts, and the output of `main`. |
 | `test_sampler.py` | The joint distribution against the marginals of every step and against `Statevector`, the Bell outcomes, the bit order, the noise, the seed, and the rejection of bad steps, shots and data. |
+| `test_server.py` | The local server of the viewer: compiling an OpenQASM text, sampling a step, the error replies (`400`, `404`, `413`), and that the relative URLs of the viewer reach the routes of the server from `/source/frontend/`. |
+| `test_importer.py` | The reading of OpenQASM 2 and 3, and the messages for what cannot be loaded. |
 | `test_tomography.py` | The estimates (with a fixed seed), the single run call and the hardware guard. |
 
 ## The oracles {.unnumbered}

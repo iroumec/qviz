@@ -87,7 +87,7 @@ qollab_api.py                   # Funciones que llaman las páginas JS de Qollab
 requirements.txt                # Dependencias para Qollab, iguales a las de pyproject.toml (un test lo comprueba). M7
 pyproject.toml                  # Desarrollo local (y PyPI a futuro). M0
 source/backend/
-  __init__.py                   # API pública: compile, export, sample, __version__
+  __init__.py                   # API pública: compile, export, load_circuit, sample, __version__
   core/
     __init__.py
     model.py                    # Dataclasses inmutables de la representación intermedia (§5)
