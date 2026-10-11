@@ -107,6 +107,16 @@ export function initControls() {
   });
   document.getElementById("measure").addEventListener("click", runMeasurement);
 
+  // The `-` and `+` of the shots field, so the native number spinner is not used.
+  const shots = document.getElementById("shots");
+  const bumpShots = (delta) => {
+    const min = Number(shots.min) || 1;
+    const max = Number(shots.max) || 100000;
+    shots.value = String(Math.max(min, Math.min(max, (Number(shots.value) || 0) + delta)));
+  };
+  document.getElementById("shotsUp").addEventListener("click", () => bumpShots(1));
+  document.getElementById("shotsDown").addEventListener("click", () => bumpShots(-1));
+
   document.addEventListener("dragover", (event) => {
     event.preventDefault();
     document.body.classList.add("drop");

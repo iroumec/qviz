@@ -116,9 +116,9 @@ export function updateSimulationDetails() {
 export function refreshPlayButton() {
   const button = document.getElementById("play");
   if (!button) return;
-  if (state.playing) button.textContent = "Pausa";
-  else if (state.data && state.stepIndex >= state.data.steps.length) button.textContent = "Reiniciar";
-  else button.textContent = state.stepIndex > 0 ? "Reanudar" : "Play";
+  if (state.playing) button.textContent = TEXT.pause;
+  else if (state.data && state.stepIndex >= state.data.steps.length) button.textContent = TEXT.restart;
+  else button.textContent = state.stepIndex > 0 ? TEXT.resume : TEXT.play;
 }
 
 // The word for the fidelity, in the language of the page (`<html lang>`).
@@ -138,6 +138,12 @@ const TEXT = ENGLISH
       simulation: "Simulation details",
       model: "Model", reference: "Reference", initialFidelity: "Initial fidelity", qubits: "Qubits", steps: "Steps",
       measurementTitle: "Measurement", step: "Step", shots: "Shots",
+      close: "Close", correction: "The probability is corrected with the fidelity",
+      more: (n) => `… and ${n} more results.`, adjusted: "adjusted", measured: "measured",
+      loadCircuit: "Load circuit", measure: "Measure",
+      title: "QViz · trapped ions",
+      legend: "drag: rotate · right click: move · wheel: zoom · WASD + space/ctrl: move",
+      play: "Play", pause: "Pause", resume: "Resume", restart: "Restart", stepWord: "step",
       initial: `Initial state: every ion in ${ketMath(0)}.`,
       targets: "Target qubits",
       phases: "Phases (rad)", angle: "Angle (turns)",
@@ -153,6 +159,12 @@ const TEXT = ENGLISH
       simulation: "Detalles de la simulación",
       model: "Modelo", reference: "Referencia", initialFidelity: "Fidelidad inicial", qubits: "Qubits", steps: "Pasos",
       measurementTitle: "Medición", step: "Paso", shots: "Shots",
+      close: "Cerrar", correction: "La probabilidad se corrige con la fidelidad",
+      more: (n) => `… y ${n} resultados más.`, adjusted: "ajustado", measured: "medido",
+      loadCircuit: "Cargar circuito", measure: "Medir",
+      title: "QViz · iones atrapados",
+      legend: "arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover",
+      play: "Play", pause: "Pausa", resume: "Reanudar", restart: "Reiniciar", stepWord: "paso",
       initial: `Estado inicial: todos los iones en ${ketMath(0)}.`,
       targets: "Qubits objetivo",
       phases: "Fases (rad)", angle: "Ángulo (turnos)",
@@ -277,7 +289,7 @@ export async function runMeasurement() {
   try {
     sorted = await sampleStep(state.data, at, shots);
   } catch (error) {
-    setError("No se pudo medir: " + error.message);
+    setError((ENGLISH ? "Could not measure: " : "No se pudo medir: ") + error.message);
     return;
   }
   // The user may have moved to another step or file while the backend worked.
@@ -317,22 +329,22 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, n, step) {
   for (let q = 0; q < n; q++) {
     const measured = ones[q] / shots;
     qubitRows.push(
-      `<tr><td>${qubitMath(q)}</td><td>${probOneMath()} ajustado ${p1[q].toFixed(3)} · ` +
-      `medido ${measured.toFixed(3)} · fid ${(100 * fidelity[q]).toFixed(2)}%</td></tr>`
+      `<tr><td>${qubitMath(q)}</td><td>${probOneMath()} ${TEXT.adjusted} ${p1[q].toFixed(3)} · ` +
+      `${TEXT.measured} ${measured.toFixed(3)} · fid ${(100 * fidelity[q]).toFixed(2)}%</td></tr>`
     );
   }
 
   document.getElementById("measurePanel").innerHTML =
-    `<button class="close" id="measureClose">Cerrar</button>` +
+    `<button class="close" id="measureClose">${TEXT.close}</button>` +
     `<h2>${TEXT.measurementTitle}</h2>` +
     `<div class="measure-meta">` +
     `<div class="measure-stat"><span>${TEXT.step}</span><b>${step} / ${state.data.steps.length}</b></div>` +
     `<div class="measure-stat"><span>${TEXT.shots}</span><b>${shots}</b></div>` +
     `</div>` +
-    `<p class="hint">La probabilidad se corrige con la fidelidad: ${probCorrectionMath()}.</p>` +
+    `<p class="hint">${TEXT.correction}: ${probCorrectionMath()}.</p>` +
     `<div>${rows}</div>` +
     (sorted.length > top.length
-      ? `<p class="hint">… y ${sorted.length - top.length} resultados más.</p>`
+      ? `<p class="hint">${TEXT.more(sorted.length - top.length)}</p>`
       : "") +
     `<hr /><table>${qubitRows.join("")}</table>`;
 

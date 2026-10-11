@@ -37,9 +37,9 @@ export const TRAP_PAD_Z = 1.45;
 export const TRAP_RING_RADIUS = 1.3;
 export const TRAP_RING_TUBE = 0.025;
 
-// The horizontal optical layer: the global Raman beam sheet and the phonon
-// guide rail that run along the chain, and the side optics at its ends.
-export const GLOBAL_BEAM_DEPTH = 4.5;
+// The horizontal optical layer: the global Raman beam (a cylinder through the
+// ions) and the phonon guide rail that run along the chain, and the side optics.
+export const GLOBAL_BEAM_RADIUS = 0.4;
 export const GLOBAL_BEAM_OPACITY = 0.18;
 export const RAIL_RADIUS = 0.03;
 export const RAIL_EXTRA = 4.0;
@@ -48,10 +48,15 @@ export const WAVE_RING_RADIUS = 0.45;
 export const WAVE_RING_TUBE = 0.02;
 export const OPTICS_MARGIN = 4.0;
 
+// At the start of the simulation the global beam is emitted once to prepare the
+// ions; INTRO_MS is how long that preparation pulse lasts.
+export const INTRO_MS = 1500;
+
 // How much accumulated fidelity loss (in %) makes a qubit look fully decohered
 // (red). The heat is driven by the per-qubit `fidelities` of the step, which
-// already mix the idle, 1Q and 2Q errors.
-export const DECOHERENCE_FIDELITY_SPAN = 10;
+// already mix the idle, 1Q and 2Q errors. The loss of a real circuit is small
+// (a few %), so the span is kept small to make the heat visible.
+export const DECOHERENCE_FIDELITY_SPAN = 2;
 
 // The height of the individual laser lens above each ion, and of the ion label.
 export const LENS_Y = 3.4;

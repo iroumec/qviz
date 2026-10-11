@@ -34,6 +34,10 @@ export const state = {
   // (0 or 1 per ion) and whether the state badges are shown.
   measure: { active: false, start: 0, outcome: [], showBadges: false },
 
+  // The start-of-simulation intro: the global beam emitted once to prepare the
+  // ions. `active` is true while the pulse runs and `start` is its timestamp.
+  intro: { active: false, start: 0 },
+
   // The shader sources, loaded once.
   shaders: {
     vert: null, frag: null, lensVert: null, lensFrag: null,

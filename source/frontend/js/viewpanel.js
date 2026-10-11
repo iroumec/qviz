@@ -1,7 +1,7 @@
-// The "Vista" panel: a button that is always in sight, and a popover with the
-// profiles and every view option (colour, shape of the sphere and the vector,
-// what is shown, light and motion, interface). It writes to settings.js and
-// follows its changes, so the panel and the scene always agree.
+// The "View and accessibility" panel: a button that is always in sight, and a
+// popover with the profiles and every view option (colour, shape of the sphere
+// and the vector, what is shown, light and motion, interface). It writes to
+// settings.js and follows its changes, so the panel and the scene always agree.
 
 import { PALETTES, PROFILES, applyProfile, resetView, setOption, subscribe } from "./settings.js";
 import { state } from "./state.js";
@@ -21,8 +21,8 @@ const PROFILE_LABELS = {
 };
 
 const TEXT = {
-  button: t("Vista", "View"),
-  title: t("Vista", "View"),
+  button: t("Vista y accesibilidad", "View and Accessibility Options"),
+  title: t("Vista y accesibilidad", "View and Accessibility Options"),
   close: t("Cerrar", "Close"),
   reset: t("Restablecer", "Reset"),
   profiles: t("Perfiles", "Profiles"),

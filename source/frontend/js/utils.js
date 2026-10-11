@@ -68,6 +68,11 @@ export function isEnglish() {
   return lang.toLowerCase().startsWith("en");
 }
 
+/** A text in the language of the page: `t("Español", "English")`. */
+export function t(es, en) {
+  return isEnglish() ? en : es;
+}
+
 /** Hide the error card of the stage, if there is one. */
 export function clearErrorCard() {
   const card = document.getElementById("errorCard");
@@ -81,14 +86,22 @@ export function clearErrorCard() {
  */
 export function reportError(error) {
   const unsupported = error && error.kind === "UnsupportedProviderError";
-  const title = unsupported ? "Máquina no soportada" : "No se pudo mostrar el circuito";
+  const title = unsupported
+    ? t("Máquina no soportada", "Machine not supported")
+    : t("No se pudo mostrar el circuito", "The circuit could not be shown");
   const hint = unsupported
-    ? "Elegí un backend de IonQ (Aria o Forte) o el simulador integrado y ejecutá de nuevo."
-    : "Revisá el circuito o elegí otro de la lista.";
+    ? t(
+        "Elegí un backend de IonQ (Aria o Forte) o el simulador integrado y ejecutá de nuevo.",
+        "Choose an IonQ backend (Aria or Forte) or the built-in simulator and run it again."
+      )
+    : t("Revisá el circuito o elegí otro de la lista.", "Check the circuit or pick another one.");
   const message = error && error.message ? error.message : String(error);
-  // The text of a machine that is not supported is Spanish; the message of the
-  // backend (with the detected machine) goes below it, as the detail.
-  const lead = unsupported ? "Esta máquina todavía no está soportada por QViz." : message;
+  const lead = unsupported
+    ? t(
+        "Esta máquina todavía no está soportada por QViz.",
+        "This machine is not supported by QViz yet."
+      )
+    : message;
   setError(title);
 
   clearErrorCard();
@@ -96,7 +109,7 @@ export function reportError(error) {
   card.id = "errorCard";
   card.className = "error-card";
   card.setAttribute("role", "alert");
-  card.innerHTML = `<button type="button" class="close" aria-label="Cerrar">&times;</button>` +
+  card.innerHTML = `<button type="button" class="close" aria-label="${t("Cerrar", "Close")}">&times;</button>` +
     `<h2>${escapeHtml(title)}</h2><p>${escapeHtml(lead)}</p>` +
     `<p class="error-hint">${escapeHtml(hint)}</p>` +
     (unsupported ? `<p class="error-detail">${escapeHtml(message)}</p>` : "");

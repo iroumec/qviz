@@ -290,7 +290,7 @@ void main() {
 
     // A qubit that has been idle for a while accumulates error, so its colour
     // shifts towards red (the decoherence heat).
-    finalCol *= vec3(1.0, 1.0 - 0.7 * vDecoherence, 1.0 - 0.7 * vDecoherence);
+    finalCol *= vec3(1.0, 1.0 - 0.85 * vDecoherence, 1.0 - 0.85 * vDecoherence);
 
     float glowMag = length(glow * 0.02);
     float alpha = clamp(glowMag * 15.0, 0.0, 1.0);

@@ -9,7 +9,7 @@
 import * as THREE from "three";
 import { state } from "./state.js";
 import { ket } from "./utils.js";
-import { OPTICS_MARGIN, SPACING } from "./config.js";
+import { INTRO_MS, OPTICS_MARGIN, SPACING } from "./config.js";
 
 const READOUT_COLOR = 0x54ff9f;
 const GATE_BEAM_COLOR = 0x00f3ff;
@@ -156,6 +156,18 @@ export function updateMeasurement(time) {
   const measure = state.measure;
   const t = measure.active ? time - measure.start : Infinity;
 
+  // At the start of the simulation the ions are prepared: a single flash over
+  // all of them, synchronized with the global beam emitted by the intro.
+  if (state.intro && state.intro.active && !measure.active) {
+    const elapsed = time - state.intro.start;
+    const envelope = elapsed < INTRO_MS ? Math.sin(Math.PI * (elapsed / INTRO_MS)) : 0;
+    for (const flare of data.flares) {
+      flare.material.color.setHex(GATE_BEAM_COLOR);
+      flare.material.opacity = envelope * 0.6;
+    }
+    return;
+  }
+
   // Phase 1 and 4: the readout beam floods, then fades. The measurement drives
   // the global beam of the horizontal layer while it runs.
   const beam = ramp(t, 0, BEAM_UP) * (1 - ramp(t, FADE_START, FADE_END));
@@ -170,6 +182,7 @@ export function updateMeasurement(time) {
   for (let i = 0; i < data.flares.length; i++) {
     const one = measure.outcome[i];
     const flicker = 0.85 + 0.15 * Math.sin(time * 0.02 + i);
+    data.flares[i].material.color.setHex(READOUT_COLOR);
     data.flares[i].material.opacity = one ? glow * flicker : 0;
   }
 

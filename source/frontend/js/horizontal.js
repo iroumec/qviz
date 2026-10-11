@@ -1,7 +1,8 @@
 // The horizontal optical layer, at the height of the chain.
 //
-// A broad, shared "global" Raman beam sheet crosses the whole chain and flashes
-// with every gate. A thin phonon guide rail threads the ion centres (the
+// A shared "global" Raman beam runs along the chain as a cylinder that passes
+// through every ion, and flashes with every gate (and once at the start, to
+// prepare the ions). A thin phonon guide rail threads the ion centres (the
 // confinement axis): it is a faint blue thread that glows amber between the two
 // ions of a two-qubit gate, with wave rings travelling along it. The side optics
 // (a readout objective lens and a mirror) sit at the two ends of the chain.
@@ -10,8 +11,9 @@ import * as THREE from "three";
 import { state } from "./state.js";
 import { pulseIntensity } from "./laser.js";
 import {
-  GLOBAL_BEAM_DEPTH,
   GLOBAL_BEAM_OPACITY,
+  GLOBAL_BEAM_RADIUS,
+  INTRO_MS,
   OPTICS_MARGIN,
   RAIL_EXTRA,
   RAIL_RADIUS,
@@ -77,10 +79,14 @@ export function createHorizontalLayer(n) {
   const chainWidth = (n - 1) * SPACING;
   const half = chainWidth / 2;
 
-  // The global Raman beam sheet, invisible until a gate fires. It spans from
-  // one side optic to the other, so its ends stay away from the end ions.
+  // The global Raman beam: a cylinder that runs along the chain, through every
+  // ion, from one side optic to the other. Invisible until a gate fires.
+  const beamGeometry = new THREE.CylinderGeometry(
+    GLOBAL_BEAM_RADIUS, GLOBAL_BEAM_RADIUS, 2 * (half + OPTICS_MARGIN), 24, 1, true
+  );
+  beamGeometry.rotateZ(Math.PI / 2);
   const beam = new THREE.Mesh(
-    new THREE.BoxGeometry(2 * (half + OPTICS_MARGIN), 0.06, GLOBAL_BEAM_DEPTH),
+    beamGeometry,
     new THREE.MeshBasicMaterial({
       color: BEAM_COLOR, transparent: true, opacity: 0,
       blending: THREE.AdditiveBlending, depthWrite: false,
@@ -151,14 +157,26 @@ export function updateHorizontal(time) {
   const layer = state.three.horizontal;
   if (!layer) return;
 
-  // The global beam flashes with any gate (single- or two-qubit). While a
+  // The global beam flashes with any gate (single- or two-qubit). At the start
+  // of the simulation it is emitted once, to prepare the ions. While a
   // measurement runs, the measurement animation drives the beam instead.
   if (!state.measure.active) {
-    let intensity = 0;
-    for (const qubit of state.qubits) {
-      intensity = Math.max(intensity, pulseIntensity(qubit.laserStart, qubit.laserEnd, time));
+    let wanted;
+    if (state.intro && state.intro.active) {
+      const elapsed = time - state.intro.start;
+      if (elapsed >= INTRO_MS) {
+        state.intro.active = false;
+        wanted = 0;
+      } else {
+        wanted = GLOBAL_BEAM_OPACITY * state.view.sheetGain * Math.sin(Math.PI * (elapsed / INTRO_MS));
+      }
+    } else {
+      let intensity = 0;
+      for (const qubit of state.qubits) {
+        intensity = Math.max(intensity, pulseIntensity(qubit.laserStart, qubit.laserEnd, time));
+      }
+      wanted = intensity * GLOBAL_BEAM_OPACITY * state.view.sheetGain;
     }
-    const wanted = intensity * GLOBAL_BEAM_OPACITY * state.view.sheetGain;
     layer.beam.material.opacity += (wanted - layer.beam.material.opacity) * 0.2;
   }
 
@@ -188,4 +206,9 @@ export function updateHorizontal(time) {
     ring.scale.setScalar(0.4 + 0.8 * progress);
     ring.material.opacity = active * (1 - progress) * 0.7;
   }
+}
+
+/** Emit the global beam once, to show the ions being prepared. */
+export function startIntro() {
+  state.intro = { active: true, start: performance.now() };
 }

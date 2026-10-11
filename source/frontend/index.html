@@ -181,10 +181,22 @@
   .drop { outline: 2px dashed var(--accent); outline-offset: -8px; }
   .error { color: var(--x); font-size: 13px; padding: 0 20px; }
   .error.status { color: var(--accent); }
-  #shots {
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 8px; width: 84px; font-size: 13px;
+  .shots {
+    display: inline-flex; align-items: stretch; background: var(--panel);
+    border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
   }
+  .shots button {
+    background: transparent; border: none; border-radius: 0; color: var(--muted);
+    padding: 0 11px; font-size: 15px; line-height: 1;
+  }
+  .shots button:hover { background: var(--panel-2); color: var(--accent); }
+  .shots input[type=number] {
+    width: 66px; padding: 7px 2px; border: none; background: transparent;
+    color: var(--text); text-align: center; font: inherit; font-size: 13px;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  .shots input[type=number]::-webkit-outer-spin-button,
+  .shots input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .measure-panel {
     position: absolute; top: 12px; right: 12px; z-index: 3;
     width: 330px; max-height: calc(100% - 24px); overflow: auto;
@@ -283,18 +295,22 @@
 </head>
 <body>
 <header>
-  <h1>QViz · iones atrapados</h1>
+  <h1 data-i18n="title">QViz · iones atrapados</h1>
   <div class="perf" id="perfMeta"></div>
 </header>
 
 <div class="controls">
   <select id="fileSelect" title="Archivos generados en out/"></select>
-  <label class="file-btn" title="Circuito en OpenQASM 2 o 3">Cargar circuito<input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
-  <button id="measure" class="primary">Medir</button>
-  <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
+  <label class="file-btn" title="Circuito en OpenQASM 2 o 3"><span data-i18n="loadCircuit">Cargar circuito</span><input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
+  <button id="measure" class="primary" data-i18n="measure">Medir</button>
+  <div class="shots">
+    <button type="button" id="shotsDown" aria-label="&#8722;">&#8722;</button>
+    <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
+    <button type="button" id="shotsUp" aria-label="+">+</button>
+  </div>
   <button id="viewToggle" class="view-toggle" type="button" aria-expanded="false" aria-controls="viewPanel" aria-haspopup="true">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-    <span id="viewToggleText">Vista</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M6 5.5l-4.535-.442A.531.531 0 0 1 1.531 4H14.47a.531.531 0 0 1 .066 1.058L10 5.5V9l.452 6.42a.535.535 0 0 1-1.053.174L8.243 9.97c-.064-.252-.422-.252-.486 0l-1.156 5.624a.535.535 0 0 1-1.053-.174L6 9z"/></svg>
+    <span id="viewToggleText">Vista y accesibilidad</span>
   </button>
   <div class="view-panel" id="viewPanel" role="dialog" aria-labelledby="viewTitle" hidden></div>
 </div>
@@ -337,7 +353,7 @@
       <span><i style="background:var(--ax)"></i>x</span>
       <span><i style="background:var(--az)"></i><span data-i18n="zAxis">z (|0⟩ arriba)</span></span>
       <span><i style="background:var(--ay)"></i>y</span>
-      <span>arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover</span>
+      <span data-i18n="legend">arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover</span>
     </legend>
     <div class="camera-pad" id="cameraPad" role="group" aria-label="Cámara">
       <span class="pad-label" data-cam-label="rotate">Girar</span>

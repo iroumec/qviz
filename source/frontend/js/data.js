@@ -3,10 +3,11 @@
 
 import { DECOHERENCE_FIDELITY_SPAN, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { laserColorFor, laserPulseFor } from "./laser.js";
+import { startIntro } from "./horizontal.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
-import { clearErrorCard, reportError, setError, setStatus } from "./utils.js";
+import { clearErrorCard, reportError, setError, setStatus, t } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
 import { buildTimeline, highlightStep } from "./timeline.js";
 import {
@@ -28,7 +29,10 @@ function initialState(n) {
 /** Load a visualization object, rebuild the scene and show step 0. */
 export function loadData(obj) {
   if (!obj || !Array.isArray(obj.steps) || typeof obj.total_qubits !== "number") {
-    throw new Error("El JSON no tiene el contrato esperado (backend/steps).");
+    throw new Error(t(
+      "El JSON no tiene el contrato esperado (backend/steps).",
+      "The JSON does not have the expected contract (backend/steps)."
+    ));
   }
   state.data = obj;
   state.stepIndex = 0;
@@ -42,6 +46,7 @@ export function loadData(obj) {
   setError("");
   clearErrorCard();
   updateStep(0, true);
+  startIntro();
   updatePerf();
 }
 
@@ -50,7 +55,7 @@ const userCircuits = new Map();
 
 /** Compile a circuit file (OpenQASM 2 or 3) and show it. */
 export async function loadCircuitFile(file) {
-  setStatus("Compilando " + file.name + "…");
+  setStatus(t("Compilando ", "Compiling ") + file.name + "…");
   try {
     const compiled = await compileQasm(await file.text());
     const key = "file:" + file.name;
@@ -76,7 +81,7 @@ export function updateStep(index, instant = false) {
   state.stepIndex = Math.max(0, Math.min(state.data.steps.length, index));
   document.getElementById("slider").value = String(state.stepIndex);
   document.getElementById("stepLabel").textContent =
-    `paso ${state.stepIndex} / ${state.data.steps.length}`;
+    `${t("paso", "step")} ${state.stepIndex} / ${state.data.steps.length}`;
   refreshPlayButton();
 
   const step = state.stepIndex === 0 ? null : state.data.steps[state.stepIndex - 1];
@@ -193,7 +198,7 @@ export async function loadManifest() {
     select.value = manifest.default || manifest.files[0].file;
     await loadFile(select.value);
   } catch (error) {
-    select.innerHTML = '<option value="">(sin out/manifest.json)</option>';
+    select.innerHTML = `<option value="">${t("(sin out/manifest.json)", "(no out/manifest.json)")}</option>`;
     try {
       await loadFile("ghz16.json");
     } catch (firstError) {

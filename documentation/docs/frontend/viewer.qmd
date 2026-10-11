@@ -129,10 +129,11 @@ the ions float above the chip.
 At the height of the chain there is a second layer of optics
 (`source/frontend/js/horizontal.js`):
 
-- A broad **global Raman beam sheet** crosses the whole chain. It is invisible at
-  rest and flashes with every gate (single- or two-qubit), in step with the
-  vertical lasers. It spans from one side optic to the other, so its ends stay
-  away from the end ions.
+- A **global Raman beam**, a cylinder that runs along the chain and passes
+  through every ion, from one side optic to the other. It is invisible at rest
+  and flashes with every gate (single- or two-qubit), in step with the vertical
+  lasers. It is also emitted once at the start of the simulation, to show the
+  ions being prepared (the intro, see below).
 - A thin **phonon guide rail** threads the ion centres: it is the confinement
   axis, and the vibrational continuum. It is a faint blue thread at rest; between
   the two ions of a two-qubit gate it glows amber and pulses, with wave rings
@@ -140,6 +141,15 @@ At the height of the chain there is a second layer of optics
 - The **side optics** close the layer: a readout objective lens at one end of the
   chain and a mirror mount at the other. They sit far enough from the end ions,
   and each rests on a stand down to the optical table.
+
+## Preparing the ions (the intro) {.unnumbered}
+
+When a visualization loads, the viewer shows how the global beam is emitted and
+the ions are prepared: for a second and a half the global beam pulses (the
+cylinder that crosses the chain) while every ion glows once, as if being
+initialised to $|0\rangle$. The pulse lasts `INTRO_MS` (1500 ms, `config.js`),
+it is a visual cue and it does not touch the data: the simulation still starts at
+step 0.
 
 ## The laboratory environment {.unnumbered}
 
@@ -288,7 +298,7 @@ page; the file selector, the load button and the measurement are at the top.
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
 | Step counter | Shows the current step and the total (`paso 3 / 24`). |
 | Medir | Measures the current step and shows the distribution of the results. |
-| shots | The number of shots used by Medir (1024 by default). |
+| shots | The number of shots used by Medir (1024 by default). The `−` and `+` buttons beside it change it by one. |
 | Drag (left button) | Rotates the camera around the chain. |
 | Drag (right button) | Moves the camera in the plane of the screen; the menu of the browser does not open. |
 | Wheel | Zooms in and out. |
@@ -296,19 +306,19 @@ page; the file selector, the load button and the measurement are at the top.
 | Space | Flies the camera up. |
 | Left control | Moves the camera down. |
 | Camera buttons | Rotate, tilt, zoom and centre the camera (hold to keep moving); see *The View panel*. |
-| Vista | Opens the panel with the profiles and the view options. |
+| View and accessibility | Opens the panel with the profiles and the view options. |
 
 Step 0 is the initial state, in which every qubit is in `|0⟩`. It is not part of
 the JSON; it is added by the viewer, in the same way as the frontend is expected
 to do.
 
-## The View panel {.unnumbered}
+## The View and accessibility panel {.unnumbered}
 
-The **Vista** (*View*) button is always at the right of the top bar, with an eye
-icon. It opens a panel with the options that make the scene easier to read. A
-profile is a quick set of values; below them, every option can be changed by
-itself (the profile then reads as custom). **Restablecer** goes back to the
-default profile. Esc, a click outside or the button close the panel.
+The **View and accessibility** button is always at the right of the top bar, with
+the universal-access icon. It opens a panel with the options that make the scene
+easier to read. A profile is a quick set of values; below them, every option can
+be changed by itself (the profile then reads as custom). **Restablecer** goes
+back to the default profile. Esc, a click outside or the button close the panel.
 
 | Profile | What it does |
 | --- | --- |
@@ -332,9 +342,9 @@ The options are in five sections:
   trap chip, the horizontal layer, the vertical lasers, the phonon bus, the jiggle,
   the halo, the qubit labels, the legend and the camera buttons.
 - **Luz y movimiento.** The brightness of the scene (the exposure), the intensity
-  of the lights, the brightness of the vertical lasers and of the global beam
-  sheet (to see them dimmer without hiding them, which *Qué se muestra* does) and
-  the reduced motion.
+  of the lights, the brightness of the vertical lasers and of the global beam (to
+  see them dimmer without hiding them, which *Qué se muestra* does) and the
+  reduced motion.
 - **Interfaz.** The size of the text (90 to 130 %, which also widens the side
   panels) and a stronger text and border contrast.
 
@@ -413,8 +423,8 @@ The measurement is also shown in the scene as **state-dependent fluorescence**
 The individual vertical lasers are not fired; the horizontal layer does the
 illumination.
 
-1. A broad **readout beam** floods the whole chain (the global beam sheet turns
-   green and bright).
+1. A broad **readout beam** floods the whole chain (the global beam turns green
+   and bright).
 2. An ion in `|1⟩` is on resonance and scatters photons, so it **glows**; an ion
    in `|0⟩` is off resonance and **stays dark**.
 3. The photons are collected by the **side readout lens**: a stream of particles
@@ -474,7 +484,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | --- | --- |
 | `js/main.js` | The entry point: reads the view options, wires the controls, builds the scene and loads the first file. |
 | `js/settings.js` | The view options: defaults, palettes, profiles and their storage. It imports only `state.js`. |
-| `js/viewpanel.js` | The *Vista* button and its panel (profiles and options), and the interface options (text size, contrast, reduced motion). |
+| `js/viewpanel.js` | The *View and accessibility* button and its panel (profiles and options), and the interface options (text size, contrast, reduced motion). |
 | `js/camerapad.js` | The on-screen camera buttons (rotate, tilt, zoom, centre). |
 | `js/config.js` | The constants, the URLs and the host hooks (`window.QVIZ_HOST`). |
 | `js/state.js` | The mutable state of the viewer, in one place. |
@@ -485,7 +495,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/laser.js` | Loads the laser model, and builds the volumetric beams and their colour. |
 | `js/phonon.js` | Builds the phonon bus, and runs the jiggle and the synchronized halo of a two-qubit gate. |
 | `js/trap.js` | Builds the surface-trap chip (substrate, gold pads and field rings) and lights the active electrodes. |
-| `js/horizontal.js` | Builds the horizontal layer (global beam sheet, guide rail, side optics) and animates it. |
+| `js/horizontal.js` | Builds the horizontal layer (the global beam cylinder, the guide rail, the side optics) and animates it, including the intro pulse. |
 | `js/measurement.js` | Runs the state-dependent fluorescence animation (readout beam, flares, photons and state badges). |
 | `js/environment.js` | Builds the vacuum chamber and optical table (breadboard, coils, collimators, viewport) and sets the fog and lights. |
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |

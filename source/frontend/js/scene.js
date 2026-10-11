@@ -6,7 +6,7 @@ import { RoomEnvironment } from "./three-addons.js";
 import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING, TABLE_TOP } from "./config.js";
 import { state } from "./state.js";
 import { PALETTES, hexToRgb } from "./settings.js";
-import { qubitLabel, showStageMessage } from "./utils.js";
+import { qubitLabel, showStageMessage, t } from "./utils.js";
 import { loadShaders } from "./shaders.js";
 import { createLaserBeams, createLaserHead, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
@@ -486,8 +486,12 @@ export async function initThree() {
     await loadShaders();
   } catch (error) {
     showStageMessage(
-      "No se pudieron cargar los shaders de <code>shaders/</code>. " +
-      "Serví el proyecto por HTTP (<code>python -m http.server</code>)."
+      t(
+        "No se pudieron cargar los shaders de <code>shaders/</code>. " +
+          "Serví el proyecto por HTTP (<code>python -m http.server</code>).",
+        "The shaders in <code>shaders/</code> could not be loaded. " +
+          "Serve the project over HTTP (<code>python -m http.server</code>)."
+      )
     );
     return false;
   }
