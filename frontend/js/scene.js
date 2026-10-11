@@ -7,7 +7,7 @@ import { BOX, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { qubitLabel, showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
-import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
+import { createLaserBeams, createLaserHead, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
 import { createIonTrap, updateTrap } from "./trap.js";
 import { createHorizontalLayer, updateHorizontal } from "./horizontal.js";
@@ -87,11 +87,9 @@ export function buildScene(n) {
     label.position.set(x, LABEL_Y, 0);
     state.three.world.add(label);
 
-    if (state.laser.template) {
-      const device = state.laser.template.clone();
-      device.position.set(x, LENS_Y, 0);
-      state.three.world.add(device);
-    }
+    const device = createLaserHead();
+    device.position.set(x, LENS_Y, 0);
+    state.three.world.add(device);
 
     const lightColor = (i % 2 === 0) ? 0xff00aa : 0x0088ff;
     const pointLight = new THREE.PointLight(lightColor, 2.0, 7.0);
@@ -278,7 +276,7 @@ export async function initThree() {
   const stage = document.getElementById("stage");
   state.three.renderer = new THREE.WebGLRenderer({ antialias: true });
   state.three.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  state.three.renderer.setClearColor(0x0b0f1a, 1);
+  state.three.renderer.setClearColor(0x121016, 1);
   state.three.renderer.toneMapping = THREE.ACESFilmicToneMapping;
   state.three.renderer.toneMappingExposure = 1.2;
   stage.appendChild(state.three.renderer.domElement);

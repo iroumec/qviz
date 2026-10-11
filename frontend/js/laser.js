@@ -80,6 +80,41 @@ function prepareMesh(mesh, dictionary) {
   }
 }
 
+/**
+ * A detailed laser head for one ion: a fiber connector, a mounting flange with
+ * bolts, a body with a focusing ring, a front barrel and a glass aperture. It
+ * points down, so the beam leaves the aperture at the bottom.
+ */
+export function createLaserHead() {
+  const group = new THREE.Group();
+  const anodized = new THREE.MeshStandardMaterial({ color: 0x1b1b21, metalness: 0.85, roughness: 0.35 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0xc2c8d2, metalness: 1.0, roughness: 0.15 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 1.0, roughness: 0.25 });
+  const glass = new THREE.MeshStandardMaterial({
+    color: 0x1b2f4a, metalness: 0.6, roughness: 0.05, emissive: 0x0a2233, emissiveIntensity: 0.6,
+  });
+  const add = (mesh, y) => { mesh.position.y = y; group.add(mesh); return mesh; };
+
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.16, 0.34, 20), anodized), 1.5);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.5, 20), steel), 1.08);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.14, 32), steel), 0.76);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.5, 1.0, 32), anodized), 0.22);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.28, 32), steel), 0.32);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.42, 0.5, 32), anodized), -0.5);
+
+  const aperture = add(new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.06, 12, 32), brass), -0.76);
+  aperture.rotation.x = Math.PI / 2;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.05, 32), glass), -0.78);
+
+  for (let i = 0; i < 4; i++) {
+    const angle = (i / 4) * Math.PI * 2;
+    const bolt = add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.18, 8), steel), 0.76);
+    bolt.position.x = 0.42 * Math.cos(angle);
+    bolt.position.z = 0.42 * Math.sin(angle);
+  }
+  return group;
+}
+
 export async function loadLaserModel() {
   buildMaterials();
   try {

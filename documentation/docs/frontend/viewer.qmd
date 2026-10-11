@@ -47,6 +47,10 @@ violet when the species is unknown. The beam is cut by the two uniforms
 `uLaserMinY` and `uLaserMaxY`, which are set from `frontend/js/config.js`
 (`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly.
 
+The lens is a detailed **laser head**: a fiber connector, a mounting flange with
+bolts, a body with a focusing ring, a front barrel and a glass aperture, built by
+`createLaserHead` in `frontend/js/laser.js`.
+
 A beam is **dark by default**. It is fired only for the target ions of a native
 gate, and only while the step is applied, so no beam is left on. Each instance
 carries its own intensity in the `instanceActive` attribute, and moving to a step
@@ -146,12 +150,23 @@ The scene is set inside an ultra-high-vacuum chamber on an optical table
 - Two thick **copper Helmholtz coils** (above and below the trap) give the
   static magnetic field that defines the quantisation axis; steel posts hold
   them to the table.
-- Every vertical laser is born from a black **collimator head**.
+- Every vertical laser is born from a detailed **laser head** above the ion (see
+  the laser paragraph above).
 - A polished **viewport ring** frames the scene, so the viewer feels inside the
   chamber. It has a floor anchor at each of its eight bends, like the supports of
   an above-ground pool: a post down to the table and a collar that embraces the
   ring.
 - **Fog** (`FogExp2`) and a blue ambient light give the chamber its depth.
+
+## The interface {.unnumbered}
+
+The interface uses a small, dark palette: **Ink** (`#121016`) for the background,
+**Plum** (`#211824`) for the panels and the bars, **Muted Violet** (`#48334f`)
+for the thin borders, **Neon Rose** (`#f05291`) for the primary actions and the
+accents, **Dusty Lilac** (`#b8a4c5`) for the secondary text, and **Warm White**
+(`#f1ebef`) for the main text. The rose is used sparingly, so the important
+elements stand out. The type is Inter, and the panels have thin borders, moderate
+radii and short transitions.
 
 ## What is shown {.unnumbered}
 

@@ -14,7 +14,6 @@ const TABLE_COLOR = 0x0f172a;
 const COPPER_COLOR = 0xb87333;
 const STEEL_COLOR = 0x94a3b8;
 const POST_COLOR = 0x64748b;
-const COLLIMATOR_COLOR = 0x18181b;
 const GRID_COLOR = 0x1d3a5c;
 const GRID_BASE = 0x122036;
 
@@ -23,7 +22,6 @@ const COIL_TOP_Y = 5.4;
 const COIL_BOTTOM_Y = -2.6;
 const COIL_TUBE = 0.28;
 const POST_RADIUS = 0.1;
-const COLLIMATOR_Y = 4.0;
 
 /** Build the chamber environment for a chain of `n` ions. */
 export function createEnvironment(n) {
@@ -68,17 +66,6 @@ export function createEnvironment(n) {
     }
   }
 
-  // A black collimator head at the top of every vertical laser.
-  const collimatorGeometry = new THREE.CylinderGeometry(0.3, 0.22, 0.8, 16);
-  const collimatorMaterial = new THREE.MeshStandardMaterial({
-    color: COLLIMATOR_COLOR, metalness: 0.9, roughness: 0.2,
-  });
-  for (let i = 0; i < n; i++) {
-    const head = new THREE.Mesh(collimatorGeometry, collimatorMaterial);
-    head.position.set((i - (n - 1) / 2) * SPACING, COLLIMATOR_Y, 0);
-    group.add(head);
-  }
-
   // The vacuum viewport frame, an octagonal polished ring around the trap.
   const viewport = new THREE.Mesh(
     new THREE.TorusGeometry(viewportRadius, 0.5, 8, 8),
@@ -112,7 +99,7 @@ export function createEnvironment(n) {
 
 /** Set the fog and the chamber lights on the scene, once. */
 export function applyAtmosphere(scene) {
-  scene.fog = new THREE.FogExp2(0x0a0e17, 0.011);
+  scene.fog = new THREE.FogExp2(0x121016, 0.011);
   scene.add(new THREE.AmbientLight(0x3a5a7a, 0.9));
 
   const accent = new THREE.PointLight(0x38bdf8, 40, 45);

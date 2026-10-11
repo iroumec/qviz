@@ -4,34 +4,44 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>QViz - Visualizador de iones atrapados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0b0f1a; --panel: #131a2b; --panel-2: #1b2438; --text: #e6ecff;
-    --muted: #8b98b8; --accent: #4f8cff; --target: #ffd166; --x: #ff6b6b;
-    --y: #51cf66; --z: #4dabf7; --border: #26304a;
+    /* Ink, plum, muted violet, neon rose, dusty lilac, warm white. */
+    --bg: #121016; --panel: #211824; --panel-2: #2a2030; --text: #f1ebef;
+    --muted: #b8a4c5; --accent: #f05291; --target: #f05291; --x: #f05291;
+    --y: #6fbf8f; --z: #e0b06a; --border: #48334f;
+    --radius: 10px; --radius-sm: 7px; --speed: 150ms;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font: 14px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     display: flex; flex-direction: column; overflow: hidden;
+    -webkit-font-smoothing: antialiased;
   }
-  header { padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 20px; align-items: baseline; flex-wrap: wrap; }
-  header h1 { font-size: 16px; margin: 0; letter-spacing: .5px; }
+  header { padding: 12px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 20px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -.02em; }
   header .meta { color: var(--muted); font-size: 13px; }
   header .meta b { color: var(--text); font-weight: 600; }
-  header .perf { color: var(--accent); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
-  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 20px; border-bottom: 1px solid var(--border); }
+  header .perf { color: var(--muted); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 22px; border-bottom: 1px solid var(--border); }
   .playback {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px 20px; border-top: 1px solid var(--border); background: var(--panel);
+    padding: 10px 22px; border-top: 1px solid var(--border); background: var(--panel);
   }
   button, .file-btn, select {
-    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    padding: 7px 13px; border-radius: var(--radius-sm); cursor: pointer; font: inherit; font-size: 13px;
+    transition: border-color var(--speed), background var(--speed), color var(--speed);
   }
   button:hover, .file-btn:hover, select:hover { border-color: var(--accent); }
+  button:focus-visible, .file-btn:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { filter: brightness(1.08); }
   select { cursor: pointer; max-width: 280px; }
   input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
   .step-label { color: var(--muted); min-width: 96px; text-align: right; }
@@ -88,7 +98,7 @@
   .readouts { display: flex; flex-direction: column; gap: 7px; }
   .readout { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
   .readout b { color: var(--text); width: 26px; }
-  .readout .bar { flex: 1; height: 7px; border-radius: 4px; background: #101728; overflow: hidden; }
+  .readout .bar { flex: 1; height: 7px; border-radius: 4px; background: var(--bg); overflow: hidden; }
   .readout .bar > span { display: block; height: 100%; background: var(--accent); width: 0; }
   .readout .p1 { width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
   .panel { border-bottom: 1px solid var(--border); }
@@ -114,10 +124,10 @@
   aside td:first-child { color: var(--muted); padding-right: 8px; white-space: nowrap; }
   .kv td:last-child { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
   .op-line { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .op-badge { display: inline-block; background: var(--accent); color: #fff; border-radius: 4px; padding: 2px 9px; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .5px; }
-  .op-badge.op-1q { background: #2b6cb0; }
-  .op-badge.op-2q { background: #b7791f; }
-  .op-badge.op-vz { background: #6b46c1; }
+  .op-badge { display: inline-block; background: var(--border); color: var(--text); border-radius: 6px; padding: 2px 10px; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+  .op-badge.op-1q { background: var(--border); }
+  .op-badge.op-2q { background: var(--accent); color: var(--bg); }
+  .op-badge.op-vz { background: #5c3f63; }
   .op-detail { color: var(--muted); font-size: 11px; margin: 0 0 10px; }
   .qchip { display: inline-block; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 6px; margin-right: 4px; font-variant-numeric: tabular-nums; }
   .qubits { margin-top: 10px; font-size: 11px; }
@@ -136,9 +146,9 @@
   .measure-panel {
     position: absolute; top: 12px; right: 12px; z-index: 3;
     width: 330px; max-height: calc(100% - 24px); overflow: auto;
-    background: rgba(19, 26, 43, 0.97); border: 1px solid var(--accent);
-    border-radius: 10px; padding: 12px; font-size: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; font-size: 12px;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
   }
   .measure-panel.hidden { display: none; }
   .measure-panel h2 { font-size: 14px; margin: 0 0 8px; }
@@ -156,7 +166,7 @@
   .measure-panel .close { float: right; padding: 2px 8px; }
   .measure-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
   .measure-row .bits { font-family: ui-monospace, monospace; letter-spacing: 1px; }
-  .measure-row .bar { flex: 1; height: 8px; background: #101728; border-radius: 4px; overflow: hidden; }
+  .measure-row .bar { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
   .measure-row .bar > span { display: block; height: 100%; background: var(--accent); }
   .measure-row .pct { width: 48px; text-align: right; color: var(--muted); }
   .measure-panel hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
@@ -180,7 +190,7 @@
     font-variant-numeric: tabular-nums; color: var(--text);
   }
   .fidelity .fidelity-bar {
-    height: 9px; background: #101728; border: 1px solid var(--border);
+    height: 9px; background: var(--bg); border: 1px solid var(--border);
     border-radius: 5px; overflow: hidden;
   }
   .fidelity .fidelity-bar > span {
@@ -221,7 +231,7 @@
 <div class="controls">
   <select id="fileSelect" title="Archivos generados en out/"></select>
   <label class="file-btn" title="Circuito en OpenQASM 2 o 3">Cargar circuito<input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
-  <button id="measure">Medir</button>
+  <button id="measure" class="primary">Medir</button>
   <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
 </div>
 <div class="error" id="error"></div>
@@ -302,7 +312,7 @@
 <div class="playback">
   <button id="reset" title="Reiniciar">&#8634;</button>
   <button id="prev" title="Paso anterior">&larr;</button>
-  <button id="play">Play</button>
+  <button id="play" class="primary">Play</button>
   <button id="next" title="Paso siguiente">&rarr;</button>
   <input type="range" id="slider" min="0" max="0" value="0" />
   <span class="step-label" id="stepLabel">paso 0 / 0</span>

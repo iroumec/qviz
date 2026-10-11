@@ -156,7 +156,7 @@ export function updateHealth(step) {
   if (!state.data) return;
   const value = step ? step.cumulative_fidelity : state.data.initial_fidelity;
   const clamped = Math.max(0, Math.min(100, value));
-  const color = clamped >= 99 ? "#51cf66" : clamped >= 95 ? "#ffd166" : "#ff6b6b";
+  const color = clamped >= 99 ? "#6fbf8f" : clamped >= 95 ? "#e0b06a" : "#f05291";
 
   document.getElementById("fidelityLabel").textContent = FIDELITY_LABEL;
   document.getElementById("healthValue").textContent = clamped.toFixed(2) + "%";
