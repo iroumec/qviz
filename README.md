@@ -96,42 +96,80 @@ Tools used during the project development:
 <table>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" width="40" height="40" />
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/python/python-original.svg" alt="Python" width="40" height="40" />
             <br/>Python
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40" />
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40" />
             <br/>JavaScript
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML" width="40" height="40" />
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/html5/html5-original.svg" alt="HTML" width="40" height="40" />
             <br/>HTML
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS" width="40" height="40" />
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/css3/css3-original.svg" alt="CSS" width="40" height="40" />
             <br/>CSS
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/makefile/makefile-original.svg" alt="Makefile" width="40" height="40" />
-            <br/>Makefile
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/numpy/numpy-original.svg" alt="NumPy" width="40" height="40" />
+            <br/>NumPy
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" width="40" height="40" />
-            <br/>Git
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" alt="GitHub" width="40" height="40" />
-            <br/>GitHub
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/qiskit/qiskit-original.svg" alt="Qiskit" width="40" height="40" />
+            <img src="https://cdn.simpleicons.org/qiskit/a56eff" alt="Qiskit" width="40" height="40" />
             <br/>Qiskit
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/threejs/threejs-original.svg" alt="three.js" width="40" height="40" />
+            <br/>three.js
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.simpleicons.org/make/9aa4b2" alt="Makefile" width="40" height="40" />
+            <br/>Makefile
         </td>
     </tr>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original.svg" alt="Visual Studio Code" width="40" height="40" />
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/git/git-original.svg" alt="Git" width="40" height="40" />
+            <br/>Git
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/github/github-original.svg" alt="GitHub" width="40" height="40" />
+            <br/>GitHub
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/githubactions/githubactions-original.svg" alt="GitHub Actions" width="40" height="40" />
+            <br/>GitHub Actions
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/vscode/vscode-original.svg" alt="Visual Studio Code" width="40" height="40" />
             <br/>VS Code
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/bash/bash-original.svg" alt="Bash" width="40" height="40" />
+            <br/>Bash
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.simpleicons.org/uv/de5fe9" alt="uv" width="40" height="40" />
+            <br/>uv
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/pytest/pytest-original.svg" alt="pytest" width="40" height="40" />
+            <br/>pytest
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://plantuml.com/favicon.ico" alt="PlantUML" width="40" height="40" />
+            <br/>PlantUML
+        </td>
+    </tr>
+    <tr>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://quarto.org/favicon.png" alt="Quarto" width="40" height="40" />
+            <br/>Quarto
+        </td>
+        <td align="center" width="96" style="background: transparent; border: none;">
+            <img src="https://cdn.simpleicons.org/typst/3fb6c4" alt="Typst" width="40" height="40" />
+            <br/>Typst
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
             <img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini" width="40" height="40" />
@@ -148,18 +186,6 @@ Tools used during the project development:
         <td align="center" width="96" style="background: transparent; border: none;">
             <img src="https://cdn.simpleicons.org/deepseek/4D6BFE" alt="DeepSeek" width="40" height="40" />
             <br/>DeepSeek
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bash/bash-original.svg" alt="Bash" width="40" height="40" />
-            <br/>Bash
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/plantuml/plantuml-original.svg" alt="PlantUML" width="40" height="40" />
-            <br/>PlantUML
-        </td>
-        <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://quarto.org/favicon.png" alt="Quarto" width="40" height="40" />
-            <br/>Quarto
         </td>
     </tr>
 </table>
