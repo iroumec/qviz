@@ -33,7 +33,7 @@
 
 .PHONY: git-init development feature finish-feature \
         release finish-release hotfix finish-hotfix \
-        sync-main sync-development status
+        sync-main sync-development status finish-development
 
 # Suppress command echoing for all targets in this file.
 # Git's own output is still displayed.
@@ -71,6 +71,21 @@ development:
 	# This reduces the risk of starting work from an outdated commit.
 	git pull origin development
 
+
+# Promote development to main.
+finish-development:
+	# Update both branches before merging.
+	git switch development
+	git pull origin development
+
+	git switch main
+	git pull origin main
+
+	# Merge development into the stable branch.
+	git merge --no-ff development
+
+	# Publish the updated main branch.
+	git push origin main
 
 # ------------------------------------------------------------------------------
 # Feature branches
