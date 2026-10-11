@@ -296,18 +296,21 @@ to do.
 
 A strip between the scene and the playback bar shows the **transpiled circuit**:
 one wire per qubit and one column per step, with the native gates in order
-(GPI, GPI2, MS, ZZ and VirtualZ as a dashed `Z`). A two-qubit gate is a box on
+(GPI, GPI2, MS, ZZ and VirtualZ as a dashed `Z`), in the palette of the interface:
+plum boxes for the single-qubit gates, neon rose for the entanglers (like the badge
+of the step details) and a muted dashed outline for VirtualZ. A two-qubit gate is a box on
 each target joined by a vertical line, which crosses the wires in between when
 the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
 `step`, so the JSON contract is not changed.
 
-- The gates that were applied are filled, the current one has a yellow border,
-  and the ones to come are dimmed. A blue column marks the current step.
+- The gates that were applied are filled, the current one has a warm white
+  border and a soft glow, and the ones to come are dimmed. A lilac column marks the
+  current step.
 - A click on a gate goes to its step and stops the play. The strip scrolls by
   itself to keep the current step in the middle. A tooltip gives the step, the
   operation, the qubits and the accumulated fidelity.
 - While the pointer is over a gate (or a box has the keyboard focus), a **selection
-  marker** fades in around its ions: four thin golden arcs that face the camera
+  marker** fades in around its ions: four thin neon rose arcs that face the camera
   and turn slowly, like the selection of a unit in a game. A two-qubit gate marks
   both ions. It is `selection.js`, driven by `state.hovered`.
 - For **long circuits**, the **−** and **+** buttons in the header change the zoom
