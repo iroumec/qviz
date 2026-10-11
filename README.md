@@ -66,7 +66,7 @@ in [`spec.md`](spec.md).
 | qiskit-ionq | `>=1.0.0,<2` | 1.0.0 to 1.1.1 | Qollab ships 1.0.2. Before 1.0.3, tomography on a non-IonQ backend fails. |
 | NumPy | `>=2.0,<3` | 2.0.2 and 2.5.4 | Qollab ships 2.4.6. |
 | qiskit-qasm3-import | `>=0.6,<1` | 0.6.0 | Only for OpenQASM 3. |
-| three.js | n/a | 0.160.0 standalone, 0.186.1 on Qollab | Loaded from a CDN; not installed. |
+| three.js | n/a | 0.186.1 (standalone and on Qollab) | Loaded from a CDN, so it is not in `requirements.txt`; Qollab provides its own. The standalone viewer uses the same version so both look alike. |
 
 `pyproject.toml` and `requirements.txt` declare the same Python packages (a test
 checks it). Details and the reasons: [installation](documentation/docs/getting-started/installation.qmd).

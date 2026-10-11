@@ -3,7 +3,7 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
-import { BOX, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
+import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { qubitLabel, showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
@@ -300,6 +300,7 @@ export async function initThree() {
   const pmremGenerator = new THREE.PMREMGenerator(state.three.renderer);
   const roomEnvironment = new RoomEnvironment();
   state.three.scene.environment = pmremGenerator.fromScene(roomEnvironment).texture;
+  state.three.scene.environmentIntensity = ENVIRONMENT_INTENSITY;
   roomEnvironment.dispose();
 
   applyAtmosphere(state.three.scene);

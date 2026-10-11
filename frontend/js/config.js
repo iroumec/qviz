@@ -133,3 +133,9 @@ export const SELECTION_COLOR = 0xffd166;
 export const SELECTION_RADIUS = 1.7;
 export const SELECTION_OPACITY = 0.85;
 export const SELECTION_FADE_MS = 90; // time constant of the fade
+
+// The strength of the environment light (RoomEnvironment). three.js 0.163 and
+// later light the scene with it much more than 0.160 did, which is the version
+// that the scene was tuned with; 0.35 gives the same brightness with the 0.186
+// that Qollab runs. Older versions ignore it.
+export const ENVIRONMENT_INTENSITY = 0.35;
