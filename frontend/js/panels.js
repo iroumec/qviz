@@ -4,7 +4,7 @@
 import { sampleStep } from "./host.js";
 import { clearMeasurement, startMeasurement } from "./measurement.js";
 import { state } from "./state.js";
-import { setError } from "./utils.js";
+import { qubitLabel, setError } from "./utils.js";
 
 // The step of the last fidelity number that was popped, so a number is shown
 // once per step and not again while the same step is redrawn.
@@ -18,7 +18,7 @@ export function buildReadouts(n) {
   for (let q = 0; q < n; q++) {
     const row = document.createElement("div");
     row.className = "readout";
-    row.innerHTML = `<b>q${q}</b><div class="bar"><span></span></div><span class="p1">0.00</span>`;
+    row.innerHTML = `<b>${qubitLabel(q)}</b><div class="bar"><span></span></div><span class="p1">0.00</span>`;
     container.appendChild(row);
   }
 }
@@ -48,7 +48,7 @@ export function renderDetails(step) {
   let html = `<div class="op-line"><span class="op-badge op-${operation.kind}">${operation.name}</span></div>` +
     `<p class="op-detail">${detail}</p>` +
     `<table class="kv"><tr><td>${TEXT.targets}</td><td>` +
-    step.targets.map((t) => `<span class="qchip">q${t}</span>`).join(" ") + "</td></tr>";
+    step.targets.map((t) => `<span class="qchip">${qubitLabel(t)}</span>`).join(" ") + "</td></tr>";
   if (step.phases) {
     html += `<tr><td>${TEXT.phases}</td><td>${step.phases.map((p) => p.toFixed(4)).join(", ")}</td></tr>`;
   }
@@ -62,7 +62,7 @@ export function renderDetails(step) {
   html += `<table class="qubits"><thead><tr><th></th><th>${TEXT.virtualZ}</th>` +
     `<th>${TEXT.inactivity}</th><th>${TEXT.fidelity}</th><th>${TEXT.vibration}</th></tr></thead><tbody>`;
   for (let q = 0; q < count; q++) {
-    html += `<tr><td>q${q}</td><td>${step.virtual_z[q].toFixed(2)}</td>` +
+    html += `<tr><td>${qubitLabel(q)}</td><td>${step.virtual_z[q].toFixed(2)}</td>` +
       `<td>${step.inactivity[q]}</td><td>${step.fidelities[q].toFixed(2)}</td>` +
       `<td>${step.vibration[q].toFixed(3)}</td></tr>`;
   }
@@ -273,7 +273,7 @@ function renderMeasurement(sorted, shots, p1, ones, fidelity, n, step) {
   for (let q = 0; q < n; q++) {
     const measured = ones[q] / shots;
     qubitRows.push(
-      `<tr><td>q${q}</td><td>p(|1⟩) ajustado ${p1[q].toFixed(3)} · ` +
+      `<tr><td>${qubitLabel(q)}</td><td>p(|1⟩) ajustado ${p1[q].toFixed(3)} · ` +
       `medido ${measured.toFixed(3)} · fid ${(100 * fidelity[q]).toFixed(2)}%</td></tr>`
     );
   }

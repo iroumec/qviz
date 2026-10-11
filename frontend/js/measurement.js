@@ -8,6 +8,7 @@
 
 import * as THREE from "three";
 import { state } from "./state.js";
+import { ket } from "./utils.js";
 import { OPTICS_MARGIN, SPACING } from "./config.js";
 
 const READOUT_COLOR = 0x54ff9f;
@@ -103,8 +104,8 @@ export function createMeasurement(n) {
 
   state.three.measure = {
     flares, badges, particles,
-    texOne: textTexture("|1>", ONE_COLOR),
-    texZero: textTexture("|0>", ZERO_COLOR),
+    texOne: textTexture(ket(1), ONE_COLOR),
+    texZero: textTexture(ket(0), ZERO_COLOR),
     assign: [],
   };
   return group;

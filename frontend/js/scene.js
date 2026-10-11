@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
 import { BOX, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
-import { showStageMessage } from "./utils.js";
+import { qubitLabel, showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
 import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
@@ -82,7 +82,7 @@ export function buildScene(n) {
     state.three.instMesh.setMatrixAt(i, dummy.matrix);
     if (state.three.laserMesh) state.three.laserMesh.setMatrixAt(i, dummy.matrix);
 
-    const label = makeLabel("q" + i);
+    const label = makeLabel(qubitLabel(i));
     label.position.set(x, 4.3, 0);
     state.three.world.add(label);
 
