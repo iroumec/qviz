@@ -19,7 +19,7 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
 1. **Ubicación:** franja **inferior**, entre `<main>` y la barra de reproducción (`.playback`). Plegable.
 2. **Abierta por defecto**, con un botón de ocultar **bien visible** (no un icono tenue): texto + chevron, por ejemplo "Circuito ▾" / "Circuito ▸", en el encabezado de la franja. Al ocultarla queda solo esa cabecera, para que se vea cómo volver a abrirla.
 3. **Las cajas no escriben ángulo ni fase.** Solo la etiqueta de la compuerta (`GPI`, `GPI2`, `MS`, `ZZ`, `Z`). El detalle sigue en el panel "Detalle del paso".
-4. Dato de coordinación: no hay nada nuevo en `origin/development` desde `3aae639` (revisado el 2026-10-11), así que no hay conflictos previos.
+4. Coordinación (2026-10-11): el commit `0944af5` del compañero (óptica, altura del lente, soportes) solo toca la escena 3D, `config.js`, `environment.js`, `horizontal.js` y `scene.js` (constantes, sin cambiar `index.html`, `data.js` ni `controls.js`). No choca con esta feature; solo hay que recordar que el encuadre usa ahora `halfY = 5.6`.
 
 ## Qué se dibuja
 
@@ -46,6 +46,7 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
 - **Módulo nuevo `frontend/js/timeline.js`** con `initTimeline()`, `buildTimeline(data)` (al cargar un circuito) y `highlightStep(index)` (en cada `updateStep`).
 - **Sin ciclos de imports.** Hoy el grafo de módulos no tiene ciclos y `bundle_modules` de `package_qollab.py` asume cada módulo después de lo que importa. `timeline.js` **no** importa `data.js` ni `controls.js`: `initTimeline(onSelect)` recibe un callback y lo cablea `controls.js` (`initTimeline((n) => { stopPlay(); updateStep(n); })`). `data.js` llama a `buildTimeline`/`highlightStep` igual que hoy llama a `updateReadouts`/`renderDetails`.
 - **`OPERATIONS` hoy es privado de `panels.js`** (nombres y `kind` de cada operación). Moverlo a `config.js` o `utils.js` y exportarlo para compartirlo, sin cambiar el panel.
+- **Redimensionado del canvas.** `scene.js` llama a `onResize` solo con el `resize` de la ventana, y al plegar o abrir la franja cambia el alto de `#stage` sin que cambie la ventana. Hay que avisar a la escena: un `ResizeObserver` sobre `#stage` que llame a `onResize` (hoy no exportada) o exportarla y llamarla desde el botón de plegar. `computeFitRadius` depende del aspecto (y desde `0944af5` usa `halfY = 5.6`), así que el encuadre se recalcula solo.
 - **HTML/CSS** en `frontend/index.html`: `<section class="timeline">` entre `</main>` y `.playback`. CSS en el bloque `<style>` existente (Qollab usa ese bloque tal cual como `main.css`). Grid CSS con una columna por paso; sin canvas ni librerías.
 - **Escala:** 16 qubits × cientos de pasos son pocas miles de cajas: aceptable construyendo el DOM una vez por circuito y solo cambiando clases en `highlightStep`. No virtualizar salvo que se mida lentitud (`ghz16`, `layered16`, `qft3`).
 - **Empaquetado:** `bundle_modules` sigue los `import` desde `main.js`, así que `timeline.js` entra solo si algún módulo lo importa. Verificar con `make qollab` que está en `qollab/main.js` y que el CSS llegó a `main.css`.
