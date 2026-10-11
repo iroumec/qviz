@@ -329,7 +329,7 @@ page; the file selector, the load button and the measurement are at the top.
 | Reset | Stops the play and returns to step 0. |
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
 | Step counter | Shows the current step and the total (`paso 3 / 24`). |
-| Medir | Measures the current step and shows the distribution of the results. |
+| Medir | Pauses the simulation, measures the step on screen and shows the distribution of the results, with the sound of the readout. |
 | shots | The number of shots used by Medir (1024 by default). The `−` and `+` buttons beside it change it by one. |
 | Drag (left button) | Rotates the camera around the chain. |
 | Drag (right button) | Moves the camera in the plane of the screen; the menu of the browser does not open. |
@@ -407,6 +407,7 @@ length of the tone follows the laser pulse, so the sound ends when the beam does
 | GPI | The same zap, lower in pitch and twice as long as the GPI2. |
 | MS and ZZ | A long swell of two detuned tones that beat, with a slow vibrato and a rising filter; it lasts as long as the pulse (three times the GPI2). |
 | VirtualZ | A click. It is a software phase, so there is no laser and no tone. |
+| Measure | A thin readout beam that swells in and fades out with the animation, and a shower of tiny photon ticks, as dense as the number of ions found in \|1⟩. Ions in \|0⟩ stay dark, so a result of all zeros has no ticks. |
 
 Only a step forward by one makes a sound (Play, the next button, the arrow keys
 and a click on the next step of the timeline); dragging the slider or jumping
@@ -442,7 +443,16 @@ the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
   choice is remembered. The background of the strip can be dragged to pan it, the
   wheel moves it sideways when there is nothing to scroll vertically, and a click
   on a step number goes to that step. The strip scrolls by itself, so a play over
-  hundreds of steps keeps the current one in the middle.
+  hundreds of steps keeps the current one in the middle. The horizontal
+  scrollbar under the strip is drawn by the viewer (`enableBar` in
+  `js/timeline.js`) and not by the browser, because the native one is not the
+  same in every browser and system and could not be dragged reliably: drag its
+  thumb (the drag goes on even when the pointer leaves the bar) or press the
+  track to move a page that way. The vertical scrollbar, when there are many
+  qubits, stays native, and a press on it does not start a pan. While the user
+  drives the strip (the bar, a drag or the wheel) the play does not pull it back
+  to the current step until 2.5 s after the last gesture. A click on a gate that
+  is already in view does not move the strip under the pointer.
 - The keys left and right change the step, and Home and End go to the first and
   the last one (unless the focus is in a field).
 - It is open at the start. The **Hide** button (with a chevron) at the left of its header, next to the
