@@ -160,6 +160,8 @@ export function updateHealth(step) {
 
   document.getElementById("fidelityLabel").textContent = FIDELITY_LABEL;
   document.getElementById("healthValue").textContent = clamped.toFixed(2) + "%";
+  document.getElementById("simCost").textContent =
+    "$" + (step ? step.cumulative_cost.toFixed(6) : "0.000000");
 
   const fill = document.getElementById("healthFill");
   fill.style.width = clamped + "%";

@@ -136,8 +136,8 @@ export function buildScene(n) {
 /** Fit the camera distance to the length of the chain. */
 function computeFitRadius() {
   if (!state.three.camera || state.qubits.length === 0) return;
-  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 8;
-  const halfY = 5.6;
+  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 9.5;
+  const halfY = 6.2;
   const vFov = (state.three.camera.fov * Math.PI) / 180;
   const hFov = 2 * Math.atan(Math.tan(vFov / 2) * state.three.camera.aspect);
   state.orbit.fitRadius = Math.max(

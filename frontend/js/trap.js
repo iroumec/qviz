@@ -45,8 +45,10 @@ export function createIonTrap(n) {
   group.add(substrate);
 
   // The gold pads, segmented along the chain on both sides of the channel. One
-  // instanced mesh per side.
-  const padCount = Math.max(2, Math.round(width / TRAP_PAD_SPACING));
+  // instanced mesh per side. The spacing divides `SPACING` and the grid is
+  // centred on zero, so a pad always sits right under every ion.
+  const padCount = Math.max(3, Math.round(width / TRAP_PAD_SPACING) | 1);
+  const padX0 = -((padCount - 1) / 2) * TRAP_PAD_SPACING;
   const padGeometry = new THREE.BoxGeometry(TRAP_PAD_WIDTH, TRAP_PAD_HEIGHT, TRAP_PAD_LENGTH);
   const padMaterial = new THREE.MeshStandardMaterial(PAD_MATERIAL);
   const dummy = new THREE.Object3D();
@@ -55,7 +57,7 @@ export function createIonTrap(n) {
     const pads = new THREE.InstancedMesh(padGeometry, padMaterial, padCount);
     pads.frustumCulled = false;
     for (let i = 0; i < padCount; i++) {
-      const x = -width / 2 + (i + 0.5) * (width / padCount);
+      const x = padX0 + i * TRAP_PAD_SPACING;
       dummy.position.set(x, padY, side * TRAP_PAD_Z);
       dummy.updateMatrix();
       pads.setMatrixAt(i, dummy.matrix);

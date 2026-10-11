@@ -212,6 +212,12 @@
   .fidelity .fidelity-error b {
     color: var(--text); font-size: 12px; font-variant-numeric: tabular-nums;
   }
+  .cost-line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 12px;
+  }
+  .cost-line b { color: var(--text); font-size: 13px; font-variant-numeric: tabular-nums; }
   .fidelity .fidelity-float {
     position: absolute; left: 50%; top: 0; z-index: 1;
     font-size: 20px; font-weight: 800; color: var(--x);
@@ -268,6 +274,10 @@
           </div>
           <div class="fidelity-bar"><span id="healthFill"></span></div>
           <div class="fidelity-error">error <b id="fidelityErrorValue">0.00%</b></div>
+        </div>
+        <div class="cost-line">
+          <span data-i18n="cumCost">Costo acumulado</span>
+          <b id="simCost">$0.000000</b>
         </div>
       </div>
     </section>

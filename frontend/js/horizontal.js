@@ -42,8 +42,8 @@ function createReadoutLens() {
   const glass = new THREE.Mesh(
     glassGeometry,
     new THREE.MeshStandardMaterial({
-      color: 0x6366f1, metalness: 0.95, roughness: 0.05,
-      emissive: 0x312e81, emissiveIntensity: 0.4,
+      color: 0xf05291, metalness: 0.9, roughness: 0.08,
+      emissive: 0x7a2748, emissiveIntensity: 0.5,
     })
   );
   glass.position.set(1.0, 0, 0);

@@ -188,7 +188,7 @@ radii and short transitions.
   *Fidelity*, from the language of the page), the percentage, a bar and the
   **total error** (the fidelity that was lost, `100 − fidelity`). The bar is
   green above 99 %, amber above 95 % and red below, and the error value takes the
-  same colour.
+  same colour. Below it, the **accumulated cost** of the current step is shown.
 - When a gate is applied, the fidelity that it subtracted (the difference with
   the previous step, for example `−0.53`) is popped over the panel as a red
   number that floats up and fades, like a damage number in a game. At step 0 the
