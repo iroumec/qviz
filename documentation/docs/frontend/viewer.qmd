@@ -177,17 +177,19 @@ radii and short transitions.
   when the qubit is fully entangled (`r` is zero).
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
-- An **idle qubit turns red** (the decoherence heat): the longer it has not been a
-  target, the redder its sphere. The colour is driven by the `inactivity` field
-  of the step, so no backend change is needed.
+- Each ion carries a **decoherence heat**: its colour shifts towards red as its
+  accumulated health drops. The health is the per-qubit `fidelities` of the step,
+  which already mix the idle, 1Q and 2Q errors, so the colour only degrades and
+  never goes back to a healthy one. No backend change is needed.
 - A volumetric **laser beam** above each ion, from the lens down to the ion. It
   is dark by default and fires only for the target ions of a native gate: the
   species colour for GPI and GPI2, and a neon-orange colour for MS and ZZ, which
   lasts three times longer (see the laser paragraph above).
 - The probability `p(|1⟩)` of each qubit — the probability of measuring **1**,
   not 0 — is shown with a bar in the **Probabilities** panel.
-- A **Simulation details** panel on the left shows the model (the backend), the
-  initial fidelity, the number of qubits and the number of steps, and the
+- A **Simulation details** panel on the left shows the model (with the ion
+  species it references, when it is a simulator), the initial fidelity, the
+  number of qubits and the number of steps, and the
   accumulated fidelity of the current step: the word for it (*Fidelidad* or
   *Fidelity*, from the language of the page), the percentage, a bar and the
   **total error** (the fidelity that was lost, `100 − fidelity`). The bar is

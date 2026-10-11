@@ -71,10 +71,38 @@ export function renderDetails(step) {
   content.innerHTML = html;
 }
 
-/** Fill the simulation details (model, initial fidelity, size) in the left panel. */
+/** A readable model name: "basic_simulator" -> "Basic simulator". */
+function prettyName(name) {
+  const cleaned = String(name || "").trim().replace(/_/g, " ");
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+/**
+ * Split the backend display name into the model and its species reference.
+ *
+ * A simulator reads "<name> -> iones (referencia <Aria|Forte>)"; a real machine
+ * reads "IonQ Aria" and has no separate reference.
+ */
+function formatModel(backend) {
+  const match = /^(.*?)\s*→\s*iones\s*\(referencia\s*(.*?)\)\s*$/.exec(backend || "");
+  if (match) return { model: prettyName(match[1]), reference: match[2] };
+  return { model: backend || "", reference: "" };
+}
+
+/** Fill the simulation details (model, reference, initial fidelity, size). */
 export function updateSimulationDetails() {
   if (!state.data) return;
-  document.getElementById("simModel").textContent = state.data.backend;
+  const { model, reference } = formatModel(state.data.backend);
+  document.getElementById("simModel").textContent = model;
+
+  const referenceRow = document.getElementById("simRefRow");
+  if (reference) {
+    document.getElementById("simRef").textContent = reference;
+    referenceRow.style.display = "";
+  } else {
+    referenceRow.style.display = "none";
+  }
+
   document.getElementById("simInitial").textContent = state.data.initial_fidelity + "%";
   document.getElementById("simQubits").textContent = String(state.data.total_qubits);
   document.getElementById("simSteps").textContent = String(state.data.steps.length);
@@ -108,7 +136,7 @@ const TEXT = ENGLISH
       details: "Step details",
       zAxis: `z (${ketMath(0)} up)`,
       simulation: "Simulation details",
-      model: "Model", initialFidelity: "Initial fidelity", qubits: "Qubits", steps: "Steps",
+      model: "Model", reference: "Reference", initialFidelity: "Initial fidelity", qubits: "Qubits", steps: "Steps",
       measurementTitle: "Measurement", step: "Step", shots: "Shots",
       initial: `Initial state: every ion in ${ketMath(0)}.`,
       targets: "Target qubits",
@@ -123,7 +151,7 @@ const TEXT = ENGLISH
       details: "Detalle del paso",
       zAxis: `z (${ketMath(0)} arriba)`,
       simulation: "Detalles de la simulación",
-      model: "Modelo", initialFidelity: "Fidelidad inicial", qubits: "Qubits", steps: "Pasos",
+      model: "Modelo", reference: "Referencia", initialFidelity: "Fidelidad inicial", qubits: "Qubits", steps: "Pasos",
       measurementTitle: "Medición", step: "Paso", shots: "Shots",
       initial: `Estado inicial: todos los iones en ${ketMath(0)}.`,
       targets: "Qubits objetivo",
