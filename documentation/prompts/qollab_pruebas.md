@@ -45,10 +45,13 @@ Elegí un backend en *Select QPU* (empezá con **Built-in**), apretá Run y abr�
 | 8 | Elegir otro circuito (`ghz16`, `layered16`) | Carga. Anotá cuánto tarda y si la página se congela. En IonQ, la segunda compilación de un ejemplo falla con "only one job is allowed": el visor lo muestra en la línea de errores. |
 | 9 | **Cargar circuito** con `examples/qasm/bell.qasm` (OpenQASM 3) y con `bell_qasm2.qasm` (OpenQASM 2); también arrastrar el archivo a la página | Aparece como entrada nueva del selector y se ve el Bell. Funciona también en IonQ y todas las veces que se quiera (no gasta el job). Medir anda igual. |
 | 10 | Cargar un `.qasm` con un `if`, un `reset`, una compuerta `opaque`, una inexistente (`rzz`) o 17 qubits | La línea roja de errores dice por qué no se puede (`control flow … is not supported`, `reset … not supported`, `opaque gates have no definition`, `gate 'rzz' is not defined`, `maximum is 16`). |
+| 11 | Botón **Vista** (arriba a la derecha): perfil *Enfoque en el vector*, luego *Daltonismo*, luego *Restablecer* | El panel abre y cierra (clic, Esc, clic afuera). Con *Enfoque* quedan solo las esferas y se ve bien el vector; con *Daltonismo* cambian los colores de los ejes y de la leyenda; *Restablecer* vuelve al defecto. |
+| 12 | Recargar la página después de elegir un perfil | Si Qollab deja usar `localStorage`, recuerda el perfil; si no, arranca con el defecto sin errores. |
+| 13 | Botones de la cámara (abajo a la derecha de la escena): mantener apretado girar, subir/bajar, +/− y centrar | La cámara se mueve sin usar WASD. (La D ya se confirmó que anda.) |
 
 **Si el 9 falla con OpenQASM 3** y dice `OpenQASM 3 needs the package qiskit-qasm3-import`, Qollab no instaló `qiskit-qasm3-import` (ni `openqasm3`, `antlr4-python3-runtime`). OpenQASM 2 sigue funcionando; hay que decidir qué hacer con el 3 y pegar el mensaje exacto.
 
-**Nota sobre la escena 3D.** El visor usa three.js 0.160 (import map) y Qollab trae la 0.186.1. El paquete importa `three` y los addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) con un respaldo: si Qollab no resuelve `three/addons/`, la consola muestra `QViz: a three.js addon could not be loaded` y el visor arranca sin láser ni luz de entorno. Se confirma a ojo: compará las esferas, el láser con su lente, las luces, las etiquetas `q0`, `q1` y los ejes con `make server` en local, y pegá la consola. Si algo se ve distinto, decime qué, y lo aprobamos antes de tocar nada.
+**Nota sobre la escena 3D.** El visor usa three.js 0.186.1 (import map), la misma que trae Qollab. El paquete importa `three` y los addons (`OBJLoader`, `RoomEnvironment`, `BufferGeometryUtils`) con un respaldo: si Qollab no resuelve `three/addons/`, la consola muestra `QViz: a three.js addon could not be loaded` y el visor arranca sin láser ni luz de entorno. Se confirma a ojo: compará las esferas, el láser con su lente, las luces, las etiquetas `q0`, `q1` y los ejes con `make server` en local, y pegá la consola. Si algo se ve distinto, decime qué y lo ajustamos.
 
 ### Medición a mano con el Bell (MS: Built-in y Aria)
 
@@ -69,8 +72,8 @@ En Forte (ZZ) los pasos intermedios son otros (hay más `virtual_z`); solo el ú
 
 | Backend | Qué hacer | Qué se espera |
 |---|---|---|
-| Built-in | Los 10 puntos; `layered16` para los tiempos | Todo bien. |
-| IonQ Aria 2 (simulador) | 1, 2, 5, 6, 9 y 10 | Lo mismo. La primera compilación (el ejemplo del arranque) gasta el único job; los `.qasm` no. |
+| Built-in | Los 13 puntos; `layered16` para los tiempos | Todo bien. |
+| IonQ Aria 2 (simulador) | 1, 2, 5, 6, 9, 10 y 11 a 13 | Lo mismo. La primera compilación (el ejemplo del arranque) gasta el único job; los `.qasm` no. |
 | IonQ Forte 1 y Forte Enterprise 1 (simuladores) | 1, 2, 5, 6 y 9 | Lo mismo, con pasos `zz`. |
 | AWS Braket local, IBM (Boston…) o cualquier otra máquina | Mirar el arranque | El visor muestra `This machine is not currently supported (detected: …). Currently supported: IonQ (Aria and Forte), the built-in simulator.` (sin el traceback). Verificado el 2026-10-11. |
 | Hardware de IonQ | **No correr** | Gasta créditos. |
@@ -93,7 +96,7 @@ Si en IonQ aparece "only one job is allowed", apretá Stop y volvé a correr.
 
 | Fecha | Backend | # (de la tabla) | ¿Bien? | Observaciones |
 |---|---|---|---|---|
-| | Built-in | 1 a 10 | | |
+| | Built-in | 1 a 13 | | |
 | | IonQ Aria 2 (sim) | 1, 2, 5, 6, 9, 10 | | |
 | | IonQ Forte 1 (sim) | 1, 2, 5, 6, 9 | | |
 | | IonQ Forte Enterprise 1 (sim) | 1, 2, 5, 6, 9 | | |

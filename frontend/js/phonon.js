@@ -85,7 +85,7 @@ export function updatePhonon(time) {
   for (let i = 0; i < qubits.length; i++) {
     const qubit = qubits[i];
     let y = 0;
-    if (running && i >= low && i <= high) {
+    if (running && i >= low && i <= high && state.view.jiggle && !state.view.reducedMotion) {
       const strong = i === gate.targets[0] || i === gate.targets[1];
       const amplitude = (strong ? JIGGLE_STRONG : JIGGLE_FAINT) * intensity;
       y = amplitude * Math.sin(time * JIGGLE_SPEED + i * 0.6);

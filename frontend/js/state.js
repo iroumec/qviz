@@ -3,6 +3,10 @@
 // variable. The fields are grouped by the part of the scene they describe.
 
 export const state = {
+  // The view options (palette, what is shown, light, motion), set by settings.js.
+  // It is empty until `initSettings()` runs.
+  view: {},
+
   // The loaded visualization and the current position in it.
   data: null,
   stepIndex: 0,
@@ -49,6 +53,10 @@ export const state = {
     laserActive: null,
     busMesh: null,
     entangledAttribute: null,
+    // The groups that the "Vista" panel can hide, and the lights it scales.
+    groups: {},
+    lights: [],
+    ionLights: [],
     trapRings: [],
     trapGlow: [],
     horizontal: null,
@@ -73,7 +81,12 @@ export const state = {
   },
 
   // The movement keys that are held down.
-  keys: { forward: false, back: false, left: false, right: false, up: false, down: false },
+  // The on-screen camera buttons hold the same kind of flags (rotate, tilt, zoom).
+  keys: {
+    forward: false, back: false, left: false, right: false, up: false, down: false,
+    rotateLeft: false, rotateRight: false, tiltUp: false, tiltDown: false,
+    zoomIn: false, zoomOut: false,
+  },
 
   // The frame-rate counter, shown in the header.
   fps: { frames: 0, last: 0, value: 0 },

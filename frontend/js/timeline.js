@@ -252,8 +252,7 @@ export function highlightStep(index) {
 function centerStep(index, mode) {
   const current = view.gates[index - 1][0];
   const scroll = view.scroll;
-  const reduced = window.matchMedia
-    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = state.view.reducedMotion;
   const behavior = reduced || mode === "auto" ? "auto" : "smooth";
   const left = current.offsetLeft + current.offsetWidth / 2 - scroll.clientWidth / 2;
   let top = scroll.scrollTop;

@@ -44,6 +44,15 @@ backend and the browser draws the viewer, with the backend that you select. Do
 not edit `qollab/`. Loaded circuits are transpiled locally, so they never spend
 the one IonQ job that each run allows.
 
+### Reading the viewer
+
+The **Vista** (*View*) button, at the top right, opens the accessibility
+options: profiles (focus on the vector, high contrast, colour blindness,
+reduced motion), colour palettes, the shape of the sphere and the vector, what
+to hide, light and text size. The camera buttons at the bottom right of the
+scene move the camera without the keyboard. The choice is remembered in the
+browser. See [`viewer.qmd`](documentation/docs/frontend/viewer.qmd).
+
 ### Locally
 
 ```bash

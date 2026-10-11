@@ -10,6 +10,7 @@ import { clearErrorCard, reportError, setError, setStatus } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
 import { buildTimeline, highlightStep } from "./timeline.js";
 import {
+  announceStep,
   buildReadouts,
   closeMeasurement,
   refreshPlayButton,
@@ -136,6 +137,7 @@ export function updateStep(index, instant = false) {
   highlightStep(state.stepIndex);
   renderDetails(step);
   updateHealth(step);
+  announceStep(step);
 }
 
 /** Load one entry of the selector: a circuit of the user, or from the host or HTTP. */

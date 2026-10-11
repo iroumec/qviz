@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import shutil
 import subprocess
@@ -200,3 +201,100 @@ def test_the_bundler_rejects_what_it_cannot_follow(module):
         module.bundle_modules({"main": "export default 1;\n"})
     with pytest.raises(SystemExit):
         module.bundle_modules({"main": 'import x from "./main.js";\n'})
+
+
+def _js_url(path: Path) -> str:
+    """Return a path as a JavaScript string literal for ``import()``."""
+    return json.dumps(path.as_uri())
+
+
+def test_the_view_panel_reaches_the_package_without_import_cycles(packaged):
+    out, _ = packaged
+    html = (out / "index.html").read_text(encoding="utf-8")
+    for element in ("viewToggle", "viewPanel", "cameraPad", "stepLive"):
+        assert f'id="{element}"' in html, element
+    assert ".view-panel" in (out / "main.css").read_text(encoding="utf-8")
+    js = (out / "main.js").read_text(encoding="utf-8")
+    for name in ("initViewPanel", "initCameraPad", "applyViewToScene", "initSettings"):
+        assert f"function {name}" in js, name
+    assert "uVecColor" in js, "the palette uniforms are embedded in the shader"
+
+    # The settings only hold values: the scene imports them, never the reverse.
+    source = (_ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    assert set(re.findall(r"from \"\./(\w+)\.js\"", source)) == {"state"}
+
+
+def test_every_uniform_of_the_sphere_shader_is_given_by_the_scene():
+    shader = (_ROOT / "shaders" / "bloch.frag").read_text(encoding="utf-8")
+    scene = (_ROOT / "frontend" / "js" / "scene.js").read_text(encoding="utf-8")
+    uniforms = re.findall(r"^uniform\s+\w+\s+(\w+);", shader, re.M)
+    assert "uVecColor" in uniforms
+    assert [name for name in uniforms if f"{name}:" not in scene] == []
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_view_options_have_profiles_that_are_kept_and_checked(tmp_path):
+    js = _ROOT / "frontend" / "js"
+    script = tmp_path / "view.mjs"
+    script.write_text(
+        f"""
+const store = {{}};
+globalThis.window = {{
+  localStorage: {{
+    getItem: (key) => (key in store ? store[key] : null),
+    setItem: (key, value) => {{ store[key] = value; }},
+  }},
+}};
+const {{ state }} = await import({_js_url(js / "state.js")});
+const s = await import({_js_url(js / "settings.js")});
+
+s.initSettings();
+const first = state.view.profile;
+s.applyProfile("focus");
+const focus = [state.view.showEnvironment, state.view.sphereDetail, state.view.profile];
+s.setOption("palette", "okabe");
+s.setOption("nonsense", 1);
+const custom = [state.view.profile, state.view.palette, "nonsense" in state.view];
+const saved = JSON.parse(store["qviz.view"]);
+
+// A saved value of the wrong type or an unknown palette is ignored.
+store["qviz.view"] = JSON.stringify({{
+  version: 1, view: {{ palette: "nope", brightness: "x", lights: 0.5, extra: true }},
+}});
+s.initSettings();
+const sanitised = [state.view.palette, state.view.brightness, state.view.lights,
+  "extra" in state.view];
+
+// A storage that throws leaves the defaults and does not fail.
+globalThis.window.localStorage.getItem = () => {{ throw new Error("blocked"); }};
+globalThis.window.localStorage.setItem = () => {{ throw new Error("blocked"); }};
+s.initSettings();
+s.setOption("jiggle", false);
+const blocked = [state.view.jiggle, state.view.palette];
+s.resetView();
+
+const keys = Object.keys(s.PALETTES.default).sort().join();
+const sameKeys = Object.values(s.PALETTES).every(
+  (p) => Object.keys(p).sort().join() === keys);
+const profilesKnown = Object.values(s.PROFILES).every(
+  (profile) => Object.keys(profile).every((key) => key in s.DEFAULT_VIEW));
+console.log(JSON.stringify({{
+  first, focus, custom, saved: [saved.version, saved.view.profile], sanitised, blocked,
+  reset: state.view.profile, sameKeys, profilesKnown, rgb: s.hexToRgb("#ff8000"),
+}}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got["first"] == "default"
+    assert got["focus"] == [False, "simple", "focus"]
+    assert got["custom"] == ["custom", "okabe", False]
+    assert got["saved"] == [1, "custom"]
+    assert got["sanitised"] == ["default", 1, 0.5, False]
+    assert got["blocked"] == [False, "default"]
+    assert got["reset"] == "default"
+    assert got["sameKeys"] and got["profilesKnown"]
+    assert got["rgb"] == [1, 128 / 255, 0]

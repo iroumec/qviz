@@ -1,6 +1,28 @@
 uniform vec3 iResolution;
 uniform float iTime;
 
+// The look of the sphere, set from `frontend/js/scene.js` (the "Vista" panel).
+// The colours come from a palette; the gains scale the glow of the shell and of
+// the state vector; `uDetail` is 0 for the outline only, 1 for the shell and the
+// great circles, 2 for everything; `uMotion` and `uHalo` are 0 or 1.
+uniform vec3 uAxisX;
+uniform vec3 uAxisY;
+uniform vec3 uAxisZ;
+uniform vec3 uVecColor;
+uniform vec3 uTipColor;
+uniform vec3 uSphereColor;
+uniform vec3 uLinesColor;
+uniform vec3 uDotsStart;
+uniform vec3 uDotsEnd;
+uniform vec3 uSweepAzimuth;
+uniform vec3 uSweepPolar;
+uniform float uSphereGain;
+uniform float uVectorGain;
+uniform float uVectorWidth;
+uniform float uDetail;
+uniform float uMotion;
+uniform float uHalo;
+
 varying vec3 vWorldPos;
 varying vec3 vInstancePos;
 varying vec3 vPsi;
@@ -11,18 +33,9 @@ varying float vEntangled;
 #define SURF_DIST 0.001
 #define PI 3.14159265359
 
-const vec3 COLOR_AXIS_X = vec3(1.0, 0.1, 0.1);
-const vec3 COLOR_AXIS_Y = vec3(0.1, 1.0, 0.1);
-const vec3 COLOR_AXIS_Z = vec3(0.1, 0.4, 1.0);
-const vec3 COLOR_STATE_VEC = vec3(0.9, 0.05, 1.0);
-const vec3 COLOR_STATE_TIP = vec3(1.0, 0.35, 1.0);
-const vec3 COLOR_SPHERE = vec3(0.3, 0.7, 1.0);
-const vec3 COLOR_SPECULAR = vec3(0.5, 0.8, 1.0);
-const vec3 COLOR_LINES = vec3(0.2, 0.5, 0.9);
-const vec3 COLOR_DOTS_START = vec3(0.1, 0.8, 1.0);
-const vec3 COLOR_DOTS_END = vec3(1.0, 0.1, 0.6);
-const vec3 COLOR_SWEEP_AZIMUTH = vec3(0.1, 0.6, 1.0);
-const vec3 COLOR_SWEEP_POLAR = vec3(1.0, 0.7, 0.1);
+// The specular edge is the colour of the sphere, lightened.
+const float SPECULAR_LIGHTEN = 0.4;
+
 // The halo of an entangled ion, in the entangler colour (neon orange).
 const vec3 COLOR_HALO = vec3(1.0, 0.5, 0.1);
 
@@ -125,6 +138,11 @@ void main() {
     float d0 = 0.0;
     bool hitAxes = false;
     
+    float radiusVec = RADIUS_STATE_VEC * uVectorWidth;
+    float radiusTip = RADIUS_STATE_TIP * uVectorWidth;
+    float gainVec = INTENSITY_STATE_VEC * uVectorGain;
+    float gainTip = INTENSITY_STATE_TIP * uVectorGain;
+
     for(int i = 0; i < MAX_STEPS; i++) {
         vec3 p = (ro + rd * d0) - vInstancePos;
         
@@ -133,21 +151,21 @@ void main() {
         float zAx = sdCapsule(p, vec3(0, 0, -LENGTH_AXIS), vec3(0, 0, LENGTH_AXIS), THICKNESS_AXIS);
         
         float stateVec = psiLen > 1e-6
-            ? sdCapsule(p, vec3(0), vPsi, RADIUS_STATE_VEC)
+            ? sdCapsule(p, vec3(0), vPsi, radiusVec)
             : 1e9;
         float stateTip = psiLen > 1e-6
-            ? length(p - vPsi) - RADIUS_STATE_TIP
+            ? length(p - vPsi) - radiusTip
             : 1e9;
 
         float d = min(min(xAx, yAx), min(zAx, min(stateVec, stateTip)));
 
         if(d < SURF_DIST) hitAxes = true;
 
-        glow += COLOR_AXIS_X * (INTENSITY_AXIS / (xAx * xAx + 0.0001));
-        glow += COLOR_AXIS_Y * (INTENSITY_AXIS / (yAx * yAx + 0.0001));
-        glow += COLOR_AXIS_Z * (INTENSITY_AXIS / (zAx * zAx + 0.0001));
-        glow += COLOR_STATE_VEC * (INTENSITY_STATE_VEC / (stateVec * stateVec + 0.0001));
-        glow += COLOR_STATE_TIP * (INTENSITY_STATE_TIP / (stateTip * stateTip + 0.0001));
+        glow += uAxisX * (INTENSITY_AXIS / (xAx * xAx + 0.0001));
+        glow += uAxisY * (INTENSITY_AXIS / (yAx * yAx + 0.0001));
+        glow += uAxisZ * (INTENSITY_AXIS / (zAx * zAx + 0.0001));
+        glow += uVecColor * (gainVec / (stateVec * stateVec + 0.0001));
+        glow += uTipColor * (gainTip / (stateTip * stateTip + 0.0001));
 
         d0 += d * RAY_ADVANCE;
         if(d0 > MAX_DIST) break;
@@ -156,7 +174,9 @@ void main() {
     d0 = 0.0;
     bool hitSweeps = false;
 
+    // The sweeps are drawn only at the full level of detail.
     for(int i = 0; i < MAX_STEPS; i++) {
+        if (uDetail < 1.5) break;
         vec3 p = (ro + rd * d0) - vInstancePos;
         
         float sweepAzimuth = sdAzimuthSector(p, (anglePsi + PI * 2.0) * -1.0, RADIUS_SPHERE * RADIUS_SWEEP_AZIMUTH, THICKNESS_SWEEPS);
@@ -172,8 +192,8 @@ void main() {
 
         if(d < SURF_DIST) hitSweeps = true;
 
-        glow += COLOR_SWEEP_AZIMUTH * (INTENSITY_SWEEP_AZIMUTH / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
-        glow += COLOR_SWEEP_POLAR * (INTENSITY_SWEEP_POLAR / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
+        glow += uSweepAzimuth * (INTENSITY_SWEEP_AZIMUTH * uSphereGain / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
+        glow += uSweepPolar * (INTENSITY_SWEEP_POLAR * uSphereGain / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
 
         d0 += d * RAY_ADVANCE;
         if(d0 > MAX_DIST) break;
@@ -190,7 +210,8 @@ void main() {
         float theta = atan(p.z, p.x);
         float phi = asin(p.y / (distToCenter + 0.0001));
         
-        float bumps = sin(theta * BUMP_FREQ + iTime * BUMP_SPEED) * cos(phi * BUMP_FREQ + iTime * BUMP_SPEED) * BUMP_AMP;
+        float bumpTime = iTime * BUMP_SPEED * uMotion;
+        float bumps = sin(theta * BUMP_FREQ + bumpTime) * cos(phi * BUMP_FREQ + bumpTime) * BUMP_AMP;
         float radiusPerturbation = bumps * BUMP_PERTURBATION_WEIGHT; 
         
         float sphereRadius = RADIUS_SPHERE + radiusPerturbation;
@@ -206,13 +227,13 @@ void main() {
         float specularEdge = pow(fresnel, FRESNEL_SPECULAR_POWER) * FRESNEL_SPECULAR_MULT;
         float volumetricNoise = VOLUMETRIC_NOISE_BASE;
 
-        glow += COLOR_SPHERE * (INTENSITY_SPHERE / (sphere * sphere + 0.0001)) * edgeOpacity * volumetricNoise;
-        glow += COLOR_SPECULAR * (INTENSITY_SPECULAR / (sphere * sphere + 0.00005)) * specularEdge;
+        glow += uSphereColor * (INTENSITY_SPHERE * uSphereGain / (sphere * sphere + 0.0001)) * edgeOpacity * volumetricNoise;
+        glow += mix(uSphereColor, vec3(1.0), SPECULAR_LIGHTEN) * (INTENSITY_SPECULAR * uSphereGain / (sphere * sphere + 0.00005)) * specularEdge;
 
         // An entangled ion carries a halo that pulses with the others of its
         // pair (they share the time, so the two pulses are in step).
-        if (vEntangled > 0.5) {
-            float halo = 0.5 + 0.5 * sin(iTime * HALO_SPEED);
+        if (vEntangled > 0.5 && uHalo > 0.5) {
+            float halo = uMotion > 0.5 ? 0.5 + 0.5 * sin(iTime * HALO_SPEED) : 1.0;
             glow += COLOR_HALO * (INTENSITY_HALO / (sphere * sphere + 0.0001)) * edgeOpacity * halo;
         }
         
@@ -223,7 +244,9 @@ void main() {
     d0 = 0.0;
     bool hitLines = false;
 
+    // The great circles and the dots are not drawn in the outline.
     for(int i = 0; i < MAX_STEPS; i++) {
+        if (uDetail < 0.5) break;
         vec3 p = (ro + rd * d0) - vInstancePos;
         
         float baseSphere = abs(length(p) - RADIUS_SPHERE) - THICKNESS_SPHERE;
@@ -235,7 +258,9 @@ void main() {
         float dotsGrid = (length(pDots) - DOTS_THICKNESS) / DOTS_SPACING;
         float dots = max(baseSphere, dotsGrid);
 
-        float d = min(min(equator, min(meridianX, meridianZ)), dots);
+        float d = uDetail > 1.5
+            ? min(min(equator, min(meridianX, meridianZ)), dots)
+            : min(equator, min(meridianX, meridianZ));
         
         if(d < SURF_DIST) hitLines = true;
 
@@ -244,13 +269,14 @@ void main() {
         float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
         float edgeOpacity = pow(fresnel, FRESNEL_EDGE_POWER);
 
-        glow += COLOR_LINES * (INTENSITY_LINES / (equator * equator + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
-        glow += COLOR_LINES * (INTENSITY_LINES / (meridianX * meridianX + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
-        glow += COLOR_LINES * (INTENSITY_LINES / (meridianZ * meridianZ + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (equator * equator + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianX * meridianX + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianZ * meridianZ + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
         
         float gradientFactor = clamp(p.y * 0.5 + 0.5, 0.0, 1.0);
-        vec3 colorDotsGradient = mix(COLOR_DOTS_START, COLOR_DOTS_END, gradientFactor);
-        glow += colorDotsGradient * (INTENSITY_DOTS / (dots * dots + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+        vec3 colorDotsGradient = mix(uDotsStart, uDotsEnd, gradientFactor);
+        float dotsGain = uDetail > 1.5 ? INTENSITY_DOTS * uSphereGain : 0.0;
+        glow += colorDotsGradient * (dotsGain / (dots * dots + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
 
         d0 += d * RAY_ADVANCE;
         if(d0 > MAX_DIST) break;

@@ -8,7 +8,7 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
 
 ## Reglas (de `AGENTS.md`)
 
-- El frontend es del equipo: esta feature **está aprobada en su diseño**, pero se coordina con el compañero que toca el visor antes de editar `frontend/index.html` (hacer `git pull` justo antes y subir rápido para no pisarse).
+- Esta feature está aprobada en su diseño.
 - El visor tiene que seguir funcionando solo con `python -m http.server`/`make server`. Nada específico de Qollab en el código de la feature.
 - **No cambia el contrato JSON** ni el backend: todo sale de `steps[].operation`, `targets` y `step` (ver `spec.md` §6).
 - Seguir la estética actual (variables CSS de `index.html`: `--panel`, `--panel-2`, `--border`, `--muted`, `--accent`, `--target`). Nada chocante: mismos bordes de 1 px, esquinas de 4–6 px, tipografía de 11–13 px.

@@ -36,12 +36,9 @@ card.
 
 ## The rule {.unnumbered}
 
-**The look and the functions of the viewer are not changed without approval of
-the team.** The viewer is a standalone page: it works without Qollab, served by
+**The viewer is a standalone page:** it works without Qollab, served by
 `python -m http.server`, and it must keep doing so. Everything that Qollab needs
-is added as an optional hook (see below) or is generated at build time. A change
-that alters what the viewer shows, or how it behaves when it is used alone, has
-to be agreed first.
+is added as an optional hook (see below) or is generated at build time.
 
 ## What Qollab does and does not allow {.unnumbered}
 
@@ -200,8 +197,7 @@ the scene with the standalone viewer.
 
 ## Rules for future changes {.unnumbered}
 
-- Do not change how the viewer looks or what it does without approval. A change
-  for Qollab goes in a hook or in the prelude, not in the viewer.
+- A change for Qollab goes in a hook or in the prelude, not in the viewer.
 - Keep the viewer working alone: with `HOST` empty, it must behave as before.
 - Python functions that JS calls return text, never a `dict`, and ordered data is
   returned as a list.

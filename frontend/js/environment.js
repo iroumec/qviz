@@ -97,12 +97,14 @@ export function createEnvironment(n) {
   return group;
 }
 
-/** Set the fog and the chamber lights on the scene, once. */
+/** Set the fog and the chamber lights on the scene, once. Returns the lights. */
 export function applyAtmosphere(scene) {
   scene.fog = new THREE.FogExp2(0x121016, 0.011);
-  scene.add(new THREE.AmbientLight(0x3a5a7a, 0.9));
+  const ambient = new THREE.AmbientLight(0x3a5a7a, 0.9);
+  scene.add(ambient);
 
   const accent = new THREE.PointLight(0x38bdf8, 40, 45);
   accent.position.set(0, -3, 0);
   scene.add(accent);
+  return [ambient, accent];
 }

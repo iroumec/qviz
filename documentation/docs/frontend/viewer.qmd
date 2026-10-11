@@ -287,10 +287,58 @@ page; the file selector, the load button and the measurement are at the top.
 | `W`, `A`, `S`, `D` | Moves the camera on the horizontal plane. |
 | Space | Flies the camera up. |
 | Left control | Moves the camera down. |
+| Camera buttons | Rotate, tilt, zoom and centre the camera (hold to keep moving); see *The View panel*. |
+| Vista | Opens the panel with the profiles and the view options. |
 
 Step 0 is the initial state, in which every qubit is in `|0⟩`. It is not part of
 the JSON; it is added by the viewer, in the same way as the frontend is expected
 to do.
+
+## The View panel {.unnumbered}
+
+The **Vista** (*View*) button is always at the right of the top bar, with an eye
+icon. It opens a panel with the options that make the scene easier to read. A
+profile is a quick set of values; below them, every option can be changed by
+itself (the profile then reads as custom). **Restablecer** goes back to the
+default profile. Esc, a click outside or the button close the panel.
+
+| Profile | What it does |
+| --- | --- |
+| Predeterminado | The default look: a solid sphere with a dim shell and a thick, bright vector. |
+| Enfoque en el vector | Hides the environment, the trap, the horizontal layer, the lasers and the phonon bus, dims the light and thickens the vector. |
+| Alto contraste | A palette of saturated colours on a dark scene without the environment, and stronger text and borders in the interface. |
+| Daltonismo | The Okabe and Ito palette (orange, sky blue and yellow axes, a pink vector) and the numbers of each vector. |
+| Movimiento reducido | No jiggle, halo, wobble of the sphere, sweep of the moving light or animated transitions. It is the starting value when the system asks for less motion (`prefers-reduced-motion`). |
+
+The options are in five sections:
+
+- **Color.** The palette of the axes, the vector and the sphere: default, Okabe
+  and Ito, high contrast and monochrome. The legend of the axes follows it.
+- **Esfera y vector.** The blending of the sphere (*solid* covers what is behind
+  it; *glow* adds to it, which washes out to white over a bright background),
+  the level of detail (full, simple without dots or sweeps, outline only), the
+  glow of the sphere, the brightness and the thickness of the vector, whether the
+  spheres are drawn in front of everything, and whether the `(x, y, z)` of each
+  vector is written under its sphere.
+- **Qué se muestra.** Each group of the scene can be hidden: the environment, the
+  trap chip, the horizontal layer, the vertical lasers, the phonon bus, the jiggle,
+  the halo, the qubit labels, the legend and the camera buttons.
+- **Luz y movimiento.** The brightness of the scene (the exposure), the intensity
+  of the lights and the reduced motion.
+- **Interfaz.** The size of the text (90 to 130 %, which also widens the side
+  panels) and a stronger text and border contrast.
+
+The choice is kept in the browser (`localStorage`, key `qviz.view`); without
+storage the viewer starts with the defaults and works the same. `settings.js`
+holds the values and imports no module of the scene; `scene.js` applies them
+(`applyViewToScene`: the uniforms of the sphere shader, the visibility of the
+groups, the lights and the exposure) and `viewpanel.js` draws the panel.
+
+**Camera buttons.** The pad at the bottom right of the scene rotates, tilts,
+zooms and centres the camera while a button is held, with the mouse, the touch
+screen or the keyboard (Enter or Space on a focused button). The camera can be
+moved without the letter keys. The step is announced to screen readers in a
+polite live region (*Paso 3 de 7: GPI2 en q0. Fidelidad 99.44 %.*).
 
 ## The circuit timeline {.unnumbered}
 
@@ -411,7 +459,10 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 
 | File | Purpose |
 | --- | --- |
-| `js/main.js` | The entry point: wires the controls, builds the scene and loads the first file. |
+| `js/main.js` | The entry point: reads the view options, wires the controls, builds the scene and loads the first file. |
+| `js/settings.js` | The view options: defaults, palettes, profiles and their storage. It imports only `state.js`. |
+| `js/viewpanel.js` | The *Vista* button and its panel (profiles and options), and the interface options (text size, contrast, reduced motion). |
+| `js/camerapad.js` | The on-screen camera buttons (rotate, tilt, zoom, centre). |
 | `js/config.js` | The constants, the URLs and the host hooks (`window.QVIZ_HOST`). |
 | `js/state.js` | The mutable state of the viewer, in one place. |
 | `js/utils.js` | Small helpers (`showStageMessage`, `escapeHtml`, `setError`). |

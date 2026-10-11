@@ -14,8 +14,8 @@ varying vec3 vLocalPos;
 void main() {
     float inSegment = step(abs(vLocalPos.x - uActiveCenter), uActiveHalf);
     float pulse = 0.5 + 0.5 * sin(iTime * 8.0 - vLocalPos.x * 6.0);
-    float active = inSegment * uIntensity;
-    vec3 color = mix(uIdleColor, uActiveColor * (0.6 + 0.4 * pulse), active);
-    float alpha = mix(0.15, 0.85 * (0.5 + 0.5 * pulse), active);
+    float lit = inSegment * uIntensity;
+    vec3 color = mix(uIdleColor, uActiveColor * (0.6 + 0.4 * pulse), lit);
+    float alpha = mix(0.15, 0.85 * (0.5 + 0.5 * pulse), lit);
     gl_FragColor = vec4(color, alpha);
 }

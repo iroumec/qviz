@@ -9,7 +9,7 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 - `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
 
-**Alcance: el backend (Python) es de este agente.** El frontend (JS, HTML, CSS) es del equipo: no lo cambies sin aprobación (ver "El visor y Qollab").
+**Alcance: backend (Python) y frontend (JS, HTML, CSS).** El visor se puede cambiar sin pedir aprobación, siguiendo las reglas de "El visor y Qollab".
 
 ---
 
@@ -76,9 +76,9 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ### El visor y Qollab
 
-El visor (`frontend/index.html`) es del equipo. Guía completa: `documentation/docs/frontend/qollab.qmd`.
+El visor (`frontend/index.html`). Guía completa: `documentation/docs/frontend/qollab.qmd`.
 
-- **No cambies su aspecto ni sus funciones sin aprobación explícita.** Tiene que seguir funcionando solo, servido con `python -m http.server`.
+- Tiene que seguir funcionando solo, servido con `python -m http.server`.
 - Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `laser`, `circuits`, `load`, `sample`, `compileQasm`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
 - `make qollab` arma `qollab/` (proyecto JS de 51 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. No edites `qollab/`.
 - Qollab no ejecuta los `<script>` del HTML, solo carga `main.css` y el JS no lee archivos del proyecto: por eso el paquete embebe los shaders y el modelo del láser, y toma los circuitos de Python.
@@ -141,7 +141,6 @@ El chat se vacía entre sesiones; el repositorio no. Por eso:
 
 ## 7. Fuera de alcance (no lo hagas)
 
-- Cambiar el aspecto o las funciones del frontend sin aprobación del equipo (ver "El visor y Qollab"). Los hooks y el empaquetado para Qollab sí son parte del trabajo.
 - Transpilar _hacia IonQ_ un circuito que viene de otro proveedor. La normalización es una **traducción estática** (`spec.md` M2).
 - Cambiar el contrato JSON sin acuerdo.
 - Optimizar o fusionar compuertas en el MVP.

@@ -1,6 +1,6 @@
 # Feature: accesibilidad y legibilidad del visor (panel "Vista")
 
-> Prompt para la próxima sesión de código. **Estado: planificada el 2026-10-11, sin implementar y sin código tocado.** Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/`, `shaders/bloch.frag` y `documentation/docs/frontend/viewer.qmd`. Para el formato se siguió el de `feature_timeline_circuito.md`.
+> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/settings.js`, `viewpanel.js` y `camerapad.js`, uniformes en `shaders/bloch.frag`, grupos y luces en `scene.js`, markup y CSS en `index.html`, tests en `tests/test_package_qollab.py`, docs en `viewer.qmd`. Quedan sin hacer (a propósito): la ganancia de láser/hoja global, el factor de duración del pulso y las flechas con Shift; el modo `?debug=keys` ya no hace falta (la D sí anda). Falta probarla en Qollab (`qollab_pruebas.md` filas 11 a 13). Lo de abajo es el plan original. Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/`, `shaders/bloch.frag` y `documentation/docs/frontend/viewer.qmd`. Para el formato se siguió el de `feature_timeline_circuito.md`.
 
 ## Por qué
 
@@ -12,8 +12,8 @@ El usuario probó el visor en Qollab y reportó (2026-10-11):
 
 ## Reglas (de `AGENTS.md`)
 
-- El frontend es del equipo: el diseño de este prompt se aprueba con el usuario y se coordina con el compañero antes de editar `index.html` y los shaders (`git pull` justo antes, commits chicos, subir rápido).
-- **El aspecto por defecto no cambia** sin aprobación: lo nuevo son opciones; el perfil "Predeterminado" debe verse **igual que hoy**. (Excepción a decidir: si el diagnóstico de la sección 1 muestra un exceso de brillo propio de Qollab, se corrige el valor por defecto con aprobación.)
+- El frontend se puede tocar sin coordinar con nadie; el diseño de este prompt se acuerda con el usuario (preguntas abiertas al final).
+- **El aspecto por defecto no cambia**: lo nuevo son opciones; el perfil "Predeterminado" debe verse **igual que hoy**. (Excepción a decidir: si el diagnóstico de la sección 1 muestra un exceso de brillo propio de Qollab, se corrige el valor por defecto con aprobación.)
 - El visor sigue funcionando solo con `python -m http.server`. Nada específico de Qollab en la feature; `localStorage` siempre en `try/catch` (en el iframe de Qollab puede fallar).
 - Sin cambios en el backend ni en el contrato JSON.
 - Al terminar: `make test`, `make lint`, `make qollab`, probar en Chromium y en Qollab, docs (`viewer.qmd`) y `memory.md`.
@@ -153,10 +153,10 @@ Hace falta una referencia a cada grupo (`state.three.groups.environment`, `.trap
 - Sonido, voz o lectura automática del circuito.
 - Un editor de colores libre (selectores de color arbitrarios): se ofrecen paletas probadas; se puede sumar después.
 
-## Preguntas abiertas para el usuario
+## Decisiones del usuario (2026-10-11)
 
-1. ~~¿La captura muestra el brillo en toda la escena o sobre todo el láser?~~ Respondida: es el fondo claro más la mezcla aditiva de las esferas (ver §1).
-2. ¿Qué navegador usás en Qollab y qué pantalla (resolución, escala del sistema)?
-3. ¿Los perfiles de §3.1 te alcanzan o querés otros?
-4. ¿Las flechas de la cámara van con Shift (para no chocar con ←/→ de los pasos), o preferís solo los botones en pantalla?
-5. ¿Si el exceso de brillo es de Qollab, aceptás bajar el valor por defecto, o solo ofrecer el perfil?
+1. **El perfil Predeterminado se mejora**: ya no tiene que verse igual que hoy; el defecto pasa a ser legible (esfera que no se satura sobre fondo claro, vector visible). Los demás perfiles parten de ahí.
+2. **Perfiles**: Enfoque en el vector, Alto contraste, Daltonismo (Okabe-Ito) y Movimiento reducido, además del Predeterminado.
+3. **Cámara**: la D finalmente sí funciona en Qollab. Se agregan **botones en pantalla** (rotar, subir/bajar, zoom, centrar) para poder mover la cámara sin teclado. No hace falta el modo `?debug=keys` ni las flechas con Shift.
+4. **Alcance**: todo, en pasos (panel y persistencia → quitar ruido y luz/movimiento → color y forma → perfiles y teclado/`aria-live`), verificando cada paso en Chromium.
+5. El frontend se toca sin pedir aprobación ni coordinar con nadie.

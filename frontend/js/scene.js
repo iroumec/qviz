@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
 import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
+import { PALETTES, hexToRgb } from "./settings.js";
 import { qubitLabel, showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
 import { createLaserBeams, createLaserHead, loadLaserModel, pulseIntensity } from "./laser.js";
@@ -34,6 +35,116 @@ function makeLabel(text) {
   return sprite;
 }
 
+// The exposure of the renderer when the brightness of the view is 1.
+const BASE_EXPOSURE = 1.2;
+
+/** The text sprite under an ion with the (x, y, z) of its vector. */
+function makeValueLabel() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 384;
+  canvas.height = 64;
+  const texture = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false })
+  );
+  sprite.scale.set(3.0, 0.5, 1);
+  sprite.userData.canvas = canvas;
+  return sprite;
+}
+
+/** Write the vector of an ion under its sphere, when it changed. */
+function updateValueLabel(qubit) {
+  const [x, y, z] = qubit.target;
+  const text = `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`;
+  if (qubit.valueText === text) return;
+  qubit.valueText = text;
+  const canvas = qubit.valueLabel.userData.canvas;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#f1ebef";
+  context.font = "600 30px ui-monospace, monospace";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineWidth = 6;
+  context.strokeStyle = "rgba(18, 16, 22, 0.9)";
+  context.strokeText(text, canvas.width / 2, canvas.height / 2);
+  context.fillText(text, canvas.width / 2, canvas.height / 2);
+  qubit.valueLabel.material.map.needsUpdate = true;
+}
+
+/** The uniforms of the sphere shader, with the values of the default view. */
+function blochUniforms() {
+  const colour = () => ({ value: new THREE.Vector3() });
+  return {
+    iTime: { value: 0 },
+    iResolution: { value: new THREE.Vector3(1, 1, 1) },
+    uAxisX: colour(), uAxisY: colour(), uAxisZ: colour(),
+    uVecColor: colour(), uTipColor: colour(),
+    uSphereColor: colour(), uLinesColor: colour(),
+    uDotsStart: colour(), uDotsEnd: colour(),
+    uSweepAzimuth: colour(), uSweepPolar: colour(),
+    uSphereGain: { value: 1 }, uVectorGain: { value: 1 }, uVectorWidth: { value: 1 },
+    uDetail: { value: 2 }, uMotion: { value: 1 }, uHalo: { value: 1 },
+  };
+}
+
+const DETAIL_LEVELS = { outline: 0, simple: 1, full: 2 };
+
+/**
+ * Apply the view options (state.view) to the scene: the palette and the shape of
+ * the spheres, the groups that are shown, the lights and the motion. It is safe to
+ * call it before the scene exists, and again after every rebuild.
+ */
+export function applyViewToScene() {
+  const view = state.view;
+  const { renderer, scene, groups, instMesh } = state.three;
+  if (!renderer || !view.palette) return;
+
+  renderer.toneMappingExposure = BASE_EXPOSURE * view.brightness;
+  scene.environmentIntensity = ENVIRONMENT_INTENSITY * view.lights;
+  for (const light of [...state.three.lights, ...state.three.ionLights]) {
+    light.intensity = light.userData.base * view.lights;
+  }
+
+  const shown = {
+    environment: view.showEnvironment, trap: view.showTrap,
+    horizontal: view.showHorizontal, lasers: view.showLasers, bus: view.showBus,
+    labels: view.showLabels, values: view.valueLabels,
+  };
+  for (const [name, visible] of Object.entries(shown)) {
+    if (groups[name]) groups[name].visible = visible;
+  }
+
+  if (!instMesh) return;
+  const palette = PALETTES[view.palette];
+  const u = instMesh.material.uniforms;
+  const colours = {
+    uAxisX: "axisX", uAxisY: "axisY", uAxisZ: "axisZ", uVecColor: "vector",
+    uTipColor: "tip", uSphereColor: "sphere", uLinesColor: "lines",
+    uDotsStart: "dotsStart", uDotsEnd: "dotsEnd",
+    uSweepAzimuth: "sweepAzimuth", uSweepPolar: "sweepPolar",
+  };
+  for (const [uniform, key] of Object.entries(colours)) {
+    u[uniform].value.set(...hexToRgb(palette[key]));
+  }
+  u.uSphereGain.value = view.sphereGlow;
+  u.uVectorGain.value = view.vectorGain;
+  u.uVectorWidth.value = view.vectorWidth;
+  u.uDetail.value = DETAIL_LEVELS[view.sphereDetail];
+  u.uMotion.value = view.reducedMotion ? 0 : 1;
+  u.uHalo.value = view.halo ? 1 : 0;
+
+  const material = instMesh.material;
+  const blending = view.sphereBlend === "glow" ? THREE.AdditiveBlending : THREE.NormalBlending;
+  const depthTest = !view.vectorOnTop;
+  if (material.blending !== blending || material.depthTest !== depthTest) {
+    material.blending = blending;
+    material.depthTest = depthTest;
+    material.needsUpdate = true;
+  }
+  instMesh.renderOrder = view.vectorOnTop ? 10 : 0;
+}
+
 /** Build the chain of ions, one sphere per qubit, as one instanced mesh. */
 export function buildScene(n) {
   if (!state.three.renderer) {
@@ -54,14 +165,11 @@ export function buildScene(n) {
   geometry.setAttribute("instanceEntangled", state.three.entangledAttribute);
 
   const material = new THREE.ShaderMaterial({
-    uniforms: {
-      iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector3(1, 1, 1) },
-    },
+    uniforms: blochUniforms(),
     vertexShader: state.shaders.vert,
     fragmentShader: state.shaders.frag,
     transparent: true,
-    blending: THREE.AdditiveBlending,
+    blending: THREE.NormalBlending,
     depthWrite: false,
   });
 
@@ -75,6 +183,13 @@ export function buildScene(n) {
     ? state.three.laserMesh.geometry.getAttribute("instanceActive")
     : null;
 
+  // What the "Vista" panel can hide goes in its own group.
+  const labels = new THREE.Group();
+  const values = new THREE.Group();
+  const lasers = new THREE.Group();
+  const bus = new THREE.Group();
+  state.three.ionLights = [];
+
   const dummy = new THREE.Object3D();
   for (let i = 0; i < n; i++) {
     const x = (i - (n - 1) / 2) * SPACING;
@@ -85,20 +200,26 @@ export function buildScene(n) {
 
     const label = makeLabel(qubitLabel(i));
     label.position.set(x, LABEL_Y, 0);
-    state.three.world.add(label);
+    labels.add(label);
+
+    const valueLabel = makeValueLabel();
+    valueLabel.position.set(x, -1.45, 0);
+    values.add(valueLabel);
 
     const device = createLaserHead();
     device.position.set(x, LENS_Y, 0);
-    state.three.world.add(device);
+    lasers.add(device);
 
     const lightColor = (i % 2 === 0) ? 0xff00aa : 0x0088ff;
     const pointLight = new THREE.PointLight(lightColor, 2.0, 7.0);
+    pointLight.userData.base = 2.0;
     pointLight.position.set(x, 0, 0);
     state.three.world.add(pointLight);
+    state.three.ionLights.push(pointLight);
 
     state.qubits.push({
-      x, label, current: [0, 0, 1], target: [0, 0, 1], vibration: 0, isTarget: false,
-      laserStart: 0, laserEnd: 0, entangled: false,
+      x, label, valueLabel, valueText: "", current: [0, 0, 1], target: [0, 0, 1],
+      vibration: 0, isTarget: false, laserStart: 0, laserEnd: 0, entangled: false,
     });
   }
   state.three.instMesh.instanceMatrix.needsUpdate = true;
@@ -106,19 +227,22 @@ export function buildScene(n) {
 
   if (state.three.laserMesh) {
     state.three.laserMesh.instanceMatrix.needsUpdate = true;
-    state.three.world.add(state.three.laserMesh);
+    lasers.add(state.three.laserMesh);
   }
+  state.three.world.add(labels, values, lasers, bus);
 
   // The phonon bus of a two-qubit gate (hidden until one runs).
   state.three.busMesh = createPhononBus();
-  if (state.three.busMesh) state.three.world.add(state.three.busMesh);
+  if (state.three.busMesh) bus.add(state.three.busMesh);
 
   // The surface-trap chip under the chain, with a field ring per ion.
-  state.three.world.add(createIonTrap(n));
+  const trap = createIonTrap(n);
+  state.three.world.add(trap);
 
   // The horizontal optical layer: the global beam sheet, the phonon guide rail
   // and the side optics at the ends of the chain.
-  state.three.world.add(createHorizontalLayer(n));
+  const horizontal = createHorizontalLayer(n);
+  state.three.world.add(horizontal);
 
   // The measurement animation (flares, photons and state badges).
   state.three.world.add(createMeasurement(n));
@@ -128,8 +252,11 @@ export function buildScene(n) {
   state.three.world.add(createSelection(n));
 
   // The laboratory environment: the vacuum chamber and the optical table.
-  state.three.world.add(createEnvironment(n));
+  const environment = createEnvironment(n);
+  state.three.world.add(environment);
 
+  state.three.groups = { labels, values, lasers, bus, trap, horizontal, environment };
+  applyViewToScene();
   computeFitRadius();
 }
 
@@ -229,6 +356,36 @@ function moveCamera(dt) {
   if (moved) updateCamera();
 }
 
+// The speed of the on-screen camera buttons: rotation in radians per second and
+// zoom as a factor per second.
+const PAD_TURN_SPEED = 1.3;
+const PAD_ZOOM_SPEED = 1.1;
+
+/** Turn, tilt or zoom the camera while an on-screen button is held. */
+function padCamera(dt) {
+  const { keys, orbit } = state;
+  const turn = (keys.rotateRight ? 1 : 0) - (keys.rotateLeft ? 1 : 0);
+  const tilt = (keys.tiltUp ? 1 : 0) - (keys.tiltDown ? 1 : 0);
+  const zoom = (keys.zoomOut ? 1 : 0) - (keys.zoomIn ? 1 : 0);
+  if (!turn && !tilt && !zoom) return;
+  orbit.azimuth += turn * PAD_TURN_SPEED * dt;
+  orbit.elevation = Math.max(-1.4, Math.min(1.4, orbit.elevation + tilt * PAD_TURN_SPEED * dt));
+  orbit.zoom = Math.max(0.25, Math.min(4, orbit.zoom * Math.exp(zoom * PAD_ZOOM_SPEED * dt)));
+  updateCamera();
+}
+
+/** Hold (or release) one of the camera flags: the buttons of the camera pad use it. */
+export function holdCamera(action, down) {
+  if (action in state.keys) state.keys[action] = down;
+}
+
+/** Return the camera to the framing of a new circuit. */
+export function resetCamera() {
+  Object.assign(state.orbit, { azimuth: 0.7, elevation: 0.32, zoom: 1 });
+  state.orbit.target = { x: 0, y: 0, z: 0 };
+  updateCamera();
+}
+
 /** Drag to rotate the chain, the wheel to zoom, the keyboard to move. */
 function addCameraControls() {
   const canvas = state.three.renderer.domElement;
@@ -260,6 +417,8 @@ function addCameraControls() {
   window.addEventListener("keydown", (event) => {
     const action = moveAction(event);
     if (!action || isTyping()) return;
+    // Space presses a button when one has the focus: it must not move the camera.
+    if (action === "up" && event.target.closest && event.target.closest("button, summary, a")) return;
     state.keys[action] = true;
     event.preventDefault();
   });
@@ -289,7 +448,7 @@ export async function initThree() {
   state.three.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   state.three.renderer.setClearColor(0x121016, 1);
   state.three.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  state.three.renderer.toneMappingExposure = 1.2;
+  state.three.renderer.toneMappingExposure = BASE_EXPOSURE;
   stage.appendChild(state.three.renderer.domElement);
 
   state.three.scene = new THREE.Scene();
@@ -303,7 +462,7 @@ export async function initThree() {
   state.three.scene.environmentIntensity = ENVIRONMENT_INTENSITY;
   roomEnvironment.dispose();
 
-  applyAtmosphere(state.three.scene);
+  const chamberLights = applyAtmosphere(state.three.scene);
 
   const directionalLight = new THREE.DirectionalLight(0xaabbff, 1.2);
   directionalLight.position.set(5, 12, 7);
@@ -311,6 +470,11 @@ export async function initThree() {
 
   state.laser.movingLight = new THREE.PointLight(0xffffff, 20.0, 20);
   state.three.scene.add(state.laser.movingLight);
+
+  // The lights that the brightness of the view scales, with their base values.
+  state.three.lights = [...chamberLights, directionalLight, state.laser.movingLight];
+  for (const light of state.three.lights) light.userData.base = light.intensity;
+  applyViewToScene();
 
   await loadLaserModel();
 
@@ -359,9 +523,12 @@ export function animate(time) {
   const dt = previousFrame ? Math.min(0.1, (time - previousFrame) / 1000) : 0;
   previousFrame = time;
   moveCamera(dt);
+  padCamera(dt);
 
   if (state.laser.movingLight) {
-    state.laser.movingLight.position.x = Math.sin(time * 0.0005) * 30.0;
+    // The light that sweeps along the chain stands still with reduced motion.
+    const sweep = state.view.reducedMotion ? 0 : Math.sin(time * 0.0005);
+    state.laser.movingLight.position.x = sweep * 30.0;
     state.laser.movingLight.position.y = 4.0;
     state.laser.movingLight.position.z = 3.0;
   }
@@ -380,7 +547,7 @@ export function animate(time) {
     const vector = qubit.current.slice();
     // The wobble is shown only while the ion moves, so the chain settles when a
     // step is reached.
-    if (moving && qubit.vibration > 0) {
+    if (moving && qubit.vibration > 0 && !state.view.reducedMotion) {
       const wobble = qubit.vibration * 0.25 * Math.sin(time * 0.006);
       vector[0] += wobble;
       vector[1] += wobble * 0.5;
@@ -390,6 +557,7 @@ export function animate(time) {
     array[i * 3 + 1] = vector[2];
     array[i * 3 + 2] = -vector[1];
     qubit.label.material.color.setHex(qubit.isTarget ? 0xffd166 : 0xe6ecff);
+    if (state.view.valueLabels) updateValueLabel(qubit);
     if (state.three.laserActive) {
       state.three.laserActive.array[i] = laserIntensity(qubit, time);
     }

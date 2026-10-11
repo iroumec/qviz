@@ -147,6 +147,24 @@ export function initPanels() {
   }
 }
 
+/** Say the current step to a screen reader: the gate, its qubits and the fidelity. */
+export function announceStep(step) {
+  const live = document.getElementById("stepLive");
+  if (!live || !state.data) return;
+  const total = state.data.steps.length;
+  if (!step) {
+    live.textContent = ENGLISH
+      ? `Initial state, step 0 of ${total}.` : `Estado inicial, paso 0 de ${total}.`;
+    return;
+  }
+  const operation = OPERATIONS[step.operation] ? OPERATIONS[step.operation].name : step.operation;
+  const qubits = step.targets.map((target) => `q${target}`).join(", ");
+  const fidelity = step.cumulative_fidelity.toFixed(2);
+  live.textContent = ENGLISH
+    ? `Step ${state.stepIndex} of ${total}: ${operation} on ${qubits}. Fidelity ${fidelity} %.`
+    : `Paso ${state.stepIndex} de ${total}: ${operation} en ${qubits}. Fidelidad ${fidelity} %.`;
+}
+
 /**
  * Show the fidelity of the circuit: the accumulated fidelity of the step, a
  * bar and the total error (the fidelity that was lost). The bar is green above
