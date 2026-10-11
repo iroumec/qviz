@@ -9,6 +9,7 @@ import { showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
 import { createLaserBeams, loadLaserModel, pulseIntensity } from "./laser.js";
 import { createPhononBus, updatePhonon } from "./phonon.js";
+import { createIonTrap, updateTrap } from "./trap.js";
 
 /** A small text sprite, used as the label above an ion. */
 function makeLabel(text) {
@@ -110,14 +111,17 @@ export function buildScene(n) {
   state.three.busMesh = createPhononBus();
   if (state.three.busMesh) state.three.world.add(state.three.busMesh);
 
+  // The surface-trap chip under the chain, with a field ring per ion.
+  state.three.world.add(createIonTrap(n));
+
   computeFitRadius();
 }
 
 /** Fit the camera distance to the length of the chain. */
 function computeFitRadius() {
   if (!state.three.camera || state.qubits.length === 0) return;
-  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 1.8;
-  const halfY = 1.8;
+  const halfX = ((state.qubits.length - 1) / 2) * SPACING + 2.6;
+  const halfY = 2.9;
   const vFov = (state.three.camera.fov * Math.PI) / 180;
   const hFov = 2 * Math.atan(Math.tan(vFov / 2) * state.three.camera.aspect);
   state.orbit.fitRadius = Math.max(
@@ -365,6 +369,7 @@ export function animate(time) {
     state.three.laserMesh.material.uniforms.iTime.value = time * 0.001;
   }
   updatePhonon(time);
+  updateTrap(time);
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

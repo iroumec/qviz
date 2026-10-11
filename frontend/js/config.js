@@ -23,6 +23,20 @@ export const SPACING = 3.0;
 // fraction of the camera distance per second.
 export const MOVE_SPEED = 1.0;
 
+// The surface-trap chip under the ion chain. The ions float at y = 0, so the
+// top of the substrate sits below them and the field rings encircle the chain.
+export const TRAP_TOP = -1.6;
+export const TRAP_THICKNESS = 0.4;
+export const TRAP_DEPTH = 5.0;
+export const TRAP_MARGIN = 2.4;
+export const TRAP_PAD_SPACING = 0.7;
+export const TRAP_PAD_WIDTH = 0.45;
+export const TRAP_PAD_LENGTH = 1.5;
+export const TRAP_PAD_HEIGHT = 0.1;
+export const TRAP_PAD_Z = 1.45;
+export const TRAP_RING_RADIUS = 1.3;
+export const TRAP_RING_TUBE = 0.025;
+
 export const VERT_URL = "../shaders/bloch.vert";
 export const FRAG_URL = "../shaders/bloch.frag";
 export const LENS_VERT_URL = "../shaders/lens.vert";

@@ -40,6 +40,8 @@ export const state = {
     laserActive: null,
     busMesh: null,
     entangledAttribute: null,
+    trapRings: [],
+    trapGlow: [],
   },
 
   // The laser model and its materials.
