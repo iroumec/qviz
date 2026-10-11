@@ -3,7 +3,7 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
-import { BOX, SPACING } from "./config.js";
+import { BOX, MOVE_SPEED, SPACING } from "./config.js";
 import { state } from "./state.js";
 import { showStageMessage } from "./utils.js";
 import { loadShaders } from "./shaders.js";
@@ -39,6 +39,7 @@ export function buildScene(n) {
     state.three.world.remove(state.three.world.children[0]);
   }
   state.qubits.length = 0;
+  state.orbit.target = { x: 0, y: 0, z: 0 };
 
   const geometry = new THREE.BoxGeometry(BOX, BOX, BOX);
   state.three.psiAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
@@ -118,20 +119,79 @@ function computeFitRadius() {
   updateCamera();
 }
 
-/** Place the camera on its orbit around the chain. */
+/** Place the camera on its orbit around the target. */
 function updateCamera() {
   if (!state.three.camera) return;
-  const { azimuth, elevation } = state.orbit;
+  const { azimuth, elevation, target } = state.orbit;
   const radius = state.orbit.fitRadius * state.orbit.zoom;
   state.three.camera.position.set(
-    radius * Math.sin(azimuth) * Math.cos(elevation),
-    radius * Math.sin(elevation),
-    radius * Math.cos(azimuth) * Math.cos(elevation)
+    target.x + radius * Math.sin(azimuth) * Math.cos(elevation),
+    target.y + radius * Math.sin(elevation),
+    target.z + radius * Math.cos(azimuth) * Math.cos(elevation)
   );
-  state.three.camera.lookAt(0, 0, 0);
+  state.three.camera.lookAt(target.x, target.y, target.z);
 }
 
-/** Drag to rotate the chain and the wheel to zoom. */
+// The keys that move the camera: WASD on the horizontal plane, space up and the
+// left control down.
+const MOVE_KEYS = {
+  KeyW: "forward",
+  KeyS: "back",
+  KeyA: "left",
+  KeyD: "right",
+  Space: "up",
+  ControlLeft: "down",
+};
+
+/** True when the keyboard event comes from a field, so the key is not stolen. */
+function isTyping() {
+  const tag = document.activeElement && document.activeElement.tagName;
+  return tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
+}
+
+/**
+ * Move the orbit target with the held keys. The step grows with the distance of
+ * the camera, so the movement feels the same at every zoom.
+ */
+function moveCamera(dt) {
+  const { keys, orbit } = state;
+  const step = orbit.fitRadius * orbit.zoom * MOVE_SPEED * dt;
+  if (step <= 0) return;
+
+  const camera = state.three.camera;
+  const forward = {
+    x: orbit.target.x - camera.position.x,
+    z: orbit.target.z - camera.position.z,
+  };
+  const length = Math.hypot(forward.x, forward.z);
+  if (length > 1e-4) {
+    forward.x /= length;
+    forward.z /= length;
+  } else {
+    forward.x = 0;
+    forward.z = -1;
+  }
+  const right = { x: -forward.z, z: forward.x };
+
+  let moved = false;
+  const shift = (key, dx, dy, dz) => {
+    if (!keys[key]) return;
+    orbit.target.x += dx;
+    orbit.target.y += dy;
+    orbit.target.z += dz;
+    moved = true;
+  };
+  shift("forward", forward.x * step, 0, forward.z * step);
+  shift("back", -forward.x * step, 0, -forward.z * step);
+  shift("right", right.x * step, 0, right.z * step);
+  shift("left", -right.x * step, 0, -right.z * step);
+  shift("up", 0, step, 0);
+  shift("down", 0, -step, 0);
+
+  if (moved) updateCamera();
+}
+
+/** Drag to rotate the chain, the wheel to zoom, the keyboard to move. */
 function addCameraControls() {
   const canvas = state.three.renderer.domElement;
   let dragging = false;
@@ -158,6 +218,21 @@ function addCameraControls() {
     );
     updateCamera();
   }, { passive: false });
+
+  window.addEventListener("keydown", (event) => {
+    const action = MOVE_KEYS[event.code];
+    if (!action || isTyping()) return;
+    state.keys[action] = true;
+    event.preventDefault();
+  });
+  window.addEventListener("keyup", (event) => {
+    const action = MOVE_KEYS[event.code];
+    if (action) state.keys[action] = false;
+  });
+  // A key that is held while the window loses the focus would stay down.
+  window.addEventListener("blur", () => {
+    for (const action of Object.keys(state.keys)) state.keys[action] = false;
+  });
 }
 
 export async function initThree() {
@@ -234,9 +309,17 @@ function laserIntensity(qubit, time) {
   return Math.min(1, progress / ramp, (1 - progress) / ramp);
 }
 
+// The timestamp of the previous frame, for the keyboard movement.
+let previousFrame = 0;
+
 export function animate(time) {
   requestAnimationFrame(animate);
   if (!state.three.renderer || !state.three.psiAttribute) return;
+
+  // The time since the last frame, for the keyboard movement.
+  const dt = previousFrame ? Math.min(0.1, (time - previousFrame) / 1000) : 0;
+  previousFrame = time;
+  moveCamera(dt);
 
   if (state.laser.movingLight) {
     state.laser.movingLight.position.x = Math.sin(time * 0.0005) * 30.0;

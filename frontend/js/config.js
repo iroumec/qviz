@@ -19,6 +19,10 @@ export const HOST = window.QVIZ_HOST || {};
 export const BOX = 2.6;
 export const SPACING = 3.0;
 
+// The speed of the keyboard movement (WASD, space and left control), as a
+// fraction of the camera distance per second.
+export const MOVE_SPEED = 1.0;
+
 export const VERT_URL = "../shaders/bloch.vert";
 export const FRAG_URL = "../shaders/bloch.frag";
 export const LENS_VERT_URL = "../shaders/lens.vert";

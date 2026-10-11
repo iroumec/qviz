@@ -45,8 +45,15 @@ export const state = {
     metalMaterial: null,
   },
 
-  // The orbit of the camera around the chain.
-  orbit: { azimuth: 0.7, elevation: 0.32, zoom: 1, fitRadius: 16 },
+  // The orbit of the camera around the chain. `target` is the point that is
+  // looked at; it is moved with the keyboard (WASD, space and left control).
+  orbit: {
+    azimuth: 0.7, elevation: 0.32, zoom: 1, fitRadius: 16,
+    target: { x: 0, y: 0, z: 0 },
+  },
+
+  // The movement keys that are held down.
+  keys: { forward: false, back: false, left: false, right: false, up: false, down: false },
 
   // The frame-rate counter, shown in the header.
   fps: { frames: 0, last: 0, value: 0 },
