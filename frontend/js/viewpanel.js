@@ -91,6 +91,8 @@ const SECTIONS = [
     controls: [
       { key: "brightness", type: "range", label: t("Brillo de la escena", "Scene brightness"), min: 0.3, max: 1.6, step: 0.05 },
       { key: "lights", type: "range", label: t("Intensidad de las luces", "Light intensity"), min: 0, max: 1.5, step: 0.05 },
+      { key: "laserGain", type: "range", label: t("Brillo de los láseres", "Laser brightness"), min: 0.1, max: 1.5, step: 0.05 },
+      { key: "sheetGain", type: "range", label: t("Brillo del haz global", "Global beam brightness"), min: 0, max: 1.5, step: 0.05 },
       { key: "reducedMotion", type: "check", label: t("Movimiento reducido", "Reduced motion") },
     ],
   },

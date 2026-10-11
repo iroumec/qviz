@@ -115,6 +115,10 @@ export function applyViewToScene() {
     if (groups[name]) groups[name].visible = visible;
   }
 
+  if (state.three.laserMesh) {
+    state.three.laserMesh.material.uniforms.uLaserGain.value = view.laserGain;
+  }
+
   if (!instMesh) return;
   const palette = PALETTES[view.palette];
   const u = instMesh.material.uniforms;

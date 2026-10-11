@@ -232,6 +232,14 @@ def test_every_uniform_of_the_sphere_shader_is_given_by_the_scene():
     assert [name for name in uniforms if f"{name}:" not in scene] == []
 
 
+def test_the_laser_gain_reaches_the_beam_shader():
+    shader = (_ROOT / "shaders" / "laser.frag").read_text(encoding="utf-8")
+    laser = (_ROOT / "frontend" / "js" / "laser.js").read_text(encoding="utf-8")
+    uniforms = re.findall(r"^uniform\s+\w+\s+(\w+);", shader, re.M)
+    assert "uLaserGain" in uniforms
+    assert [name for name in uniforms if f"{name}:" not in laser] == []
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_view_options_have_profiles_that_are_kept_and_checked(tmp_path):
     js = _ROOT / "frontend" / "js"

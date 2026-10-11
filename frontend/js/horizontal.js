@@ -158,7 +158,7 @@ export function updateHorizontal(time) {
     for (const qubit of state.qubits) {
       intensity = Math.max(intensity, pulseIntensity(qubit.laserStart, qubit.laserEnd, time));
     }
-    const wanted = intensity * GLOBAL_BEAM_OPACITY;
+    const wanted = intensity * GLOBAL_BEAM_OPACITY * state.view.sheetGain;
     layer.beam.material.opacity += (wanted - layer.beam.material.opacity) * 0.2;
   }
 

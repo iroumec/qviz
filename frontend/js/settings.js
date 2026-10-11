@@ -66,6 +66,8 @@ export const DEFAULT_VIEW = {
   halo: true,
   brightness: 1, // the exposure of the scene
   lights: 1, // the factor of every light and of the environment
+  laserGain: 1, // the brightness of the vertical laser beams
+  sheetGain: 1, // the brightness of the global beam sheet
   reducedMotion: false,
   textScale: 1, // the size of the text of the panels
   uiContrast: false,

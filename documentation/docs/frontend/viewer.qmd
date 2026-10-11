@@ -325,7 +325,9 @@ The options are in five sections:
   trap chip, the horizontal layer, the vertical lasers, the phonon bus, the jiggle,
   the halo, the qubit labels, the legend and the camera buttons.
 - **Luz y movimiento.** The brightness of the scene (the exposure), the intensity
-  of the lights and the reduced motion.
+  of the lights, the brightness of the vertical lasers and of the global beam
+  sheet (to see them dimmer without hiding them, which *Qué se muestra* does) and
+  the reduced motion.
 - **Interfaz.** The size of the text (90 to 130 %, which also widens the side
   panels) and a stronger text and border contrast.
 

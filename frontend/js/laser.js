@@ -222,6 +222,7 @@ export function createLaserBeams(n) {
       uLaserMinY: { value: LASER_MIN_Y },
       uLaserMaxY: { value: LASER_MAX_Y },
       uLaserActive: { value: 1.0 },
+      uLaserGain: { value: 1.0 },
     },
     vertexShader: state.shaders.laserVert,
     fragmentShader: state.shaders.laserFrag,

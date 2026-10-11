@@ -13,6 +13,8 @@ uniform float uPulseSpeed;
 uniform float uLaserMinY;
 uniform float uLaserMaxY;
 uniform float uLaserActive;
+// The brightness of the beam, from the "Vista" panel (1 is the default).
+uniform float uLaserGain;
 
 varying vec3 vWorldPosition;
 varying vec3 vInstancePos;
@@ -68,7 +70,7 @@ void main() {
     vec3 baseColor = uLaserColor * glow;
     vec3 coreColor = vec3(1.0, 0.8, 0.8) * pow(glow * CORE_INTENSITY, 2.0);
 
-    vec3 finalColor = (baseColor + coreColor) * intensity;
+    vec3 finalColor = (baseColor + coreColor) * intensity * uLaserGain;
 
-    gl_FragColor = vec4(finalColor, min(glow * intensity, 1.0));
+    gl_FragColor = vec4(finalColor, min(glow * intensity * uLaserGain, 1.0));
 }

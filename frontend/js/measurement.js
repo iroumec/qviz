@@ -161,7 +161,7 @@ export function updateMeasurement(time) {
   const beam = ramp(t, 0, BEAM_UP) * (1 - ramp(t, FADE_START, FADE_END));
   const layer = state.three.horizontal;
   if (layer) {
-    layer.beam.material.opacity = 0.8 * beam;
+    layer.beam.material.opacity = 0.8 * beam * state.view.sheetGain;
     layer.beam.material.color.setHex(beam > 0 ? READOUT_COLOR : GATE_BEAM_COLOR);
   }
 
