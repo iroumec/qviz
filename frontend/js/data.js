@@ -6,7 +6,7 @@ import { laserColorFor, laserPulseFor } from "./laser.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
 import { state } from "./state.js";
-import { setError, setStatus } from "./utils.js";
+import { clearErrorCard, reportError, setError, setStatus } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
 import { buildTimeline, highlightStep } from "./timeline.js";
 import {
@@ -39,6 +39,7 @@ export function loadData(obj) {
   slider.max = String(state.data.steps.length);
   slider.value = "0";
   setError("");
+  clearErrorCard();
   updateStep(0, true);
   updatePerf();
 }
@@ -63,7 +64,7 @@ export async function loadCircuitFile(file) {
     select.value = key;
     loadData(compiled);
   } catch (error) {
-    setError("Error: " + error.message);
+    reportError(error);
   }
 }
 
@@ -171,7 +172,7 @@ export async function loadManifest() {
     try {
       await loadFile(select.value);
     } catch (error) {
-      setError("No se pudo cargar " + error.message);
+      reportError(error);
     }
     return;
   }

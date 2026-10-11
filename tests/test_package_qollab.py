@@ -131,6 +131,39 @@ def test_every_python_function_of_the_prelude_exists_in_the_api(module):
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_prelude_keeps_the_message_and_the_class_of_our_errors(module, tmp_path):
+    source = module._PRELUDE
+    start = source.index("const readable")
+    end = source.index("};\n", start) + 3
+    script = tmp_path / "readable.js"
+    script.write_text(
+        source[start:end]
+        + """
+const trace = new Error("Traceback (most recent call last):\\n  File x\\n"
+  + "backend.core.errors.UnsupportedProviderError: This machine is not supported");
+const ours = readable(trace);
+console.log(JSON.stringify([ours.message, ours.kind]));
+const other = new Error("boom");
+console.log(readable(other) === other);
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    first, second = result.stdout.strip().splitlines()
+    assert first == '["This machine is not supported","UnsupportedProviderError"]'
+    assert second == "true"
+
+
+def test_the_viewer_shows_an_error_card_for_unsupported_machines(packaged):
+    out, _ = packaged
+    js = (out / "main.js").read_text(encoding="utf-8")
+    assert "function reportError" in js and "UnsupportedProviderError" in js
+    assert ".error-card" in (out / "main.css").read_text(encoding="utf-8")
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_generated_script_is_valid_javascript(packaged, tmp_path):
     out, _ = packaged
     module_file = tmp_path / "main.mjs"

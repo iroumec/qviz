@@ -12,7 +12,7 @@
 //            it is how the user loads a circuit
 //
 // The viewer needs Python for `compileQasm` and `sample`. Without a host that gives
-// them, host.js asks the local server of scripts/server.py (`make serverr`).
+// them, host.js asks the local server of scripts/server.py (`make server`).
 
 export const HOST = window.QVIZ_HOST || {};
 

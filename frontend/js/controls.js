@@ -3,7 +3,7 @@
 
 import { PLAY_INTERVAL_MS, PLAY_MARGIN_MS } from "./config.js";
 import { state } from "./state.js";
-import { setError } from "./utils.js";
+import { reportError } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { refreshPlayButton, runMeasurement } from "./panels.js";
 import { initTimeline } from "./timeline.js";
@@ -77,9 +77,7 @@ export function initControls() {
   });
   document.getElementById("fileSelect").addEventListener("change", (event) => {
     stopPlay();
-    loadFile(event.target.value).catch((error) => {
-      setError("No se pudo cargar " + error.message);
-    });
+    loadFile(event.target.value).catch(reportError);
   });
   document.getElementById("prev").addEventListener("click", () => {
     stopPlay();

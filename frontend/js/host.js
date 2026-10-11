@@ -1,13 +1,13 @@
 // The two services that need Python: compile a circuit and measure a step.
 // Each one asks the host (Qollab) when it gives the service, and the local server
-// (scripts/server.py, `make serverr`) otherwise. Both run the same Python code, so
+// (scripts/server.py, `make server`) otherwise. Both run the same Python code, so
 // the results are the same. There is no JavaScript fallback: without Python the
 // viewer cannot compile or measure, and it says so.
 
 import { COMPILE_URL, HOST, SAMPLE_URL } from "./config.js";
 
 const NO_SERVER =
-  "este servidor no tiene Python (sin Qollab ni `make serverr`), no puede ";
+  "este servidor no tiene Python (sin Qollab ni `make server`), no puede ";
 
 /** POST to the local server and return the parsed reply, or throw a readable error. */
 async function post(url, body, what) {
@@ -15,7 +15,7 @@ async function post(url, body, what) {
   try {
     response = await fetch(url, { method: "POST", body });
   } catch (error) {
-    throw new Error("no hay conexión con el servidor. Usá `make serverr`.");
+    throw new Error("no hay conexión con el servidor. Usá `make server`.");
   }
   if ([404, 405, 501].includes(response.status)) {
     throw new Error(NO_SERVER + what + ".");

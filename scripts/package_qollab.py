@@ -58,13 +58,16 @@ const textOf = (data) => {
 };
 
 // Python errors reach JS with their whole traceback. The errors of QViz are meant
-// to be read, so only their message is kept; any other error is left untouched.
+// to be read, so only their message is kept, and its class goes in `kind` (for
+// example UnsupportedProviderError); any other error is left untouched.
 const readable = (error) => {
   const last = String(error && error.message).trim().split("\\n").pop();
   const prefix = "backend.core.errors.";
   const colon = last.indexOf(": ");
-  const ours = last.startsWith(prefix) && colon > 0;
-  return ours ? new Error(last.slice(colon + 2)) : error;
+  if (!(last.startsWith(prefix) && colon > 0)) return error;
+  const friendly = new Error(last.slice(colon + 2));
+  friendly.kind = last.slice(prefix.length, colon);
+  return friendly;
 };
 
 try {

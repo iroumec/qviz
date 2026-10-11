@@ -326,6 +326,20 @@ the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
   closes it, and the choice is remembered in `localStorage` when the page allows
   it. The scene resizes with a `ResizeObserver`. Below 860 px wide it is hidden.
 
+## When a circuit cannot be shown {.unnumbered}
+
+The viewer always opens, even when the compilation fails. A failure puts a short
+red line under the controls and a **card over the scene** (`reportError` in
+`utils.js`) that cannot be missed; the cross closes it, and a successful load
+removes it. A machine that QViz does not support (IBM, AWS or any other that is
+not IonQ or the built-in simulator) gets its own card: "Máquina no soportada",
+what to do (choose IonQ Aria or Forte, or the built-in simulator) and, in small
+text, the message of the backend with the machine that was detected. The Qollab
+prelude tells the two apart because it keeps the class of the Python error in
+`error.kind` (`UnsupportedProviderError`); any other error shows the generic card
+"No se pudo mostrar el circuito" with its message. The same card is used when a
+file that was loaded or chosen from the list fails.
+
 ## The measurement {.unnumbered}
 
 The `Medir` button draws a number of shots from the probabilities of the current
