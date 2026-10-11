@@ -1,6 +1,6 @@
 # Feature: línea de tiempo del circuito transpilado (franja inferior)
 
-> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/timeline.js`, markup y CSS en `index.html`, cableado en `controls.js`/`data.js`/`scene.js`. Queda por probar en Qollab, y no se hizo el realce de las esferas 3D al pasar el mouse ni el clic en el nombre del qubit (opcionales). Prompt original: Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
+> **Estado (2026-10-11): implementada, sin commitear.** `frontend/js/timeline.js`, markup y CSS en `index.html`, cableado en `controls.js`/`data.js`/`scene.js`. Queda por probar en Qollab, y no se hizo el realce de las esferas 3D al pasar el mouse ni el clic en el nombre del qubit (opcionales); el realce 3D ya está hecho (`selection.js`) y se agregó zoom, arrastre y clic en el número de paso para circuitos largos. Prompt original: Diseño aprobado por el usuario el 2026-10-11 (ver "Decisiones"). Antes de empezar: `git pull --rebase origin development`, leer `memory.md`, `frontend/js/` y `documentation/docs/frontend/viewer.qmd`.
 
 ## Objetivo
 

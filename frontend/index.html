@@ -41,12 +41,27 @@
   .timeline { border-top: 1px solid var(--border); background: var(--panel); }
   .timeline-head { display: flex; align-items: center; gap: 10px; padding: 5px 20px; }
   .timeline-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .3px; }
-  .tl-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; border-color: var(--accent); color: var(--accent); }
+  .tl-zoom { margin-left: auto; display: inline-flex; gap: 4px; }
+  .tl-zoom button { padding: 1px 9px; font-size: 13px; line-height: 1.3; }
+  .tl-zoom button:disabled { opacity: .4; cursor: default; border-color: var(--border); }
+  .timeline.collapsed .tl-zoom { display: none; }
+  .tl-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; font-size: 12px; border-color: var(--accent); color: var(--accent); }
   .tl-toggle:hover { background: var(--accent); color: #fff; }
   .tl-toggle .chevron { transition: transform .2s ease; font-size: 11px; }
   .tl-toggle[aria-expanded="false"] .chevron { transform: rotate(180deg); }
   .timeline.collapsed .timeline-body { display: none; }
   .timeline-body { --tl-col: 38px; --tl-row: 28px; --tl-head: 18px; padding: 0 20px 8px; }
+  .timeline-body.z2 { --tl-col: 22px; }
+  .timeline-body.z3 { --tl-col: 9px; }
+  .timeline-body.z2 .tl-gate, .timeline-body.z3 .tl-gate { font-size: 0; }
+  .timeline-body.z2 .tl-gate { width: 16px; height: 16px; }
+  .timeline-body.z3 .tl-gate { width: 5px; height: 16px; border-radius: 2px; }
+  .timeline-body.z2 .tl-index:not(.m5), .timeline-body.z3 .tl-index:not(.m10) { visibility: hidden; }
+  .timeline-body.z3 .tl-index { overflow: visible; white-space: nowrap; }
+  .tl-index { cursor: pointer; }
+  .tl-index:hover { color: var(--text); }
+  .tl-scroll { cursor: grab; }
+  .tl-scroll.panning { cursor: grabbing; user-select: none; }
   .tl-empty { color: var(--muted); font-size: 12px; margin: 4px 0; }
   .tl-scroll { color-scheme: dark; position: relative; max-height: 176px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; background: #101728; }
   .tl-grid { display: grid; width: max-content; min-width: 100%; justify-content: start; position: relative; }
@@ -58,7 +73,7 @@
   .tl-wire.hl { background-image: linear-gradient(var(--muted), var(--muted)); }
   .tl-link { z-index: 1; justify-self: center; width: 2px; margin: calc(var(--tl-row) / 2) 0; background: var(--muted); }
   .tl-playhead { z-index: 0; background: rgba(79, 140, 255, 0.12); border-left: 1px solid var(--accent); border-right: 1px solid var(--accent); }
-  .tl-gate { z-index: 2; align-self: center; justify-self: center; width: 32px; height: 22px; padding: 0; border-radius: 4px; border: 1px solid transparent; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .3px; }
+  .tl-gate { z-index: 2; cursor: pointer; align-self: center; justify-self: center; width: 32px; height: 22px; padding: 0; border-radius: 4px; border: 1px solid transparent; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .3px; }
   .tl-gate.op-1q { background: #2b6cb0; }
   .tl-gate.op-2q { background: #b7791f; }
   .tl-gate.op-vz { background: transparent; color: #b794f4; border: 1px dashed #6b46c1; height: 18px; }
@@ -273,6 +288,10 @@
 <section class="timeline" id="timeline">
   <div class="timeline-head">
     <h2 id="timelineTitle">Circuito transpilado</h2>
+    <span class="tl-zoom">
+      <button type="button" id="timelineZoomOut" aria-label="Alejar">&minus;</button>
+      <button type="button" id="timelineZoomIn" aria-label="Acercar">+</button>
+    </span>
     <button class="tl-toggle" id="timelineToggle" type="button" aria-expanded="true" aria-controls="timelineBody">
       <span class="tl-toggle-text">Ocultar</span><span class="chevron">&#9662;</span>
     </button>

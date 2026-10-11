@@ -126,3 +126,10 @@ export const OPERATIONS = {
   zz: { name: "ZZ", short: "ZZ", kind: "2q" },
   virtual_z: { name: "VirtualZ", short: "Z", kind: "vz" },
 };
+
+// The selection marker that appears around the ions of a gate when the pointer
+// is over it in the timeline: four thin arcs, subtle but visible.
+export const SELECTION_COLOR = 0xffd166;
+export const SELECTION_RADIUS = 1.7;
+export const SELECTION_OPACITY = 0.85;
+export const SELECTION_FADE_MS = 90; // time constant of the fade

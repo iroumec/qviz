@@ -12,6 +12,7 @@ import { createPhononBus, updatePhonon } from "./phonon.js";
 import { createIonTrap, updateTrap } from "./trap.js";
 import { createHorizontalLayer, updateHorizontal } from "./horizontal.js";
 import { createMeasurement, updateMeasurement } from "./measurement.js";
+import { createSelection, updateSelection } from "./selection.js";
 import { applyAtmosphere, createEnvironment } from "./environment.js";
 
 /** A small text sprite, used as the label above an ion. */
@@ -123,6 +124,10 @@ export function buildScene(n) {
 
   // The measurement animation (flares, photons and state badges).
   state.three.world.add(createMeasurement(n));
+
+  // The selection markers of the ions (shown while a gate is hovered).
+  state.hovered = [];
+  state.three.world.add(createSelection(n));
 
   // The laboratory environment: the vacuum chamber and the optical table.
   state.three.world.add(createEnvironment(n));
@@ -389,6 +394,7 @@ export function animate(time) {
   updateTrap(time);
   updateHorizontal(time);
   updateMeasurement(time);
+  updateSelection(time);
 
   state.three.renderer.render(state.three.scene, state.three.camera);
 

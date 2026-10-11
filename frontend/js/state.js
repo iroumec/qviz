@@ -15,6 +15,10 @@ export const state = {
   playing: false,
   playTimer: null,
 
+  // The ions that the pointer is over in the timeline (the targets of a gate),
+  // which get the selection marker.
+  hovered: [],
+
   // One entry per ion: the animated vector and its target.
   qubits: [],
 
@@ -49,6 +53,7 @@ export const state = {
     trapGlow: [],
     horizontal: null,
     measure: null,
+    selection: [],
   },
 
   // The laser model and its materials.

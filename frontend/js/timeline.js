@@ -8,15 +8,19 @@ import { state } from "./state.js";
 import { isEnglish, qubitLabel } from "./utils.js";
 
 const STORAGE_KEY = "qviz.timeline.open";
+const ZOOM_KEY = "qviz.timeline.zoom";
+const ZOOM_LEVELS = 3; // 1 = labelled boxes, 2 = small boxes, 3 = thin marks
 
 const TEXT = isEnglish()
   ? {
       title: "Transpiled circuit", hide: "Hide", show: "Show",
+      zoomIn: "Zoom in", zoomOut: "Zoom out", jump: "Go to step",
       empty: "Load a circuit to see its sequence.",
       step: "Step", fidelity: "Fidelity", label: "Native gates of the circuit, by qubit",
     }
   : {
       title: "Circuito transpilado", hide: "Ocultar", show: "Mostrar",
+      zoomIn: "Acercar", zoomOut: "Alejar", jump: "Ir al paso",
       empty: "Cargá un circuito para ver su secuencia.",
       step: "Paso", fidelity: "Fidelidad", label: "Compuertas nativas del circuito, por qubit",
     };
@@ -25,20 +29,35 @@ const TEXT = isEnglish()
 const view = { gates: [], names: [], wires: [], playhead: null, scroll: null };
 let onSelect = () => {};
 
-function readOpen() {
+function readStored(key) {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) !== "0";
+    return window.localStorage.getItem(key);
   } catch (error) {
-    return true;
+    return null;
   }
 }
 
-function saveOpen(open) {
+function store(key, value) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, open ? "1" : "0");
+    window.localStorage.setItem(key, value);
   } catch (error) {
     // The storage can be blocked (private window, sandboxed frame): not needed.
   }
+}
+
+let zoom = 1;
+
+// The zoom changes the width of a column (CSS classes z1, z2 and z3), which
+// matters for long circuits: at z3 hundreds of steps fit in a few screens.
+function setZoom(level) {
+  zoom = Math.max(1, Math.min(ZOOM_LEVELS, level));
+  const body = document.getElementById("timelineBody");
+  body.classList.remove("z1", "z2", "z3");
+  body.classList.add(`z${zoom}`);
+  document.getElementById("timelineZoomIn").disabled = zoom === 1;
+  document.getElementById("timelineZoomOut").disabled = zoom === ZOOM_LEVELS;
+  store(ZOOM_KEY, String(zoom));
+  if (state.stepIndex > 0 && view.playhead) centerStep(state.stepIndex, "auto");
 }
 
 function setOpen(open) {
@@ -56,15 +75,23 @@ export function initTimeline(select) {
   const body = document.getElementById("timelineBody");
   body.setAttribute("aria-label", TEXT.label);
   body.innerHTML = `<p class="tl-empty">${TEXT.empty}</p>`;
-  setOpen(readOpen());
+  setOpen(readStored(STORAGE_KEY) !== "0");
   document.getElementById("timelineToggle").addEventListener("click", () => {
     const open = document.getElementById("timeline").classList.contains("collapsed");
     setOpen(open);
-    saveOpen(open);
+    store(STORAGE_KEY, open ? "1" : "0");
   });
+  const zoomIn = document.getElementById("timelineZoomIn");
+  const zoomOut = document.getElementById("timelineZoomOut");
+  zoomIn.title = TEXT.zoomIn;
+  zoomOut.title = TEXT.zoomOut;
+  zoomIn.addEventListener("click", () => setZoom(zoom - 1));
+  zoomOut.addEventListener("click", () => setZoom(zoom + 1));
+  setZoom(Number(readStored(ZOOM_KEY)) || 1);
 }
 
 function highlightWires(targets, on) {
+  state.hovered = on ? targets.slice() : [];
   for (const q of targets) {
     if (view.names[q]) view.names[q].classList.toggle("hl", on);
     if (view.wires[q]) view.wires[q].classList.toggle("hl", on);
@@ -130,8 +157,10 @@ export function buildTimeline(data) {
     const column = index + 2;
     const operation = OPERATIONS[step.operation] || { short: step.operation, kind: "1q" };
     const head = document.createElement("div");
-    head.className = "tl-index";
+    head.className = "tl-index" + (step.step % 5 === 0 ? " m5" : "") + (step.step % 10 === 0 ? " m10" : "");
     head.textContent = String(step.step);
+    head.title = `${TEXT.jump} ${step.step}`;
+    head.addEventListener("click", () => onSelect(index + 1));
     head.style.gridArea = `1 / ${column}`;
     grid.appendChild(head);
 
@@ -167,6 +196,33 @@ export function buildTimeline(data) {
   body.appendChild(scroll);
   view.scroll = scroll;
   view.playhead = playhead;
+  enablePan(scroll);
+}
+
+// Long circuits: drag the background of the strip to pan it, and let the wheel
+// move it sideways when there is nothing to scroll vertically.
+function enablePan(scroll) {
+  let drag = null;
+  scroll.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || event.target.closest("button, .tl-index")) return;
+    drag = { x: event.clientX, left: scroll.scrollLeft };
+    scroll.setPointerCapture(event.pointerId);
+    scroll.classList.add("panning");
+  });
+  scroll.addEventListener("pointermove", (event) => {
+    if (drag) scroll.scrollLeft = drag.left - (event.clientX - drag.x);
+  });
+  const stop = () => {
+    drag = null;
+    scroll.classList.remove("panning");
+  };
+  scroll.addEventListener("pointerup", stop);
+  scroll.addEventListener("pointercancel", stop);
+  scroll.addEventListener("wheel", (event) => {
+    if (scroll.scrollHeight > scroll.clientHeight + 1 || event.shiftKey) return;
+    event.preventDefault();
+    scroll.scrollLeft += event.deltaY;
+  }, { passive: false });
 }
 
 /** Mark the gates as done, current or pending for this step (0 = initial state). */
@@ -193,11 +249,12 @@ export function highlightStep(index) {
 
 // Scroll so that the current column is in the middle and its first wire is
 // visible. Only the strip scrolls, never the page.
-function centerStep(index) {
+function centerStep(index, mode) {
   const current = view.gates[index - 1][0];
   const scroll = view.scroll;
-  const behavior = window.matchMedia
-    && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  const reduced = window.matchMedia
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const behavior = reduced || mode === "auto" ? "auto" : "smooth";
   const left = current.offsetLeft + current.offsetWidth / 2 - scroll.clientWidth / 2;
   let top = scroll.scrollTop;
   if (current.offsetTop < top) top = current.offsetTop - 22;

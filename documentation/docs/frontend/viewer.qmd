@@ -291,6 +291,16 @@ the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
 - A click on a gate goes to its step and stops the play. The strip scrolls by
   itself to keep the current step in the middle. A tooltip gives the step, the
   operation, the qubits and the accumulated fidelity.
+- While the pointer is over a gate (or a box has the keyboard focus), a **selection
+  marker** fades in around its ions: four thin golden arcs that face the camera
+  and turn slowly, like the selection of a unit in a game. A two-qubit gate marks
+  both ions. It is `selection.js`, driven by `state.hovered`.
+- For **long circuits**, the **−** and **+** buttons in the header change the zoom
+  (labelled boxes, small boxes, thin marks with a step number every 10), and the
+  choice is remembered. The background of the strip can be dragged to pan it, the
+  wheel moves it sideways when there is nothing to scroll vertically, and a click
+  on a step number goes to that step. The strip scrolls by itself, so a play over
+  hundreds of steps keeps the current one in the middle.
 - The keys left and right change the step, and Home and End go to the first and
   the last one (unless the focus is in a field).
 - It is open at the start. The **Hide** button (with a chevron) in its header
@@ -385,6 +395,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/panels.js` | The panels (probabilities, simulation details, step details), the fidelity and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
 | `js/timeline.js` | The circuit timeline strip: builds the wires and gates, and marks the current step. It does not import `data.js` or `controls.js` (the controls wire the click). |
+| `js/selection.js` | The selection marker around the ions of the gate that the pointer is over in the timeline. |
 | `js/controls.js` | The playback bar (step buttons, play, reset, slider) and the drag and drop. |
 
 No module imports a module that imports it back, so the dependency graph is easy
