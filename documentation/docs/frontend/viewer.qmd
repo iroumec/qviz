@@ -49,7 +49,8 @@ violet when the species is unknown. The beam is cut by the two uniforms
 
 The lens is a detailed **laser head**: a fiber connector, a mounting flange with
 bolts, a body with a focusing ring, a front barrel and a glass aperture, built by
-`createLaserHead` in `frontend/js/laser.js`.
+`createLaserHead` in `frontend/js/laser.js`. The heads are not floating: they hang
+from a **rail** above the chain, which is held by a post at each end.
 
 A beam is **dark by default**. It is fired only for the target ions of a native
 gate, and only while the step is applied, so no beam is left on. Each instance
@@ -112,7 +113,7 @@ The ions are held by a microfabricated **surface-trap chip** below the chain
 (`frontend/js/trap.js`):
 
 - A dark, mirror-like **silicon substrate** gives contrast to the lasers and the
-  gold.
+  gold. It rests on four legs down to the optical table, so it is not floating.
 - Two rows of **gold electrode pads**, segmented along the chain, shape the
   trapping potential on both sides of a central channel. The electrodes under an
   ion glow cyan while that ion is a target of the current step.
@@ -176,6 +177,9 @@ radii and short transitions.
   when the qubit is fully entangled (`r` is zero).
 - The target qubits of the step are highlighted in yellow, and the corresponding
   sphere is brighter.
+- An **idle qubit turns red** (the decoherence heat): the longer it has not been a
+  target, the redder its sphere. The colour is driven by the `inactivity` field
+  of the step, so no backend change is needed.
 - A volumetric **laser beam** above each ion, from the lens down to the ion. It
   is dark by default and fires only for the target ions of a native gate: the
   species colour for GPI and GPI2, and a neon-orange colour for MS and ZZ, which

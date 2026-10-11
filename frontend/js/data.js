@@ -1,7 +1,7 @@
 // Load a visualization and move through its steps. A visualization is a JSON
 // file that follows the contract of spec.md §6.
 
-import { HOST, MANIFEST_URL, OUT_URL } from "./config.js";
+import { DECOHERENCE_IDLE_STEPS, HOST, MANIFEST_URL, OUT_URL } from "./config.js";
 import { laserColorFor, laserPulseFor } from "./laser.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
@@ -122,6 +122,11 @@ export function updateStep(index, instant = false) {
     qubit.isTarget = targets.has(q);
     qubit.entangled = entangledPair ? entangledPair.includes(q) : false;
     qubit.vibration = step && step.vibration ? step.vibration[q] || 0 : 0;
+    // A qubit that has been idle for several steps accumulates error and turns
+    // red. `inactivity` is the accumulated count of steps where it was idle.
+    qubit.decoherence = step && step.inactivity
+      ? Math.min(1, step.inactivity[q] / DECOHERENCE_IDLE_STEPS)
+      : 0;
     // The laser is off unless this step fires it on this ion, so moving to a
     // step that does not fire it cancels a pulse that is still fading.
     if (pulse && qubit.isTarget) {

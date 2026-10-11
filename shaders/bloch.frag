@@ -27,6 +27,7 @@ varying vec3 vWorldPos;
 varying vec3 vInstancePos;
 varying vec3 vPsi;
 varying float vEntangled;
+varying float vDecoherence;
 
 #define MAX_STEPS 64
 #define MAX_DIST 4.5
@@ -286,6 +287,10 @@ void main() {
 
     vec3 rawCol = glow * 0.02;
     vec3 finalCol = 1.0 - exp(-rawCol * EXPOSURE);
+
+    // A qubit that has been idle for a while accumulates error, so its colour
+    // shifts towards red (the decoherence heat).
+    finalCol *= vec3(1.0, 1.0 - 0.7 * vDecoherence, 1.0 - 0.7 * vDecoherence);
 
     float glowMag = length(glow * 0.02);
     float alpha = clamp(glowMag * 15.0, 0.0, 1.0);

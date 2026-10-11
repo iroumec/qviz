@@ -48,6 +48,9 @@ export const WAVE_RING_RADIUS = 0.45;
 export const WAVE_RING_TUBE = 0.02;
 export const OPTICS_MARGIN = 4.0;
 
+// How many idle steps it takes for a qubit to look fully decohered (red).
+export const DECOHERENCE_IDLE_STEPS = 10;
+
 // The height of the individual laser lens above each ion, and of the ion label.
 export const LENS_Y = 3.4;
 export const LABEL_Y = 4.9;

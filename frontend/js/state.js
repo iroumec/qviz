@@ -57,6 +57,7 @@ export const state = {
     groups: {},
     lights: [],
     ionLights: [],
+    decoherenceAttribute: null,
     trapRings: [],
     trapGlow: [],
     horizontal: null,

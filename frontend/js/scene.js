@@ -3,7 +3,7 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "./three-addons.js";
-import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING } from "./config.js";
+import { BOX, ENVIRONMENT_INTENSITY, LABEL_Y, LENS_Y, MOVE_SPEED, SPACING, TABLE_TOP } from "./config.js";
 import { state } from "./state.js";
 import { PALETTES, hexToRgb } from "./settings.js";
 import { qubitLabel, showStageMessage } from "./utils.js";
@@ -167,6 +167,8 @@ export function buildScene(n) {
   geometry.setAttribute("instancePsi", state.three.psiAttribute);
   state.three.entangledAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
   geometry.setAttribute("instanceEntangled", state.three.entangledAttribute);
+  state.three.decoherenceAttribute = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
+  geometry.setAttribute("instanceDecoherence", state.three.decoherenceAttribute);
 
   const material = new THREE.ShaderMaterial({
     uniforms: blochUniforms(),
@@ -224,6 +226,7 @@ export function buildScene(n) {
     state.qubits.push({
       x, label, valueLabel, valueText: "", current: [0, 0, 1], target: [0, 0, 1],
       vibration: 0, isTarget: false, laserStart: 0, laserEnd: 0, entangled: false,
+      decoherence: 0,
     });
   }
   state.three.instMesh.instanceMatrix.needsUpdate = true;
@@ -234,6 +237,20 @@ export function buildScene(n) {
     lasers.add(state.three.laserMesh);
   }
   state.three.world.add(labels, values, lasers, bus);
+
+  // A rail above the chain holds every laser head, on a post at each end.
+  const railY = LENS_Y + 1.7;
+  const railWidth = (n - 1) * SPACING + 4;
+  const railMaterial = new THREE.MeshStandardMaterial({ color: 0x1b1b21, metalness: 0.85, roughness: 0.35 });
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(railWidth, 0.28, 0.6), railMaterial);
+  rail.position.set(0, railY, 0);
+  state.three.world.add(rail);
+  const railPostGeometry = new THREE.CylinderGeometry(0.1, 0.13, railY - TABLE_TOP, 12);
+  for (const x of [-railWidth / 2 + 0.35, railWidth / 2 - 0.35]) {
+    const post = new THREE.Mesh(railPostGeometry, railMaterial);
+    post.position.set(x, (railY + TABLE_TOP) / 2, 0);
+    state.three.world.add(post);
+  }
 
   // The phonon bus of a two-qubit gate (hidden until one runs).
   state.three.busMesh = createPhononBus();
@@ -593,9 +610,13 @@ export function animate(time) {
     if (state.three.laserActive) {
       state.three.laserActive.array[i] = laserIntensity(qubit, time);
     }
+    if (state.three.decoherenceAttribute) {
+      state.three.decoherenceAttribute.array[i] = qubit.decoherence || 0;
+    }
   }
   state.three.psiAttribute.needsUpdate = true;
   if (state.three.laserActive) state.three.laserActive.needsUpdate = true;
+  if (state.three.decoherenceAttribute) state.three.decoherenceAttribute.needsUpdate = true;
   state.three.instMesh.material.uniforms.iTime.value = time * 0.001;
   if (state.three.laserMesh) {
     state.three.laserMesh.material.uniforms.iTime.value = time * 0.001;

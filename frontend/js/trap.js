@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { state } from "./state.js";
 import {
   SPACING,
+  TABLE_TOP,
   TRAP_DEPTH,
   TRAP_MARGIN,
   TRAP_PAD_HEIGHT,
@@ -43,6 +44,22 @@ export function createIonTrap(n) {
   );
   substrate.position.set(0, TRAP_TOP - TRAP_THICKNESS / 2, 0);
   group.add(substrate);
+
+  // Four legs hold the substrate down to the optical table.
+  const substrateBottom = TRAP_TOP - TRAP_THICKNESS;
+  const legMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.3 });
+  const legGeometry = new THREE.CylinderGeometry(0.12, 0.16, substrateBottom - TABLE_TOP, 12);
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const leg = new THREE.Mesh(legGeometry, legMaterial);
+      leg.position.set(
+        sx * (width / 2 - 0.7),
+        (substrateBottom + TABLE_TOP) / 2,
+        sz * (TRAP_DEPTH / 2 - 0.7)
+      );
+      group.add(leg);
+    }
+  }
 
   // The gold pads, segmented along the chain on both sides of the channel. One
   // instanced mesh per side. The spacing divides `SPACING` and the grid is
