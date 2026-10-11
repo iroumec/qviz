@@ -45,7 +45,7 @@ the beam is centred on its own ion. The colour follows the species of the
 backend: magenta for ytterbium (Aria, Harmony), green for barium (Forte), and
 violet when the species is unknown. The beam is cut by the two uniforms
 `uLaserMinY` and `uLaserMaxY`, which are set from `frontend/js/config.js`
-(`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly.
+(`LASER_MIN_Y` and `LASER_MAX_Y`), so that it meets the lens exactly. `LASER_MAX_Y` is `LENS_Y`, so it follows the height of the device.
 
 The lens is a detailed **laser head**: a fiber connector, a mounting flange with
 bolts, a body with a focusing ring, a front barrel and a glass aperture, built by
@@ -318,7 +318,8 @@ the qubits are not adjacent. It reads only `steps[].operation`, `targets` and
   hundreds of steps keeps the current one in the middle.
 - The keys left and right change the step, and Home and End go to the first and
   the last one (unless the focus is in a field).
-- It is open at the start. The **Hide** button (with a chevron) in its header
+- It is open at the start. The **Hide** button (with a chevron) at the left of its header, next to the
+  playback buttons,
   closes it, and the choice is remembered in `localStorage` when the page allows
   it. The scene resizes with a `ResizeObserver`. Below 860 px wide it is hidden.
 

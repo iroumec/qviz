@@ -170,6 +170,17 @@ const MOVE_KEYS = {
   ControlLeft: "down",
 };
 
+// The same keys by the character, for the events that carry no physical key
+// code (some embedded frames and input methods).
+const MOVE_CHARS = { w: "forward", s: "back", a: "left", d: "right", " ": "up" };
+
+/** The movement of a keyboard event, or undefined when it is not a movement key. */
+function moveAction(event) {
+  if (MOVE_KEYS[event.code]) return MOVE_KEYS[event.code];
+  const noCode = !event.code || event.code === "Unidentified";
+  return noCode && event.key ? MOVE_CHARS[event.key.toLowerCase()] : undefined;
+}
+
 /** True when the keyboard event comes from a field, so the key is not stolen. */
 function isTyping() {
   const tag = document.activeElement && document.activeElement.tagName;
@@ -247,13 +258,13 @@ function addCameraControls() {
   }, { passive: false });
 
   window.addEventListener("keydown", (event) => {
-    const action = MOVE_KEYS[event.code];
+    const action = moveAction(event);
     if (!action || isTyping()) return;
     state.keys[action] = true;
     event.preventDefault();
   });
   window.addEventListener("keyup", (event) => {
-    const action = MOVE_KEYS[event.code];
+    const action = moveAction(event);
     if (action) state.keys[action] = false;
   });
   // A key that is held while the window loses the focus would stay down.

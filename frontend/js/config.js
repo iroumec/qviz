@@ -77,7 +77,7 @@ export const RAIL_FRAG_URL = "../shaders/rail.frag";
 // LASER_PULSE_MS, a GPI pulse lasts LASER_GPI_FACTOR times that, and the
 // two-qubit entanglers (MS and ZZ) last LASER_ENTANGLER_FACTOR times that.
 export const LASER_MIN_Y = 0.0;
-export const LASER_MAX_Y = 2.5;
+export const LASER_MAX_Y = LENS_Y; // the beam leaves the lens of the device
 export const LASER_BOX = 0.6;
 export const LASER_PULSE_SPEED = 0.0;
 export const LASER_PULSE_MS = 650;
