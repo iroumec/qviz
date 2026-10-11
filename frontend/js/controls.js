@@ -35,7 +35,8 @@ function startPlay() {
 
 function stopPlay() {
   state.playing = false;
-  document.getElementById("play").textContent = "Play";
+  document.getElementById("play").textContent =
+    state.stepIndex > 0 ? "Reanudar" : "Play";
   clearTimeout(state.playTimer);
 }
 
@@ -66,6 +67,10 @@ export function initControls() {
   });
   document.getElementById("play").addEventListener("click", () => {
     state.playing ? stopPlay() : startPlay();
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    stopPlay();
+    updateStep(0);
   });
   document.getElementById("slider").addEventListener("input", (event) => {
     stopPlay();

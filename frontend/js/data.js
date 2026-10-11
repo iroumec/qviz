@@ -73,6 +73,8 @@ export function updateStep(index, instant = false) {
   document.getElementById("slider").value = String(state.stepIndex);
   document.getElementById("stepLabel").textContent =
     `paso ${state.stepIndex} / ${state.data.steps.length}`;
+  document.getElementById("play").textContent =
+    state.playing ? "Pausa" : (state.stepIndex > 0 ? "Reanudar" : "Play");
 
   const step = state.stepIndex === 0 ? null : state.data.steps[state.stepIndex - 1];
   const states = step ? step.states : initialState(state.data.total_qubits);

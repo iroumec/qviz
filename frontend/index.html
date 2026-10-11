@@ -23,6 +23,10 @@
   header .meta b { color: var(--text); font-weight: 600; }
   header .perf { color: var(--accent); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; }
   .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 20px; border-bottom: 1px solid var(--border); }
+  .playback {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 20px; border-top: 1px solid var(--border); background: var(--panel);
+  }
   button, .file-btn, select {
     background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
@@ -138,13 +142,8 @@
 <div class="controls">
   <select id="fileSelect" title="Archivos generados en out/"></select>
   <label class="file-btn" title="Circuito en OpenQASM 2 o 3">Cargar circuito<input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
-  <button id="prev">&larr;</button>
-  <button id="play">Play</button>
-  <button id="next">&rarr;</button>
   <button id="measure">Medir</button>
   <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
-  <input type="range" id="slider" min="0" max="0" value="0" />
-  <span class="step-label" id="stepLabel">paso 0 / 0</span>
 </div>
 <div class="error" id="error"></div>
 
@@ -174,6 +173,15 @@
       (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.</p>
   </aside>
 </main>
+
+<div class="playback">
+  <button id="reset" title="Reiniciar">&#8634;</button>
+  <button id="prev" title="Paso anterior">&larr;</button>
+  <button id="play">Play</button>
+  <button id="next" title="Paso siguiente">&rarr;</button>
+  <input type="range" id="slider" min="0" max="0" value="0" />
+  <span class="step-label" id="stepLabel">paso 0 / 0</span>
+</div>
 
 
 <script type="module" src="./js/main.js"></script>
