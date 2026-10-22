@@ -284,6 +284,31 @@ console.log(JSON.stringify({{
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_qollab_uses_its_compile_hook_without_probing_the_network(tmp_path):
+    host = _ROOT / "source" / "frontend" / "js" / "host.js"
+    script = tmp_path / "hook.mjs"
+    script.write_text(
+        f"""
+globalThis.window = {{
+  QVIZ_HOST: {{ compileQasm: async (text) => ({{ text }}) }},
+}};
+globalThis.fetch = async () => {{ throw new Error("must not be called"); }};
+const host = await import({_js_url(host)});
+console.log(JSON.stringify({{
+  available: await host.canCompile(),
+  compiled: await host.compileQasm("OPENQASM 3.0;"),
+}}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got == {"available": True, "compiled": {"text": "OPENQASM 3.0;"}}
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_file_helpers_accept_only_circuits_and_pick_a_valid_default(tmp_path):
     files = _ROOT / "source" / "frontend" / "js" / "files.js"
     script = tmp_path / "files.mjs"

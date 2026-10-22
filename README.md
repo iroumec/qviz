@@ -178,14 +178,14 @@ choice is remembered in the browser. See
 
 `pyproject.toml` and `requirements.txt` declare the same Python packages (a test
 checks it). Details and the reasons: [installation](documentation/docs/getting-started/installation.qmd).
-The last full run: 437 tests passed, 1 skipped, and `make lint` clean.
+The last full run: 444 tests passed, 1 skipped, and `make lint` clean.
 
 ## Status
 
 QViz was built for the Qollab hackathon (2026). The pipeline, the viewer and the
 Qollab package are complete and tested; the project is now in maintenance and
-polish. The next improvements are more JavaScript tests and a single catalog for
-the example circuits. The design decisions live in
+polish. The next improvements are more JavaScript tests, a formal JS linter and
+coverage for the Python modules. The design decisions live in
 `documentation/internal/spec.md`; the day-to-day state is in
 [`memory.md`](memory.md). The working notes of the team and the agent
 instructions are public on purpose; they are kept in `documentation/internal/`

@@ -47,7 +47,7 @@ image has it).
 | File | What is checked |
 | --- | --- |
 | `test_smoke.py` | The public API is exactly the expected one, and a `NativeOp` is immutable. |
-| `test_documentation.py` | Every local link in the README, the book and the internal notes points to a file that exists, and the internal notes stay out of the published book. |
+| `test_documentation.py` | Every local link in the README, the book and the internal notes points to a file that exists, every chapter listed in `_quarto.yml` exists, and the internal notes stay out of the published book. |
 | `test_provider.py` | The provider detection, the entangler rule and the hardware rule. |
 | `test_transpiler.py` | The three IonQ strategies, the fallback and the size limit. |
 | `test_translator.py` | Every rule is checked by an equivalence test. Invariants are also checked, and malformed native payloads are rejected with the index of the entry. |

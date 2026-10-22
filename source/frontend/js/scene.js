@@ -599,14 +599,17 @@ export function animate(time) {
       qubit.current = motion.vector;
       if (!moving) qubit.motion = null;
     } else {
-      qubit.current = qubit.target.slice();
+      // The same array, not a copy: nothing mutates it, and idle frames stay
+      // allocation-free even with sixteen ions.
+      qubit.current = qubit.target;
     }
 
-    const vector = qubit.current.slice();
+    let vector = qubit.current;
     // The wobble is shown only while the ion moves, so the chain settles when a
     // step is reached.
     if (moving && qubit.vibration > 0 && !state.view.reducedMotion) {
       const wobble = qubit.vibration * 0.25 * Math.sin(time * 0.006);
+      vector = vector.slice();
       vector[0] += wobble;
       vector[1] += wobble * 0.5;
     }

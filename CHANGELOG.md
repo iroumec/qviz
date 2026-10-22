@@ -23,14 +23,20 @@ All notable changes to QViz are recorded here. The format follows
   write to the repository `out/`, not the current directory.
 - The example circuits come from one catalog (`resources/examples/catalog.py`),
   shared by the viewer, the Qollab package and the generator.
-- The load button is disabled when the page has no Python, and the previous
-  circuit stays on screen if a new file fails to compile.
+- The load button and *Medir* are disabled when the page has no Python, and the
+  previous circuit stays on screen if a new file fails to compile. A newer
+  circuit choice wins over a slower, older load, and the status line shows what
+  is loading.
+- The local server serves files only: no directory listings and no `.git`,
+  `.venv` or `__pycache__`.
 
 ### Fixed
 
 - OpenQASM files saved with a UTF-8 BOM are accepted.
 - A non-JSON reply from the server is reported as a readable error instead of a
   parser error.
+- The scene no longer allocates small arrays on idle frames, which keeps the
+  frame rate steadier with sixteen ions.
 - The selector no longer stays empty when `out/manifest.json` is missing.
 
 ## [0.1.0] - 2026-10-11

@@ -71,6 +71,8 @@
     transition: border-color var(--speed), background var(--speed), color var(--speed);
   }
   button:hover, .file-btn:hover, select:hover { border-color: var(--accent); }
+  button:disabled, button:disabled:hover { opacity: .5; cursor: not-allowed; border-color: var(--border); }
+  button.primary:disabled, button.primary:disabled:hover { background: var(--panel); color: var(--muted); filter: none; }
   .file-btn.busy { opacity: .6; cursor: progress; }
   .file-btn.busy:hover { border-color: var(--border); }
   .file-btn.unavailable { opacity: .5; cursor: not-allowed; }

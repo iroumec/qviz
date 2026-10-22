@@ -31,7 +31,8 @@ function initialState(n) {
 
 /** Load a visualization object, rebuild the scene and show step 0. */
 export function loadData(obj) {
-  if (!obj || !Array.isArray(obj.steps) || typeof obj.total_qubits !== "number") {
+  if (!obj || !Array.isArray(obj.steps) || !Number.isInteger(obj.total_qubits)
+      || obj.total_qubits < 1) {
     throw new Error(t(
       "El JSON no tiene el contrato esperado (backend/steps).",
       "The JSON does not have the expected contract (backend/steps)."
@@ -65,38 +66,56 @@ let compileAvailable = true;
 /** Whether a compile is running. */
 let loading = false;
 
-/** Draw the load button from the two flags above. */
-function updateLoadButton() {
+/** Draw the buttons that need Python from the two flags above. */
+function updateButtons() {
   const input = document.getElementById("file");
-  if (!input) return;
-  input.disabled = loading || !compileAvailable;
-  const label = input.closest("label");
-  if (!label) return;
-  label.classList.toggle("busy", loading);
-  label.classList.toggle("unavailable", !compileAvailable);
-  label.setAttribute("aria-busy", String(loading));
-  if (compileAvailable) {
-    label.removeAttribute("aria-disabled");
-    label.title = t("Circuito en OpenQASM 2 o 3", "Circuit in OpenQASM 2 or 3");
-  } else {
-    label.setAttribute("aria-disabled", "true");
-    label.title = t(
-      "Cargar circuitos necesita `make server` o Qollab.",
-      "Loading circuits needs `make server` or Qollab."
-    );
+  if (input) {
+    input.disabled = loading || !compileAvailable;
+    const label = input.closest("label");
+    if (label) {
+      label.classList.toggle("busy", loading);
+      label.classList.toggle("unavailable", !compileAvailable);
+      label.setAttribute("aria-busy", String(loading));
+      if (compileAvailable) {
+        label.removeAttribute("aria-disabled");
+        label.title = t("Circuito en OpenQASM 2 o 3", "Circuit in OpenQASM 2 or 3");
+      } else {
+        label.setAttribute("aria-disabled", "true");
+        label.title = t(
+          "Cargar circuitos necesita `make server` o Qollab.",
+          "Loading circuits needs `make server` or Qollab."
+        );
+      }
+    }
+  }
+
+  const measure = document.getElementById("measure");
+  if (measure) {
+    const available = compileAvailable || Boolean(HOST.sample);
+    measure.disabled = !available;
+    if (available) {
+      measure.removeAttribute("aria-disabled");
+      measure.title = t("Medir el paso actual", "Measure the current step");
+    } else {
+      measure.setAttribute("aria-disabled", "true");
+      measure.title = t(
+        "Medir necesita `make server` o Qollab.",
+        "Measuring needs `make server` or Qollab."
+      );
+    }
   }
 }
 
-/** Tell the viewer whether this page can compile circuits with Python. */
-export function setCompileAvailable(available) {
+/** Tell the viewer whether this page has the Python services. */
+export function setPythonAvailable(available) {
   compileAvailable = Boolean(available);
-  updateLoadButton();
+  updateButtons();
 }
 
 /** Disable the load button while Python compiles, so it cannot start twice. */
 function setLoading(busy) {
   loading = busy;
-  updateLoadButton();
+  updateButtons();
 }
 
 /** Compile a circuit file (OpenQASM 2 or 3) and show it. */
@@ -260,22 +279,34 @@ export function updateStep(index, instant = false) {
 
 /** Load one entry of the selector: a circuit of the user, or from the host or HTTP. */
 export async function loadFile(name) {
+  // A newer choice wins: a slow 1 MB file must not replace a circuit that the
+  // user picked after it, and a selector change cancels a file compile in flight.
+  const token = ++loadToken;
+  setLoading(false);
   if (userCircuits.has(name)) {
     loadData(userCircuits.get(name));
     return;
   }
-  if (HOST.load) {
-    loadData(await HOST.load(name));
-    return;
+  setStatus(t("Cargando ", "Loading ") + name + "…");
+  try {
+    let data;
+    if (HOST.load) {
+      data = await HOST.load(name);
+    } else {
+      const response = await fetch(OUT_URL + name);
+      if (!response.ok) {
+        throw new Error(t(
+          "No se pudo cargar " + name + ".",
+          "Could not load " + name + "."
+        ));
+      }
+      data = await response.json();
+    }
+    if (token !== loadToken) return;
+    loadData(data);
+  } catch (error) {
+    if (token === loadToken) throw error;
   }
-  const response = await fetch(OUT_URL + name);
-  if (!response.ok) {
-    throw new Error(t(
-      "No se pudo cargar " + name + ".",
-      "Could not load " + name + "."
-    ));
-  }
-  loadData(await response.json());
 }
 
 function fillSelector(select, entries) {

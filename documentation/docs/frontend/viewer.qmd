@@ -280,13 +280,18 @@ metrics) before it can be shown. There are three ways to see a circuit.
    screen if the new one fails.
 3. **Drag and drop.** The same file is dropped anywhere on the page.
 
+While a circuit loads, the status line shows its name. If two circuits are
+chosen in a row, the newer one wins even when the older file is larger and its
+fetch finishes later.
+
 Loading a circuit needs Python to compile it. In Qollab, the page calls the
 platform (`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Locally, run the
 server of the project, which compiles with the same code on the built-in
 simulator (see below). With a plain `python -m http.server` the viewer shows the
-examples, and the load button is disabled with a title that says so; a file that
-is dropped anyway gets the same explanation. The viewer asks the server with an
-`OPTIONS` request, which `make server` answers and a static server does not.
+examples, and the load button and *Medir* are disabled with a title that says
+so; a file that is dropped anyway gets the same explanation. The viewer asks the
+server with an `OPTIONS` request, which `make server` answers and a static server
+does not.
 
 The importer accepts a UTF-8 BOM before the header, which some Windows editors
 add, and the usual CRLF line endings. Only `.qasm`, `.qasm3` and `.txt` are

@@ -49,6 +49,10 @@ COMPILE_PATH = "/api/compile"
 SAMPLE_PATH = "/api/sample"
 MAX_SAMPLE_BYTES = 64_000_000
 VIEWER_PATH = "/source/frontend/index.html"
+# Never serve the local internals, even if the server is bound to another host.
+_BLOCKED = {
+    ".git", ".venv", "__pycache__", ".pytest_cache", "qviz.egg-info", "node_modules",
+}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -63,12 +67,24 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802 - name fixed by http.server
         """Send the viewer for ``/`` and the file for any other path."""
-        if urlparse(self.path).path == "/":
+        path = urlparse(self.path).path
+        if any(part in _BLOCKED for part in Path(path).parts):
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
+        if path == "/":
             self.send_response(HTTPStatus.FOUND)
             self.send_header("Location", VIEWER_PATH)
             self.end_headers()
             return
+        if path.endswith("/"):
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
         super().do_GET()
+
+    def list_directory(self, path: str) -> None:
+        """Never list a folder: the viewer asks for files, not for an index."""
+        self.send_error(HTTPStatus.NOT_FOUND)
+        return None
 
     def do_OPTIONS(self) -> None:  # noqa: N802 - name fixed by http.server
         """Tell the viewer that this server has the Python services."""

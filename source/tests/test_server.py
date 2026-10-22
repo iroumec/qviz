@@ -113,6 +113,19 @@ def test_options_on_an_unknown_service_is_a_404(base):
     assert error.value.code == 404
 
 
+@pytest.mark.parametrize("path", ["/.git/config", "/.venv/pyvenv.cfg", "/__pycache__/"])
+def test_private_folders_are_not_served(base, path):
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(base + path)
+    assert error.value.code == 404
+
+
+def test_folders_are_not_listed(base):
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(base + "/documentation/")
+    assert error.value.code == 404
+
+
 def test_the_root_goes_to_the_viewer_and_the_files_are_served(base):
     with urllib.request.urlopen(base + "/") as response:
         assert response.url.endswith("/source/frontend/index.html")

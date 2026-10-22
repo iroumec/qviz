@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -82,3 +83,21 @@ def test_compiled_adder_validates_against_schema(basic_backend):
     data = compile(basic_backend, circuit)
     jsonschema.validate(data, _SCHEMA)
     assert data["total_qubits"] == 2
+
+
+def test_the_output_generator_uses_the_catalog_labels():
+    script = (
+        Path(__file__).parent.parent.parent
+        / "resources"
+        / "scripts"
+        / "generate_outputs.py"
+    )
+    spec = importlib.util.spec_from_file_location("generate_outputs", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    from examples import catalog
+
+    outputs = module._outputs()
+    for name, label in catalog.LABELS.items():
+        assert outputs[f"{name}.json"][0] == label

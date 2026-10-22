@@ -84,7 +84,9 @@ Qollab, on the built-in simulator.
 A circuit that cannot be compiled answers `400` with `{"error": "…"}`, and an
 unexpected failure answers `500` with the same shape. A negative or non-numeric
 `Content-Length` answers `400`, and a body over the limit answers `413`. The server
-listens on `127.0.0.1` only, sends `Cache-Control: no-store`, and redirects `/` to
+listens on `127.0.0.1` only, sends `Cache-Control: no-store`, refuses directory
+listings and never serves `.git`, `.venv`, `__pycache__` or the other local
+folders, and redirects `/` to
 `/source/frontend/index.html`.
 
 It is a development tool. Qollab never runs it.

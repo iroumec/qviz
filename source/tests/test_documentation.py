@@ -52,3 +52,15 @@ def test_the_internal_notes_are_public_and_not_inside_the_book():
     # The published book only lists documentation/docs in _quarto.yml.
     config = (_DOCS / "_quarto.yml").read_text(encoding="utf-8")
     assert "internal/" not in config
+
+
+def test_every_chapter_listed_in_the_quarto_config_exists():
+    config = (_DOCS / "_quarto.yml").read_text(encoding="utf-8")
+    chapters = [
+        line.strip()[2:].strip()
+        for line in config.splitlines()
+        if line.strip().startswith("- ") and line.strip().endswith(".qmd")
+    ]
+    assert chapters
+    missing = [name for name in chapters if not (_DOCS / name).is_file()]
+    assert not missing, missing
