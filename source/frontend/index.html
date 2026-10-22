@@ -8,6 +8,15 @@
 <meta name="theme-color" content="#121016" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23121016'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23f05291' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23f1ebef'/%3E%3C/svg%3E" />
 <title>QViz Trapped Ions</title>
+<script>
+  // The language chosen in the viewer, applied before the modules are evaluated.
+  try {
+    var saved = window.localStorage.getItem("qviz.lang");
+    if (saved === "en" || saved === "es") document.documentElement.lang = saved;
+  } catch (error) {
+    // Private window or sandboxed frame: keep the language of the page.
+  }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -25,15 +34,16 @@
 <header>
   <h1 data-i18n="title">QViz Trapped Ions</h1>
   <div class="perf" id="perfMeta"></div>
+  <button id="langToggle" class="lang-toggle" type="button" lang="en">English</button>
 </header>
 
 <div class="controls">
-  <select id="fileSelect" title="Archivos generados en out/"></select>
-  <label class="file-btn" title="Circuito en OpenQASM 2 o 3"><span data-i18n="loadCircuit">Cargar circuito</span><input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
+  <select id="fileSelect" title="Archivos generados en out/" data-i18n-title="selectTitle"></select>
+  <label class="file-btn" title="Circuito en OpenQASM 2 o 3" data-i18n-title="fileTitle"><span data-i18n="loadCircuit">Cargar circuito</span><input type="file" id="file" accept=".qasm,.qasm3,.txt" hidden /></label>
   <button id="measure" class="primary" data-i18n="measure">Medir</button>
   <div class="shots">
     <button type="button" id="shotsDown" aria-label="&#8722;">&#8722;</button>
-    <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" />
+    <input type="number" id="shots" min="1" max="100000" step="1" value="1024" title="shots" data-i18n-title="shotsTitle" />
     <button type="button" id="shotsUp" aria-label="+">+</button>
   </div>
   <button id="viewToggle" class="view-toggle" type="button" aria-expanded="false" aria-controls="viewPanel" aria-haspopup="true">
@@ -122,7 +132,7 @@
         <span class="chevron">&#9662;</span>
       </button>
       <div class="panel-body" id="detailsContent">
-        <p class="hint">Elegí un circuito de la lista o cargá el tuyo en OpenQASM
+        <p class="hint" data-i18n="detailsHint">Elegí un circuito de la lista o cargá el tuyo en OpenQASM
           (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.</p>
       </div>
     </section>
@@ -144,10 +154,10 @@
 </section>
 
 <div class="playback">
-  <button id="reset" title="Reiniciar">&#8634;</button>
-  <button id="prev" title="Paso anterior">&larr;</button>
+  <button id="reset" title="Reiniciar" data-i18n-title="resetTitle">&#8634;</button>
+  <button id="prev" title="Paso anterior" data-i18n-title="prevTitle">&larr;</button>
   <button id="play" class="primary">Play</button>
-  <button id="next" title="Paso siguiente">&rarr;</button>
+  <button id="next" title="Paso siguiente" data-i18n-title="nextTitle">&rarr;</button>
   <input type="range" id="slider" min="0" max="0" value="0" />
   <span class="step-label" id="stepLabel">paso 0 / 0</span>
 </div>

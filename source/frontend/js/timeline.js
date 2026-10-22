@@ -103,6 +103,8 @@ export function initTimeline(select) {
   const zoomOut = document.getElementById("timelineZoomOut");
   zoomIn.title = TEXT.zoomIn;
   zoomOut.title = TEXT.zoomOut;
+  zoomIn.setAttribute("aria-label", TEXT.zoomIn);
+  zoomOut.setAttribute("aria-label", TEXT.zoomOut);
   zoomIn.addEventListener("click", () => setZoom(zoom - 1));
   zoomOut.addEventListener("click", () => setZoom(zoom + 1));
   setZoom(Number(readStored(ZOOM_KEY)) || 1);

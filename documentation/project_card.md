@@ -13,7 +13,7 @@ shows every ion as a **Bloch sphere** that moves gate by gate, inside a 3D model
 of the trap: the laser pulse that drives each gate, the phonon bus that joins two
 ions, the electrodes and the readout lens. A strip at the bottom lays out the
 whole **transpiled circuit**, one lane per ion, and a click jumps to any step.
-**Medir** (*Measure*) samples the current step. It runs entirely in the browser
+**Measure** (*Measure*) samples the current step. It runs entirely in the browser
 on Qollab.
 
 ## Why does it matter, and who is it for?
@@ -27,7 +27,7 @@ instead of only reading about them.
 
 It is for **students, teachers and curious people** who know the basics of
 circuits and nothing about the hardware. The interface is in Spanish and English
-for classroom use, and it is built to be accessible. The **Vista y accesibilidad**
+for classroom use, and it is built to be accessible. The **View and accessibility**
 (*View and accessibility*) panel opens profiles (focus on the vector, high
 contrast, colour blindness, reduced motion), colour palettes, the shape of the
 sphere and the vector, what to hide, the light, the text size and a switch for
@@ -52,7 +52,7 @@ announced to screen readers.
   a preparation-and-measurement error, so the fidelity of the circuit falls as
   gates accumulate. The numbers are order-of-magnitude values, not a calibrated
   model, and nothing is sent to real hardware.
-- **Measurement.** **Medir** samples the exact statevector with a readout error
+- **Measurement.** **Measure** samples the exact statevector with a readout error
   per ion, so correlations survive: a Bell pair gives `00` and `11`, never `01`.
 - **Sound.** Every native gate has its own synthesised tone (short and high for
   GPI2, longer and lower for GPI, a two-tone swell for MS/ZZ, a click for
@@ -77,7 +77,7 @@ make qollab
 
 Upload the **content** of the generated `qollab/` folder (not the folder itself)
 to a Qollab JS project and run it. Python runs in the browser (Pyodide), with the
-backend you select in Qollab. Use **Cargar circuito** (*Load circuit*), or drag a
+backend you select in Qollab. Use **Load circuit** (*Load circuit*), or drag a
 `.qasm` file, to load a circuit; examples are in `resources/examples/qasm/`.
 
 **Locally**, with Python 3.12 or newer:
@@ -90,7 +90,7 @@ make open       # like server, but it opens the browser for you
 ```
 
 Press **Play** (the play button waits for the laser pulse to finish), move through
-the steps with the arrows, the circuit strip or the slider, and press **Medir** to
+the steps with the arrows, the circuit strip or the slider, and press **Measure** to
 measure the current step.
 
 ## Details

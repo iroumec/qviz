@@ -61,6 +61,10 @@ function isEditing() {
 export function initControls() {
   const slider = document.getElementById("slider");
   slider.setAttribute("aria-label", t("Paso", "Step"));
+  document.getElementById("reset").title = t("Reiniciar", "Restart");
+  document.getElementById("prev").title = t("Paso anterior", "Previous step");
+  document.getElementById("next").title = t("Paso siguiente", "Next step");
+  document.getElementById("stepLabel").textContent = `${t("paso", "step")} 0 / 0`;
   initTimeline((step) => {
     stopPlay();
     updateStep(step);

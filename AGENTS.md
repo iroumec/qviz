@@ -56,7 +56,7 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ### Convenciones
 
-- Código, identificadores, comentarios, docstrings y mensajes de commit en **inglés**. La documentación (`spec.md`, `documentation/`) en **español**.
+- Código, identificadores, comentarios, docstrings y mensajes de commit en **inglés**. La documentación pública (`README.md`, `documentation/docs/`, `CONTRIBUTING.md`, `CHANGELOG.md`) en **inglés**; las notas internas de `documentation/internal/` y el `spec.md` en **español**.
 - Type hints en todas las firmas públicas. Docstrings cortos: qué hace, unidades de entrada y salida.
 - Copiá el estilo del código que ya está alrededor. No sumes abstracciones (clases base, registros, plugins) que el spec no pida.
 

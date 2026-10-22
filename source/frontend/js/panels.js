@@ -143,6 +143,10 @@ const TEXT = ENGLISH
       more: (n) => `… and ${n} more results.`, adjusted: "adjusted", measured: "measured",
       loadCircuit: "Load circuit", measure: "Measure",
       title: "QViz Trapped Ions",
+      selectTitle: "Circuits generated in out/", fileTitle: "Circuit in OpenQASM 2 or 3",
+      shotsTitle: "Number of shots", resetTitle: "Restart", prevTitle: "Previous step",
+      nextTitle: "Next step", zoomIn: "Zoom in", zoomOut: "Zoom out",
+      detailsHint: `Choose a circuit from the list or load your own in OpenQASM (<code>.qasm</code>): the <i>Load circuit</i> button, or drop the file.`,
       legend: "drag: rotate · right click: move · wheel: zoom · WASD + space/ctrl: move",
       play: "Play", pause: "Pause", resume: "Resume", restart: "Restart", stepWord: "step",
       initial: `Initial state: every ion in ${ketMath(0)}.`,
@@ -164,6 +168,10 @@ const TEXT = ENGLISH
       more: (n) => `… y ${n} resultados más.`, adjusted: "ajustado", measured: "medido",
       loadCircuit: "Cargar circuito", measure: "Medir",
       title: "QViz Trapped Ions",
+      selectTitle: "Circuitos generados en out/", fileTitle: "Circuito en OpenQASM 2 o 3",
+      shotsTitle: "Número de shots", resetTitle: "Reiniciar", prevTitle: "Paso anterior",
+      nextTitle: "Paso siguiente", zoomIn: "Acercar", zoomOut: "Alejar",
+      detailsHint: `Elegí un circuito de la lista o cargá el tuyo en OpenQASM (<code>.qasm</code>): botón <i>Cargar circuito</i> o arrastrá el archivo.`,
       legend: "arrastrar: rotar · clic derecho: mover · rueda: zoom · WASD + espacio/ctrl: mover",
       play: "Play", pause: "Pausa", resume: "Reanudar", restart: "Reiniciar", stepWord: "paso",
       initial: `Estado inicial: todos los iones en ${ketMath(0)}.`,
@@ -183,6 +191,14 @@ export function initPanels() {
   for (const node of document.querySelectorAll("[data-i18n]")) {
     const key = node.getAttribute("data-i18n");
     if (TEXT[key]) node.innerHTML = TEXT[key];
+  }
+  for (const node of document.querySelectorAll("[data-i18n-title]")) {
+    const key = node.getAttribute("data-i18n-title");
+    if (TEXT[key]) node.title = TEXT[key];
+  }
+  for (const node of document.querySelectorAll("[data-i18n-aria]")) {
+    const key = node.getAttribute("data-i18n-aria");
+    if (TEXT[key]) node.setAttribute("aria-label", TEXT[key]);
   }
   for (const head of document.querySelectorAll(".panel-head")) {
     head.addEventListener("click", () => {

@@ -2,6 +2,7 @@
 // builds the scene and loads the first visualization.
 
 import { initCameraPad } from "./camerapad.js";
+import { initLanguage } from "./language.js";
 import { canCompile } from "./host.js";
 import { initControls } from "./controls.js";
 import { loadManifest, setPythonAvailable } from "./data.js";
@@ -18,6 +19,7 @@ initViewPanel();
 initControls();
 initPanels();
 initCameraPad();
+initLanguage();
 
 (async function start() {
   const ready = await initThree();

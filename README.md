@@ -3,7 +3,7 @@
 [![CI](https://github.com/iroumec/QViz/actions/workflows/ci.yml/badge.svg)](https://github.com/iroumec/QViz/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**See what a trapped-ion quantum computer really does with your circuit.**
+> **See what a trapped-ion quantum computer really does with your circuit.**
 
 QViz takes a circuit written in OpenQASM 2 or 3 and a backend (IonQ or the
 built-in simulator), compiles it into the **native gates** of an ion trap,
@@ -13,8 +13,9 @@ by gate, inside a 3D model of the trap.
 ![A GPI2 pulse on the first ion of a Bell circuit](documentation/images/viewer-gpi2.png)
 
 It runs in the browser on [Qollab](documentation/docs/frontend/qollab.qmd) and
-locally with one command. The interface is in Spanish and English, and includes
-colour-blind palettes, high contrast and reduced motion.
+locally with one command. The interface is in Spanish and English (switch it with
+the language button in the header) and includes colour-blind palettes, high
+contrast and reduced motion.
 
 ## Quick start
 
@@ -44,8 +45,8 @@ make open                   # the same, and opens the browser
 the same Python code as Qollab. Use it, not a plain `python -m http.server`, when
 you want to load a circuit or measure.
 
-Then choose an example, press **Cargar circuito** or drag a `.qasm` file from
-`resources/examples/qasm/`, press **Play** and press **Medir**.
+Then choose an example, press **Load circuit** or drag a `.qasm` file from
+`resources/examples/qasm/`, press **Play** and press **Measure**.
 
 ## What it does
 
@@ -53,7 +54,7 @@ Then choose an example, press **Cargar circuito** or drag a `.qasm` file from
   and VirtualZ) and what each one does to one ion.
 - Shows **entanglement** appear: the Bloch vector of an ion shrinks, and
   vanishes when the ion is fully entangled.
-- Shows **noise**: the fidelity falls with every gate, and *Medir* samples the
+- Shows **noise**: the fidelity falls with every gate, and _Measure_ samples the
   exact statevector, so a Bell pair gives `00` and `11`, never `01` or `10`.
 - Lets you change the view: profiles, palettes, camera without the keyboard.
 
@@ -80,16 +81,16 @@ the [native gates](documentation/docs/concepts/motivation.qmd) and the
 
 ## Repository map
 
-| Path | What is in it |
-| --- | --- |
-| `source/backend/` | The Python pipeline, one package per module. |
-| `source/frontend/` | The viewer: `index.html`, `styles.css` and the ES modules of `js/`. |
-| `source/shaders/` | The GLSL shaders of the spheres, the laser and the phonon bus. |
-| `resources/examples/` | Worked circuits in Python and OpenQASM. |
-| `resources/scripts/` | The demos, the generator of `out/`, the packager and the local server. |
-| `source/tests/` | The test suite (no network; IonQ is mocked). |
-| `documentation/` | The Quarto book, the JSON schema and the internal notes. |
-| `package.json`, `pnpm-lock.yaml`, `eslint.config.js` | ESLint and the JavaScript development tools (Node.js only). |
+| Path                                                 | What is in it                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| `source/backend/`                                    | The Python pipeline, one package per module.                           |
+| `source/frontend/`                                   | The viewer: `index.html`, `styles.css` and the ES modules of `js/`.    |
+| `source/shaders/`                                    | The GLSL shaders of the spheres, the laser and the phonon bus.         |
+| `resources/examples/`                                | Worked circuits in Python and OpenQASM.                                |
+| `resources/scripts/`                                 | The demos, the generator of `out/`, the packager and the local server. |
+| `source/tests/`                                      | The test suite (no network; IonQ is mocked).                           |
+| `documentation/`                                     | The Quarto book, the JSON schema and the internal notes.               |
+| `package.json`, `pnpm-lock.yaml`, `eslint.config.js` | ESLint and the JavaScript development tools (Node.js only).            |
 
 Generated and ignored: `out/`, `qollab/`, `_book/`, `node_modules/`.
 

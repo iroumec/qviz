@@ -8,6 +8,9 @@ All notable changes to QViz are recorded here. The format follows
 
 ### Added
 
+- A language button in the viewer: it switches between Spanish and English,
+  stores the choice and applies it by reloading the page.
+
 - `CONTRIBUTING.md`, `.editorconfig`, issue and pull-request templates, and
   `make verify` (tests, linters and the Qollab package in one command).
 - JavaScript syntax checking in `make lint` and in CI, plus a Python 3.14 job.

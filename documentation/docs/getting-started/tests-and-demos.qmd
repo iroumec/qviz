@@ -75,6 +75,6 @@ make server            # generates out/ on the first run
 
 The page `source/frontend/index.html` is connected to the files in `out/`. It reads the
 manifest, fills a selector with the available files, and opens the default one.
-An OpenQASM file (`resources/examples/qasm/*.qasm`) can be loaded with the button *Cargar circuito*
+An OpenQASM file (`resources/examples/qasm/*.qasm`) can be loaded with the button *Load circuit*
 or dragged onto the page: `make server` compiles it (a plain `python -m http.server`
 cannot).

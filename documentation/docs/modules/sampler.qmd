@@ -98,7 +98,7 @@ affected on the IonQ backends.
 
 ## The measurement of the viewer {.unnumbered}
 
-The `Medir` button of the viewer always uses `sample`: on Qollab, where a click
+The `Measure` button of the viewer always uses `sample`: on Qollab, where a click
 can call Python (checked on 2026-10-10), and locally through `make server`, which
 runs the same function. The viewer has no measurement of its own, because drawing
 every qubit independently from the marginals does not model entanglement. See

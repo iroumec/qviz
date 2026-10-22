@@ -74,7 +74,7 @@ The most common request is a person loading an OpenQASM file in the viewer.
    cannot print.
 6. The viewer parses the text, adds the circuit to its selector and draws the
    first step (`js/data.js`).
-7. When the person presses **Medir**, the viewer calls `sampleStep`. This reaches
+7. When the person presses **Measure**, the viewer calls `sampleStep`. This reaches
    `qollab_api.sample_step`, which calls `sample(data, step, shots)` on the same
    JSON. No job is sent to IonQ.
 

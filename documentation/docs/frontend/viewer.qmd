@@ -187,6 +187,11 @@ accents, **Dusty Lilac** (`#b8a4c5`) for the secondary text, and **Warm White**
 elements stand out. The type is Inter, and the panels have thin borders, moderate
 radii and short transitions.
 
+The viewer is bilingual. The **language button** at the right of the header
+switches between Spanish and English; the choice is stored in the browser and
+applied by reloading the page, because every module builds its texts when it is
+evaluated. On Qollab the same choice is applied by the generated prelude.
+
 ## What is shown {.unnumbered}
 
 - One Bloch sphere per qubit. The vector of the sphere is the `(x, y, z)` vector
@@ -232,8 +237,8 @@ radii and short transitions.
 - A **Simulation details** panel on the left shows the model (with the ion
   species it references, when it is a simulator), the initial fidelity, the
   number of qubits and the number of steps, and the
-  accumulated fidelity of the current step: the word for it (*Fidelidad* or
-  *Fidelity*, from the language of the page), the percentage, a bar and the
+  accumulated fidelity of the current step: its label (*Fidelity*), the percentage,
+  a bar and the
   **total error** (the fidelity that was lost, `100 − fidelity`). The bar is
   green above 99 %, amber above 95 % and red below, and the error value takes the
   same colour. Below it, the **accumulated cost** of the current step is shown.
@@ -243,16 +248,16 @@ radii and short transitions.
   panel shows the initial fidelity of the backend.
 - The **Step details** panel shows a large **operation badge** (colour-coded by
   gate family) with a one-line description, the target qubits, and the fields of
-  the step with readable names (*VirtualZ*, *Fidelidad acumulada*, *Costo
-  acumulado*, …). The per-qubit fields (VirtualZ, inactivity, fidelity and
+  the step with readable names (*VirtualZ*, *Accumulated fidelity*, *Accumulated
+  cost*, …). The per-qubit fields (VirtualZ, inactivity, fidelity and
   vibration) are shown as a table with one row per qubit, so every value is read
   at a glance.
 
 The **Simulation details** panel is on the left; the **Probabilities** and
 **Step details** panels are on the right. Each one is collapsible: its title is a
 button, and clicking it shows or hides the body. The titles follow the language
-of the page (*Detalles de la simulación* / *Simulation details*, *Probabilidades*
-/ *Probabilities* and *Detalle del paso* / *Step details*).
+of the page (*Simulation details*, *Probabilities* and *Step details*, or their
+Spanish names when the viewer is in Spanish).
 
 The `+z` axis is drawn upwards, and `|0⟩` is at the top. This follows the
 standard convention that is used by the backend.
@@ -274,7 +279,7 @@ metrics) before it can be shown. There are three ways to see a circuit.
 1. **The selector.** It lists the examples. Served over HTTP, they are the
    files of `../out/manifest.json`; in Qollab, they are compiled by the backend.
    If nothing is found, a small example that is stored inside the page is used.
-2. **The load button** (*Cargar circuito*). A circuit written in OpenQASM 2 or 3
+2. **The load button** (*Load circuit*). A circuit written in OpenQASM 2 or 3
    (`.qasm`) is chosen, compiled by the backend and added to the selector. The
    button is disabled while Python compiles, and the previous circuit stays on
    screen if the new one fails.
@@ -288,7 +293,7 @@ Loading a circuit needs Python to compile it. In Qollab, the page calls the
 platform (`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Locally, run the
 server of the project, which compiles with the same code on the built-in
 simulator (see below). With a plain `python -m http.server` the viewer shows the
-examples, and the load button and *Medir* are disabled with a title that says
+examples, and the load button and *Measure* are disabled with a title that says
 so; a file that is dropped anyway gets the same explanation. The viewer asks the
 server with an `OPTIONS` request, which `make server` answers and a static server
 does not.
@@ -337,13 +342,13 @@ page; the file selector, the load button and the measurement are at the top.
 | Load circuit | Opens the file selector for an OpenQASM file (`.qasm`). |
 | Example | Loads the small example that is embedded in the page. |
 | Left arrow | Moves to the previous step. |
-| Play / Pause | Plays the steps automatically, or pauses. It reads *Reanudar* when paused in the middle and *Reiniciar* once the last step is reached. |
+| Play / Pause | Plays the steps automatically, or pauses. It reads *Resume* when paused in the middle and *Restart* once the last step is reached. |
 | Right arrow | Moves to the next step. |
 | Reset | Stops the play and returns to step 0. |
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
-| Step counter | Shows the current step and the total (`paso 3 / 24`). |
-| Medir | Pauses the simulation, measures the step on screen and shows the distribution of the results, with the sound of the readout. |
-| shots | The number of shots used by Medir (1024 by default). The `−` and `+` buttons beside it change it by one. |
+| Step counter | Shows the current step and the total (`step 3 / 24`). |
+| Measure | Pauses the simulation, measures the step on screen and shows the distribution of the results, with the sound of the readout. |
+| shots | The number of shots used by Measure (1024 by default). The `−` and `+` buttons beside it change it by one. |
 | Drag (left button) | Rotates the camera around the chain. |
 | Drag (right button) | Moves the camera in the plane of the screen; the menu of the browser does not open. |
 | Wheel | Zooms in and out. |
@@ -362,33 +367,33 @@ to do.
 The **View and accessibility** button is always at the right of the top bar, with
 the universal-access icon. It opens a panel with the options that make the scene
 easier to read. A profile is a quick set of values; below them, every option can
-be changed by itself (the profile then reads as custom). **Restablecer** goes
+be changed by itself (the profile then reads as custom). **Reset** goes
 back to the default profile. Esc, a click outside or the button close the panel.
 
 | Profile | What it does |
 | --- | --- |
-| Predeterminado | The default look: a solid sphere with a dim shell and a thick, bright vector. |
-| Enfoque en el vector | Hides the environment, the trap, the horizontal layer, the lasers and the phonon bus, dims the light and thickens the vector. |
-| Alto contraste | A palette of saturated colours on a dark scene without the environment, and stronger text and borders in the interface. |
-| Daltonismo | The Okabe and Ito palette (orange, sky blue and yellow axes, a pink vector) and the numbers of each vector. |
-| Movimiento reducido | No jiggle, halo, wobble of the sphere, sweep of the moving light or animated transitions. It is the starting value when the system asks for less motion (`prefers-reduced-motion`). |
+| Default | The default look: a solid sphere with a dim shell and a thick, bright vector. |
+| Focus on the vector | Hides the environment, the trap, the horizontal layer, the lasers and the phonon bus, dims the light and thickens the vector. |
+| High contrast | A palette of saturated colours on a dark scene without the environment, and stronger text and borders in the interface. |
+| Colour blindness | The Okabe and Ito palette (orange, sky blue and yellow axes, a pink vector) and the numbers of each vector. |
+| Reduced motion | No jiggle, halo, wobble of the sphere, sweep of the moving light or animated transitions. It is the starting value when the system asks for less motion (`prefers-reduced-motion`). |
 
 The options are in five sections:
 
 - **Color.** The palette of the axes, the vector and the sphere: default, Okabe
   and Ito, high contrast and monochrome. The legend of the axes follows it.
-- **Esfera y vector.** The blending of the sphere (*solid* covers what is behind
+- **Sphere and vector.** The blending of the sphere (*solid* covers what is behind
   it; *glow* adds to it, which washes out to white over a bright background),
   the level of detail (full, simple without dots or sweeps, outline only), the
   glow of the sphere, the brightness and the thickness of the vector, whether the
   spheres are drawn in front of everything, and whether the `(x, y, z)` of each
   vector is written under its sphere.
-- **Qué se muestra.** Each group of the scene can be hidden: the environment, the
+- **What is shown.** Each group of the scene can be hidden: the environment, the
   trap chip, the horizontal layer, the vertical lasers, the phonon bus, the jiggle,
   the halo, the qubit labels, the legend and the camera buttons.
-- **Luz y movimiento.** The brightness of the scene (the exposure), the intensity
+- **Light and motion.** The brightness of the scene (the exposure), the intensity
   of the lights, the brightness of the vertical lasers and of the global beam (to
-  see them dimmer without hiding them, which *Qué se muestra* does) and the
+  see them dimmer without hiding them, which *What is shown* does) and the
   reduced motion.
 - **Interfaz.** The size of the text (90 to 130 %, which also widens the side
   panels) and a stronger text and border contrast.
@@ -406,7 +411,7 @@ it with buttons, in four rows: rotate, tilt, move (left, right, up, down) and
 zoom with the centre button. A button keeps acting while it is held, with the
 mouse, the touch screen or the keyboard (Enter or Space on a focused button), so
 the camera can be moved without the letter keys and without a right button. The step is announced to screen readers in a
-polite live region (*Paso 3 de 7: GPI2 en q0. Fidelidad 99.44 %.*).
+polite live region (*Step 3 of 7: GPI2 on q0. Fidelity 99.44 %.*).
 
 ## The sound of the gates {.unnumbered}
 
@@ -479,17 +484,17 @@ The viewer always opens, even when the compilation fails. A failure puts a short
 red line under the controls and a **card over the scene** (`reportError` in
 `utils.js`) that cannot be missed; the cross closes it, and a successful load
 removes it. A machine that QViz does not support (IBM, AWS or any other that is
-not IonQ or the built-in simulator) gets its own card: "Máquina no soportada",
+not IonQ or the built-in simulator) gets its own card: "Machine not supported",
 what to do (choose IonQ Aria or Forte, or the built-in simulator) and, in small
 text, the message of the backend with the machine that was detected. The Qollab
 prelude tells the two apart because it keeps the class of the Python error in
 `error.kind` (`UnsupportedProviderError`); any other error shows the generic card
-"No se pudo mostrar el circuito" with its message. The same card is used when a
+"The circuit could not be shown" with its message. The same card is used when a
 file that was loaded or chosen from the list fails.
 
 ## The measurement {.unnumbered}
 
-The `Medir` button draws a number of shots from the probabilities of the current
+The `Measure` button draws a number of shots from the probabilities of the current
 step, and shows the distribution of the resulting bitstrings. The measurement is
 done in the browser, from the fields of the JSON, so no job is sent to a
 backend.
@@ -508,7 +513,7 @@ illumination.
 4. The outcome is resolved: a **`|0⟩` or `|1⟩` badge** appears above every ion.
 
 The animation uses the most likely outcome of the sampled shots, and runs next to
-the histogram when the `Medir` button is pressed. The panel shows the **step** and
+the histogram when the `Measure` button is pressed. The panel shows the **step** and
 the number of **shots** as two clear blocks at the top, and every expression (the
 qubit labels, `p(|1⟩)` and the readout correction) is typeset as MathML.
 

@@ -54,6 +54,14 @@ _PRELUDE = """\
 // Do not edit: change the viewer and run `make qollab` again.
 import * as api from "qollab_api";
 
+// The language chosen in the viewer, applied before the modules are evaluated.
+try {
+  const saved = window.localStorage.getItem("qviz.lang");
+  if (saved === "en" || saved === "es") document.documentElement.lang = saved;
+} catch (error) {
+  // Private window or sandboxed frame: keep the language of the page.
+}
+
 // The text of each JSON, to send it to Python without writing it again.
 const sources = new WeakMap();
 const textOf = (data) => {

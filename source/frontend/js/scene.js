@@ -653,6 +653,6 @@ export function animate(time) {
 export function updatePerf() {
   if (!state.data) return;
   document.getElementById("perfMeta").textContent =
-    `${state.data.total_qubits} qubits · ${state.data.steps.length} pasos · ` +
+    `${state.data.total_qubits} qubits · ${state.data.steps.length} ${t("pasos", "steps")} · ` +
     `${state.fps.value.toFixed(0)} fps`;
 }
