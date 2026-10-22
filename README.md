@@ -115,11 +115,19 @@ select in Qollab (the built-in simulator or an IonQ simulator). Do not edit
 `qollab/`. Loaded circuits are transpiled locally, so they never spend the one
 IonQ job that each run allows.
 
+The generated `main.js` is about 0.5 MB. Most of it is not code: Qollab does not
+serve the other files of the project, so the shaders and the laser `.obj`/`.mtl`
+model are embedded as strings, and the modules of the viewer are bundled into
+the same file. The bundler is `resources/scripts/package_qollab.py`; the reasons
+and the size breakdown are in
+[`qollab.qmd`](documentation/docs/frontend/qollab.qmd).
+
 ### Locally
 
 ```bash
 make venv && make install   # needs Python 3.12 or newer (see Versions)
 make test                   # the test suite
+make verify                 # tests, linters and the Qollab package
 make server                 # the viewer at http://localhost:8000 (PORT=9000)
 make open                   # like server, but it opens the browser for you
 ```
@@ -128,10 +136,12 @@ Open the viewer, choose an example from the list or press **Cargar circuito**
 (or drag a `.qasm` file onto the page). Try the files in `resources/examples/qasm/`
 (`bell.qasm`, `ghz4.qasm`, `qft3.qasm`). Press **Play**, or move through the
 steps with the arrows and the circuit strip, and press **Medir** to measure the
-current step. `make server` runs the same Python code as Qollab. The viewer has
-no calculation of its own: compiling and measuring go through Python. `make demo
+current step. `make server` runs the same Python code as Qollab and generates
+`out/` on the first run, so a fresh clone works. The viewer has no calculation of
+its own: compiling and measuring go through Python, so use `make server` rather
+than a plain `python -m http.server` when you want to load a circuit. `make demo
 M=translator` runs the demo of one module; the pipeline is described in
-[`spec.md`](documentation/prompts/spec.md).
+[`spec.md`](documentation/internal/spec.md).
 
 ### Reading the viewer
 
@@ -148,18 +158,18 @@ choice is remembered in the browser. See
 | Path                                                              | What is in it                                                                              |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `source/backend/core/`                                            | One package per module of the pipeline, plus the model, the errors and the noise profiles. |
-| `source/frontend/`, `source/shaders/`                             | The viewer: `index.html` and the ES modules of `js/`, and its shaders.                     |
+| `source/frontend/`, `source/shaders/`                             | The viewer: `index.html`, `styles.css`, the ES modules of `js/`, and its shaders.          |
 | `qollab_api.py`, `main.py`, `resources/scripts/package_qollab.py` | What Qollab runs and the script that builds the project to upload.                         |
 | `resources/examples/`                                             | Example circuits in Python and OpenQASM.                                                   |
 | `source/tests/`                                                   | The test suite (no network, IonQ is mocked).                                               |
-| `documentation/prompts/spec.md`                                   | The architecture, the JSON contract and the plan by module.                                |
+| `documentation/internal/`                                         | The specification, the working notes and the agent prompts (public on purpose).            |
 | `documentation/`                                                  | The Quarto book (English), the schema and the references.                                  |
 
 ## Versions
 
 | Piece               | Required     | Tested with                        | Notes                                                                                                                                           |
 | ------------------- | ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Python              | `>=3.12`     | 3.13.16 (CI: 3.12 and 3.13)        | Qollab runs 3.14 (Pyodide v314.0.7). Python 3.11 is refused by `pip install`.                                                                   |
+| Python              | `>=3.12`     | 3.13.5 locally (CI: 3.12–3.14)     | Qollab runs 3.14 (Pyodide v314.0.7). Python 3.11 is refused by `pip install`.                                                                   |
 | Qiskit              | `>=2.5.2,<3` | 2.5.2                              | Qollab ships 2.5.2.                                                                                                                             |
 | qiskit-ionq         | `>=1.0.0,<2` | 1.0.0 to 1.1.1                     | Qollab ships 1.0.2. Before 1.0.3, tomography on a non-IonQ backend fails.                                                                       |
 | NumPy               | `>=2.0,<3`   | 2.0.2 and 2.5.4                    | Qollab ships 2.4.6.                                                                                                                             |
@@ -168,7 +178,22 @@ choice is remembered in the browser. See
 
 `pyproject.toml` and `requirements.txt` declare the same Python packages (a test
 checks it). Details and the reasons: [installation](documentation/docs/getting-started/installation.qmd).
-The last full run: 427 tests passed, 1 skipped, and `make lint` clean.
+The last full run: 437 tests passed, 1 skipped, and `make lint` clean.
+
+## Status
+
+QViz was built for the Qollab hackathon (2026). The pipeline, the viewer and the
+Qollab package are complete and tested; the project is now in maintenance and
+polish. The next improvements are more JavaScript tests and a single catalog for
+the example circuits. The design decisions live in
+`documentation/internal/spec.md`; the day-to-day state is in
+[`memory.md`](memory.md). The working notes of the team and the agent
+instructions are public on purpose; they are kept in `documentation/internal/`
+so they do not mix with the published book.
+
+Contributions are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first:
+`make test`, `make lint` and `make qollab` must pass. The changes of each
+version are in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Limitations
 

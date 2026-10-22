@@ -1,7 +1,7 @@
 """Functions that Qollab pages call, shared with ``main.py``.
 
 A JS project reaches these with ``callPromising`` (see
-``documentation/prompts/qollab_pruebas.md``). They take and return plain values
+``documentation/internal/qollab_pruebas.md``). They take and return plain values
 and **JSON strings**, never dictionaries, because Pyodide turns a ``dict`` into
 a JS ``Map`` that ``JSON.stringify`` cannot print (``qollab_context.md`` §8.1).
 
@@ -12,7 +12,6 @@ in as an argument.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
 from typing import Any
 
 from qiskit import QuantumCircuit
@@ -20,26 +19,7 @@ from qiskit import QuantumCircuit
 from backend import compile, export, load_circuit, sample
 from backend.core.errors import QVizError
 from backend.core.model import Entangler
-from examples import bell, distant_bell, ghz, layered
-
-
-CIRCUITS: dict[str, Callable[[], QuantumCircuit]] = {
-    "bell": bell,
-    "bell_distant": distant_bell,
-    "ghz3": lambda: ghz(3),
-    "ghz16": lambda: ghz(16),
-    "layered16": lambda: layered(16),
-}
-
-
-# The text that the selector of the viewer shows for each circuit.
-_LABELS = {
-    "bell": "Bell (2 qubits)",
-    "bell_distant": "Distant Bell pair (q0-q2, 3 qubits)",
-    "ghz3": "GHZ (3 qubits)",
-    "ghz16": "GHZ (16 qubits, performance)",
-    "layered16": "Random layers, depth 4 (16 qubits, performance)",
-}
+from examples.catalog import CIRCUITS, LABELS
 
 
 def build_circuit(name: str) -> QuantumCircuit:
@@ -71,7 +51,7 @@ def circuits() -> str:
 
     The viewer lists them in its selector, in the place of the files of ``out/``.
     """
-    return json.dumps([{"file": name, "label": _LABELS[name]} for name in CIRCUITS])
+    return json.dumps([{"file": name, "label": LABELS[name]} for name in CIRCUITS])
 
 
 def run(

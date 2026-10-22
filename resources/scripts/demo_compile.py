@@ -13,7 +13,8 @@ from _common import ghz3
 from examples import bell
 from backend import compile, export
 
-OUT = Path("out")
+ROOT = Path(__file__).resolve().parent.parent.parent
+OUT = ROOT / "out"
 
 
 def main() -> None:

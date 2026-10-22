@@ -31,8 +31,8 @@ version from 1.0.0 works. The whole test suite was run with each of the followin
 
 Qiskit 2.5.2 and NumPy 2.4.6 (and NumPy 2.0.2 with `qiskit-ionq` 1.0.0) were used.
 
-The latest full run (2026-10-11) used Python 3.13.16, Qiskit 2.5.2, qiskit-ionq
-1.1.1, NumPy 2.5.4 and qiskit-qasm3-import 0.6.0: 419 tests passed, 1 was skipped,
+The latest full run (2026-10-22) used Python 3.13.5, Qiskit 2.5.2, qiskit-ionq
+1.1.1, NumPy 2.5.3 and qiskit-qasm3-import 0.6.0: 437 tests passed, 1 was skipped,
 and `make lint` had no findings. A machine whose `python3` is older than 3.12
 (for example Debian 12, with 3.11) cannot install the package: `pip` refuses it
 with `requires a different Python`. Create the environment with a newer
@@ -47,7 +47,7 @@ and later light the scene with the environment map more strongly. The scene is
 calibrated for 0.186.1 with `ENVIRONMENT_INTENSITY` in `source/frontend/js/config.js`.
 Qollab runs Python 3.14 (Pyodide v314.0.7).
 On Qollab, the page of the test project prints the versions that are really
-installed (see `documentation/prompts/qollab_pruebas.md`).
+installed (see `documentation/internal/qollab_pruebas.md`).
 
 ### What Qollab installs {.unnumbered}
 

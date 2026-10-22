@@ -22,13 +22,14 @@ source/                     What is shipped: the library, the viewer and the tes
     __init__.py             The public API: compile, export, load_circuit, sample.
     core/                   The modules (see below).
   frontend/                 The viewer.
-    index.html              Markup and style only.
+    index.html              Markup only.
+    styles.css              The style of the viewer (becomes main.css in the package).
     js/                     The ES modules of the viewer.
   shaders/                  GLSL: the Bloch spheres, laser, lens, phonon bus and rail.
   tests/                    The pytest suite, the shared circuits and the golden file.
 
 resources/                  What supports the project.
-  examples/                 Worked circuits (Bell, GHZ, layers, the QFT adder) and .qasm files.
+  examples/                 Worked circuits (Bell, GHZ, layers, the QFT adder), the catalog of the selector and .qasm files.
   models/                   The laser model (OBJ and MTL).
   scripts/                  The demos, the generator of out/, the packager and the server.
   make/                     Makefile.git (branch workflow) and Makefile.quarto (this book).
@@ -38,7 +39,7 @@ documentation/              The specification, the schema and this book.
   docs/                     The chapters.
   diagrams/                 PlantUML sources and their SVG renders.
   schema/                   The JSON schema of the contract.
-  prompts/                  spec.md and the working notes of the team.
+  internal/                 spec.md, the working notes of the team and the agent prompts.
   references/               Notes on the native gates of IonQ.
 
 out/                        Generated: the example JSON files and their manifest.

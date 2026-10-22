@@ -42,14 +42,33 @@ jobs:
       - name: Check the docstrings (pydocstyle)
         run: python -m pydocstyle source/backend resources/examples
 
+      - name: Check the viewer modules (node)
+        run: |
+          for file in source/frontend/js/*.js; do node --check "$file"; done
+
+      - name: Build the Qollab package
+        run: python resources/scripts/package_qollab.py
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render the book (HTML)
+        run: quarto render documentation --to html
+
   test:
     name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # ``requires-python`` is >=3.12, and NumPy needs >=3.12 as well.
-        python-version: ["3.12", "3.13"]
+        # ``requires-python`` is >=3.12. Python 3.14 is what Qollab runs on
+        # Pyodide, so it is tested too.
+        python-version: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
 

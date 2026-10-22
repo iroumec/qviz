@@ -24,9 +24,44 @@ async function post(url, body, what) {
       "this server has no Python (neither Qollab nor `make server`), it cannot " + what + "."
     ));
   }
-  const reply = await response.json();
-  if (!response.ok) throw new Error(reply.error || "error " + response.status);
+  const text = await response.text();
+  let reply = null;
+  try {
+    reply = text ? JSON.parse(text) : null;
+  } catch {
+    reply = null;
+  }
+  if (!response.ok) {
+    throw new Error((reply && reply.error) || "error " + response.status);
+  }
+  if (!reply) {
+    throw new Error(t(
+      "el servidor devolvió una respuesta que no es JSON.",
+      "the server returned a reply that is not JSON."
+    ));
+  }
   return reply;
+}
+
+/**
+ * True when the page can compile a circuit: Qollab gives the hook, or the local
+ * server answers OPTIONS on the compile endpoint. A plain `http.server` does not,
+ * so the viewer can disable the load button instead of failing after the click.
+ */
+export async function canCompile() {
+  if (HOST.compileQasm) return true;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1500);
+  try {
+    const response = await fetch(COMPILE_URL, {
+      method: "OPTIONS", signal: controller.signal,
+    });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Compile a circuit written in OpenQASM 2 or 3; returns the visualization. */

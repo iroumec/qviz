@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an improvement or a new capability.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: Describe the need, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Backend pipeline
+        - Viewer (3D, timeline, accessibility)
+        - Qollab packaging
+        - Documentation
+        - Tooling and CI
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

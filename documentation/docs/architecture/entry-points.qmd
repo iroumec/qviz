@@ -79,6 +79,7 @@ Qollab, on the built-in simulator.
 | --- | --- | --- | --- |
 | `POST /api/compile` | OpenQASM text | `shots`, `entangler` | the JSON of the visualization |
 | `POST /api/sample` | the JSON of a visualization | `step`, `shots` | the list of pairs of `sample_step` |
+| `OPTIONS /api/compile`, `OPTIONS /api/sample` | none | none | `204` with `Allow: POST, OPTIONS` |
 
 A circuit that cannot be compiled answers `400` with `{"error": "…"}`, and an
 unexpected failure answers `500` with the same shape. A negative or non-numeric

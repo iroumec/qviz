@@ -18,7 +18,7 @@ standard text format for them, and the organizers of the hackathon recommended i
 
 | Name | Type | Meaning |
 | --- | --- | --- |
-| `text` | string | The circuit. The first statement must be `OPENQASM 2.0;` or `OPENQASM 3.0;` (comments before it are allowed). |
+| `text` | string | The circuit. The first statement must be `OPENQASM 2.0;` or `OPENQASM 3.0;` (comments and a UTF-8 BOM before it are allowed). |
 
 **Returns** a `QuantumCircuit`.
 

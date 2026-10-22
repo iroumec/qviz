@@ -53,7 +53,7 @@ These decisions came out of the design review and are fixed for this version.
 ## 4. Context and constraints
 
 The frontend runs in the browser. On Qollab, the following constraints apply and
-shape the design (see `documentation/prompts/qollab_context.md`):
+shape the design (see `documentation/internal/qollab_context.md`):
 
 - **No server.** No `POST`, no database, no persistence. The page is a single
   `index.html` with its `main.js` and CSS, and the Python code runs in the same
@@ -306,5 +306,5 @@ The frontend must degrade gracefully, never with a blank page.
 
 - `spec.md` — backend specification and JSON contract.
 - `documentation/docs/frontend/viewer.qmd` — the viewers, in the book.
-- `documentation/prompts/qollab_context.md` — platform constraints.
+- `documentation/internal/qollab_context.md` — platform constraints.
 - `documentation/references/ionq_native_gates.md` — the native gates.

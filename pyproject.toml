@@ -6,14 +6,33 @@ build-backend = "setuptools.build_meta"
 name = "qviz"
 version = "0.1.0"
 description = "Educational trapped-ion circuit visualizer for Qollab"
+readme = "README.md"
 license = { text = "MIT" }
+authors = [{ name = "Qubit Overflow" }]
 requires-python = ">=3.12"
+keywords = ["quantum", "qiskit", "trapped ions", "visualization", "education"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Physics",
+]
 dependencies = [
     "qiskit>=2.5.2,<3.0.0",
     "qiskit-ionq>=1.0.0,<2.0.0",
     "numpy>=2.0,<3.0",
     "qiskit-qasm3-import>=0.6,<1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/iroumec/QViz"
+Repository = "https://github.com/iroumec/QViz"
+Issues = "https://github.com/iroumec/QViz/issues"
 
 [project.optional-dependencies]
 dev = [

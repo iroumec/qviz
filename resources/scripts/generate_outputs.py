@@ -17,9 +17,11 @@ from qiskit import QuantumCircuit
 from qiskit.providers.basic_provider import BasicSimulator
 
 from backend import compile, export
-from examples import bell, distant_bell, ghz, layered, qft_adder
+from examples import qft_adder
+from examples.catalog import CIRCUITS, LABELS
 
-OUT = Path("out")
+ROOT = Path(__file__).resolve().parent.parent.parent
+OUT = ROOT / "out"
 _MANIFEST = OUT / "manifest.json"
 
 
@@ -35,20 +37,15 @@ def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:
 
 
 def _outputs() -> dict[str, tuple[str, QuantumCircuit]]:
-    return {
-        "bell.json": ("Bell (2 qubits)", bell()),
-        "bell_distant.json": (
-            "Distant Bell pair (q0-q2, 3 qubits)",
-            distant_bell(),
-        ),
-        "ghz3.json": ("GHZ (3 qubits)", ghz(3)),
-        "ghz16.json": ("GHZ (16 qubits, performance)", ghz(16)),
-        "layered16.json": (
-            "Random layers, depth 4 (16 qubits, performance)",
-            layered(16, depth=4),
-        ),
-        "adder_n2_1_1.json": ("QFT adder 1 + 1 (4 qubits)", _adder_input(2, 1, 1)),
+    outputs = {
+        f"{name}.json": (LABELS[name], factory())
+        for name, factory in CIRCUITS.items()
     }
+    outputs["adder_n2_1_1.json"] = (
+        "QFT adder 1 + 1 (4 qubits)",
+        _adder_input(2, 1, 1),
+    )
+    return outputs
 
 
 def main() -> None:

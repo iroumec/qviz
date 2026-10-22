@@ -56,6 +56,15 @@ def test_circuits_lists_every_example_with_a_label():
     assert all(build_circuit(entry["file"]) for entry in entries)
 
 
+def test_the_example_catalog_is_the_single_source_of_names_and_labels():
+    from examples import catalog
+
+    entries = json.loads(qollab_api.circuits())
+    assert CIRCUITS is catalog.CIRCUITS
+    assert set(catalog.LABELS) == set(CIRCUITS)
+    assert {entry["file"]: entry["label"] for entry in entries} == catalog.LABELS
+
+
 def test_run_returns_json_text(basic_backend):
     text = run(basic_backend, "bell", 256)
     assert isinstance(text, str)

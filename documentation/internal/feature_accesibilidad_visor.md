@@ -144,7 +144,7 @@ Hace falta una referencia a cada grupo (`state.three.groups.environment`, `.trap
   - la cámara se maneja con los botones en pantalla aunque la D no responda;
   - con lector de pantalla o inspeccionando el árbol de accesibilidad: el panel tiene nombre, rol y estado, y el `aria-live` anuncia el paso.
 - Medir el costo: los uniformes nuevos no deben bajar los fps (el contador del encabezado).
-- Anotar en `documentation/prompts/qollab_pruebas.md` §4 el resultado en Qollab (brillo, D, panel).
+- Anotar en `documentation/internal/qollab_pruebas.md` §4 el resultado en Qollab (brillo, D, panel).
 
 ## Fuera de alcance
 

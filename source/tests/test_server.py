@@ -99,6 +99,20 @@ def test_other_services_do_not_exist(base):
     assert status == 404
 
 
+def test_options_says_that_the_python_services_exist(base):
+    request = urllib.request.Request(base + "/api/compile", method="OPTIONS")
+    with urllib.request.urlopen(request) as response:
+        assert response.status == 204
+        assert response.headers["Allow"] == "POST, OPTIONS"
+
+
+def test_options_on_an_unknown_service_is_a_404(base):
+    request = urllib.request.Request(base + "/api/other", method="OPTIONS")
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(request)
+    assert error.value.code == 404
+
+
 def test_the_root_goes_to_the_viewer_and_the_files_are_served(base):
     with urllib.request.urlopen(base + "/") as response:
         assert response.url.endswith("/source/frontend/index.html")

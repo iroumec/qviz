@@ -74,7 +74,7 @@ Que el visor muestre el **circuito ya transpilado a compuertas nativas** (GPI, G
   - WASD y espacio/ctrl siguen moviendo la cámara;
   - el visor 3D no se deforma al abrir o cerrar la franja (el canvas se redimensiona: revisar el `resize` de `scene.js`);
   - bajo 860 px la franja no aparece.
-- Verificar en Qollab (Built-in) que la franja aparece y responde; anotar el resultado en `documentation/prompts/qollab_pruebas.md` §4.
+- Verificar en Qollab (Built-in) que la franja aparece y responde; anotar el resultado en `documentation/internal/qollab_pruebas.md` §4.
 
 ## Fuera de alcance
 

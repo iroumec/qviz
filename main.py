@@ -5,7 +5,7 @@ Qollab injects the selected backend as the global ``backend`` and calls
 would shadow the injected global. Local execution is not supported.
 
 Parameters with strict annotations make Qollab render a form in the QPU
-dialog (``documentation/prompts/qollab_context.md`` §5). The functions are in
+dialog (``documentation/internal/qollab_context.md`` §5). The functions are in
 ``qollab_api.py``, which a JS project can call too.
 """
 

@@ -8,6 +8,7 @@ import { gateRotation, makeMotion, wrapAngle } from "./motion.js";
 import { playGateSound, stopGateSounds } from "./sound.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
+import { defaultFile, isCircuitFile, manifestEntries } from "./files.js";
 import { state } from "./state.js";
 import { clearErrorCard, reportError, setError, setStatus, t } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
@@ -55,11 +56,65 @@ export function loadData(obj) {
 /** The circuits that the user loaded, by selector key, to show them again. */
 const userCircuits = new Map();
 
+/** The latest load, so that an older compile cannot replace a newer one. */
+let loadToken = 0;
+
+/** Whether Python can compile (unknown until the probe in main.js answers). */
+let compileAvailable = true;
+
+/** Whether a compile is running. */
+let loading = false;
+
+/** Draw the load button from the two flags above. */
+function updateLoadButton() {
+  const input = document.getElementById("file");
+  if (!input) return;
+  input.disabled = loading || !compileAvailable;
+  const label = input.closest("label");
+  if (!label) return;
+  label.classList.toggle("busy", loading);
+  label.classList.toggle("unavailable", !compileAvailable);
+  label.setAttribute("aria-busy", String(loading));
+  if (compileAvailable) {
+    label.removeAttribute("aria-disabled");
+    label.title = t("Circuito en OpenQASM 2 o 3", "Circuit in OpenQASM 2 or 3");
+  } else {
+    label.setAttribute("aria-disabled", "true");
+    label.title = t(
+      "Cargar circuitos necesita `make server` o Qollab.",
+      "Loading circuits needs `make server` or Qollab."
+    );
+  }
+}
+
+/** Tell the viewer whether this page can compile circuits with Python. */
+export function setCompileAvailable(available) {
+  compileAvailable = Boolean(available);
+  updateLoadButton();
+}
+
+/** Disable the load button while Python compiles, so it cannot start twice. */
+function setLoading(busy) {
+  loading = busy;
+  updateLoadButton();
+}
+
 /** Compile a circuit file (OpenQASM 2 or 3) and show it. */
 export async function loadCircuitFile(file) {
+  if (!file) return;
+  if (!isCircuitFile(file.name)) {
+    reportError(new Error(t(
+      "Elegí un archivo .qasm (OpenQASM 2 o 3).",
+      "Choose a .qasm file (OpenQASM 2 or 3)."
+    )));
+    return;
+  }
+  const token = ++loadToken;
+  setLoading(true);
   setStatus(t("Compilando ", "Compiling ") + file.name + "…");
   try {
     const compiled = await compileQasm(await file.text());
+    if (token !== loadToken) return;
     const key = "file:" + file.name;
     userCircuits.set(key, compiled);
     const select = document.getElementById("fileSelect");
@@ -72,7 +127,9 @@ export async function loadCircuitFile(file) {
     select.value = key;
     loadData(compiled);
   } catch (error) {
-    reportError(error);
+    if (token === loadToken) reportError(error);
+  } finally {
+    if (token === loadToken) setLoading(false);
   }
 }
 
@@ -212,7 +269,12 @@ export async function loadFile(name) {
     return;
   }
   const response = await fetch(OUT_URL + name);
-  if (!response.ok) throw new Error(name);
+  if (!response.ok) {
+    throw new Error(t(
+      "No se pudo cargar " + name + ".",
+      "Could not load " + name + "."
+    ));
+  }
   loadData(await response.json());
 }
 
@@ -230,7 +292,7 @@ function fillSelector(select, entries) {
 export async function loadManifest() {
   const select = document.getElementById("fileSelect");
 
-  if (HOST.circuits) {
+  if (HOST.circuits && HOST.circuits.length) {
     fillSelector(select, HOST.circuits);
     try {
       await loadFile(select.value);
@@ -244,19 +306,26 @@ export async function loadManifest() {
     const response = await fetch(MANIFEST_URL);
     if (!response.ok) throw new Error("no manifest");
     const manifest = await response.json();
-    fillSelector(select, manifest.files);
-    select.value = manifest.default || manifest.files[0].file;
+    const entries = manifestEntries(manifest);
+    if (!entries.length) throw new Error("empty manifest");
+    fillSelector(select, entries);
+    select.value = defaultFile(entries, manifest.default);
     await loadFile(select.value);
   } catch (error) {
-    select.innerHTML = `<option value="">${t("(sin out/manifest.json)", "(no out/manifest.json)")}</option>`;
-    try {
-      await loadFile("ghz16.json");
-    } catch (firstError) {
+    // Without out/ (a fresh clone, or a static server) fall back to the
+    // generated files that may still be reachable, and then to the built-in
+    // demo. The selector says which one is shown instead of staying empty.
+    for (const name of ["ghz16.json", "bell.json"]) {
       try {
-        await loadFile("bell.json");
-      } catch (secondError) {
-        loadData(DEMO);
+        await loadFile(name);
+        fillSelector(select, [{ file: name, label: name }]);
+        select.value = name;
+        return;
+      } catch (missing) {
+        // Try the next one.
       }
     }
+    fillSelector(select, [{ file: "", label: t("Demostración", "Demo") }]);
+    loadData(DEMO);
   }
 }

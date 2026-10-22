@@ -69,8 +69,7 @@ is read by the viewer. See the
 The JSON that is produced can be inspected by hand, or with the viewer.
 
 ```bash
-make outputs
-make server
+make server            # generates out/ on the first run
 # then open http://localhost:8000/source/frontend/index.html
 ```
 

@@ -65,7 +65,9 @@ def test_the_viewer_package_is_the_real_viewer(packaged):
     assert 'id="measure"' in html and 'id="stage"' in html
 
     source = (_ROOT / "source" / "frontend" / "index.html").read_text(encoding="utf-8")
-    style = source.split("<style>")[1].split("</style>")[0]
+    assert 'href="./styles.css"' in source
+    assert "<style>" not in source
+    style = (_ROOT / "source" / "frontend" / "styles.css").read_text(encoding="utf-8")
     assert (out / "main.css").read_text(encoding="utf-8").strip() == style.strip()
 
     # Qollab serves no other file of the project: the modules go inside main.js.
@@ -208,6 +210,111 @@ def test_the_bundler_rejects_what_it_cannot_follow(module):
 def _js_url(path: Path) -> str:
     """Return a path as a JavaScript string literal for ``import()``."""
     return json.dumps(path.as_uri())
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_host_turns_http_replies_and_failures_into_readable_errors(tmp_path):
+    host = _ROOT / "source" / "frontend" / "js" / "host.js"
+    script = tmp_path / "host.mjs"
+    script.write_text(
+        f"""
+globalThis.window = {{ QVIZ_HOST: {{}} }};
+const {{ compileQasm }} = await import({_js_url(host)});
+
+async function attempt(status, body) {{
+  globalThis.fetch = async () => new Response(body, {{
+    status, headers: {{ "Content-Type": "application/json" }},
+  }});
+  try {{
+    return {{ ok: await compileQasm("x") }};
+  }} catch (error) {{
+    return {{ error: error.message }};
+  }}
+}}
+
+console.log(JSON.stringify({{
+  noPython: await attempt(501, ""),
+  badRequest: await attempt(400, '{{"error":"bad circuit"}}'),
+  ok: await attempt(200, '{{"total_qubits":2}}'),
+  notJson: await attempt(200, "<html>"),
+}}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert "no tiene Python" in got["noPython"]["error"]
+    assert got["badRequest"]["error"] == "bad circuit"
+    assert got["ok"]["ok"] == {"total_qubits": 2}
+    assert "no es JSON" in got["notJson"]["error"]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_viewer_only_enables_loading_when_python_answers(tmp_path):
+    host = _ROOT / "source" / "frontend" / "js" / "host.js"
+    script = tmp_path / "probe.mjs"
+    script.write_text(
+        f"""
+globalThis.window = {{ QVIZ_HOST: {{}} }};
+const {{ canCompile }} = await import({_js_url(host)});
+
+async function attempt(status, fail = false) {{
+  globalThis.fetch = async () => {{
+    if (fail) throw new Error("offline");
+    return new Response(null, {{ status }});
+  }};
+  return canCompile();
+}}
+
+console.log(JSON.stringify({{
+  ok: await attempt(204),
+  noPython: await attempt(501),
+  offline: await attempt(0, true),
+}}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got == {"ok": True, "noPython": False, "offline": False}
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_file_helpers_accept_only_circuits_and_pick_a_valid_default(tmp_path):
+    files = _ROOT / "source" / "frontend" / "js" / "files.js"
+    script = tmp_path / "files.mjs"
+    script.write_text(
+        f"""
+const f = await import({_js_url(files)});
+console.log(JSON.stringify({{
+  names: [
+    f.isCircuitFile("bell.qasm"), f.isCircuitFile("A.QASM3"),
+    f.isCircuitFile("notes.txt"), f.isCircuitFile("bell.json"), f.isCircuitFile(""),
+  ],
+  defaults: [
+    f.defaultFile([{{ file: "a" }}, {{ file: "b" }}], "b"),
+    f.defaultFile([{{ file: "a" }}], "missing"),
+    f.defaultFile([], "missing"),
+  ],
+  entries: f.manifestEntries({{
+    files: [{{ file: "a" }}, null, {{}}, {{ file: "" }}] }}),
+  noManifest: f.manifestEntries(null),
+}}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got["names"] == [True, True, True, False, False]
+    assert got["defaults"] == ["b", "a", ""]
+    assert got["entries"] == [{"file": "a"}]
+    assert got["noManifest"] == []
 
 
 def test_the_view_panel_reaches_the_package_without_import_cycles(packaged):

@@ -3,7 +3,7 @@
 
 import { PLAY_INTERVAL_MS, PLAY_MARGIN_MS } from "./config.js";
 import { state } from "./state.js";
-import { reportError } from "./utils.js";
+import { reportError, t } from "./utils.js";
 import { loadCircuitFile, loadFile, updateStep } from "./data.js";
 import { refreshPlayButton, runMeasurement } from "./panels.js";
 import { stopGateSounds } from "./sound.js";
@@ -59,6 +59,8 @@ function isEditing() {
 }
 
 export function initControls() {
+  const slider = document.getElementById("slider");
+  slider.setAttribute("aria-label", t("Paso", "Step"));
   initTimeline((step) => {
     stopPlay();
     updateStep(step);

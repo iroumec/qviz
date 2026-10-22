@@ -38,13 +38,16 @@ The file `source/tests/conftest.py` defines two fixtures. A fixture is a value t
 | `basic_backend` | A `BasicSimulator`, the ideal local backend. |
 | `chip_backend` | A `GenericBackendV2` with 20 qubits, a coupling map and the basis `["cz", "rz", "sx", "x"]`. It is an unsupported backend for `compile`, and it is used to test the layout and the rejection. |
 
-No network is used and no credential is needed. Every IonQ backend is mocked.
+No network is used and no credential is needed. Every IonQ backend is mocked. The
+JavaScript tests need Node; they are skipped when it is not installed (the CI
+image has it).
 
 ## The test files {.unnumbered}
 
 | File | What is checked |
 | --- | --- |
 | `test_smoke.py` | The public API is exactly the expected one, and a `NativeOp` is immutable. |
+| `test_documentation.py` | Every local link in the README, the book and the internal notes points to a file that exists, and the internal notes stay out of the published book. |
 | `test_provider.py` | The provider detection, the entangler rule and the hardware rule. |
 | `test_transpiler.py` | The three IonQ strategies, the fallback and the size limit. |
 | `test_translator.py` | Every rule is checked by an equivalence test. Invariants are also checked, and malformed native payloads are rejected with the index of the entry. |
@@ -57,7 +60,7 @@ No network is used and no credential is needed. Every IonQ backend is mocked.
 | `test_exporter.py` | The JSON text, the file output and the rejection of `NaN` and infinities. |
 | `test_examples.py` | The QFT matrix, its inverse, the sum computed by the adder, and the schema of a compiled adder. |
 | `test_performance.py` | The GHZ and layered circuits: the state, the reproducibility with a seed, the argument errors, and the 16-qubit files compiled against the schema. |
-| `test_package_qollab.py` | The Qollab folder fits in the file limit and has the files of a JS project, without `main.py`; the viewer package is the real viewer (markup, style, script and embedded shaders); every service of the prelude is read by the viewer; and the generated `main.js` is valid JavaScript (when Node is installed). |
+| `test_package_qollab.py` | The Qollab folder fits in the file limit and has the files of a JS project, without `main.py`; the viewer package is the real viewer (markup, style, script and embedded shaders); every service of the prelude is read by the viewer; and the generated `main.js` is valid JavaScript. It also runs the pure viewer helpers, the host bridge and the availability probe with Node. |
 | `test_memory.py` | `memory.md` keeps the sections that a new session needs and stays short, and `CLAUDE.md` and `AGENTS.md` point to it. |
 | `test_requirements.py` | `requirements.txt` equals the dependencies of `pyproject.toml`, and it uses only what Qollab accepts. |
 | `test_qollab_api.py` | The entry point and the functions that Qollab pages call: the `entangler` field, the example circuits, the JSON text that is returned, the order of the counts, and the output of `main`. |
@@ -97,12 +100,13 @@ The checks are run automatically on GitHub Actions, by the workflow in
 `.github/workflows/ci.yml`. It runs on every push to `main` and `development`,
 and on every pull request.
 
-Two jobs are defined.
+Three jobs are defined.
 
 | Job | What it does |
 | --- | --- |
-| Lint | Runs `flake8` and `pydocstyle`, exactly as `make lint` does. |
-| Tests | Runs `pytest`, exactly as `make test` does, on Python 3.12 and 3.13. |
+| Lint | Runs `flake8` and `pydocstyle` (as `make lint`), checks every viewer module with `node --check`, and builds the Qollab package. |
+| Tests | Runs `pytest`, exactly as `make test` does, on Python 3.12, 3.13 and 3.14. |
+| Documentation | Renders the Quarto book to HTML, so a broken chapter or a missing file fails the build. |
 
 Python 3.12 is the oldest supported version, and NumPy also needs 3.12 or newer.
 A red mark on a pull request means that the style or a test has to be fixed

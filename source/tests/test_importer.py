@@ -48,6 +48,12 @@ def test_comments_before_the_header_are_ignored():
     assert qc.num_qubits == 1
 
 
+@pytest.mark.parametrize("bom", ["\ufeff", "\n\ufeff"])
+def test_a_utf8_bom_before_the_header_is_ignored(bom):
+    qc = load_circuit(bom + _HEAD3 + "qubit q; x q;")
+    assert qc.count_ops()["x"] == 1
+
+
 @pytest.mark.parametrize("path", sorted(_QASM.glob("*.qasm")), ids=lambda p: p.name)
 def test_every_example_file_compiles(path, basic_backend):
     data = compile(basic_backend, load_circuit(path.read_text()), allow_remote=False)

@@ -6,16 +6,17 @@ files of the root to decide the type of the project. Qollab also runs no
 ``<script>`` of the HTML, loads a single style sheet (``main.css``) and cannot
 read the files of the project from JS. This script builds the project from the
 repository: the real viewer, ``source/frontend/index.html``. Its markup becomes
-``index.html`` and its style ``main.css``. ``main.js`` is generated: a short
-prelude that gives the viewer the Qollab services (``window.QVIZ_HOST``) followed
-by **all the modules of** ``frontend/js`` **bundled in one file**. Qollab does not
+``index.html`` and ``source/frontend/styles.css`` becomes ``main.css``.
+``main.js`` is generated: a short prelude that gives the viewer the Qollab
+services (``window.QVIZ_HOST``) followed by **all the modules of**
+``source/frontend/js`` **bundled in one file**. Qollab does not
 serve the other files of the project, so a relative ``import("./js/main.js")``
 fails there (``error loading dynamically imported module``). The project also
 has ``qollab_api.py``, ``requirements.txt``, the ``LICENSE`` (MIT) and the
 libraries ``backend/`` and ``examples/``. ``main.py`` is left out on purpose: in
 a JS project it could compile a second time and spend a second IonQ job.
 
-Upload the **content** of ``qollab/``. See ``documentation/prompts/qollab_pruebas.md``.
+Upload the **content** of ``qollab/``. See ``documentation/internal/qollab_pruebas.md``.
 
 Run with: python resources/scripts/package_qollab.py   (or: make qollab)
 """
@@ -37,6 +38,7 @@ MAX_BYTES = 2_000_000
 _LIBRARY = (("source/backend", "backend"), ("resources/examples", "examples"))
 _SHARED = ("qollab_api.py", "requirements.txt", "LICENSE")
 _VIEWER = Path("source/frontend") / "index.html"
+_VIEWER_STYLE = Path("source/frontend") / "styles.css"
 _VIEWER_MODULES = Path("source/frontend") / "js"
 _ENTRY_IMPORT = "./js/main.js"
 _SHADERS = Path("source/shaders")
@@ -120,19 +122,13 @@ try {
 """
 
 
-def _between(text: str, start: str, end: str, after: int = 0) -> tuple[str, int]:
-    """Return the text between two markers and the position after the second."""
-    begin = text.index(start, after) + len(start)
-    stop = text.index(end, begin)
-    return text[begin:stop], stop + len(end)
-
-
 _MODULE_SCRIPT = re.compile(r'<script type="module"[^>]*>')
 
 
-def split_viewer(html: str) -> tuple[str, str]:
-    """Return the style and the markup of the viewer, and check the entry."""
-    style, _ = _between(html, "<style>", "</style>")
+def split_viewer(html: str) -> str:
+    """Return the markup of the viewer, and check its style and entry points."""
+    if './styles.css' not in html:
+        raise SystemExit("the viewer must link ./styles.css")
     body_start = html.index("<body>") + len("<body>")
     opening = _MODULE_SCRIPT.search(html, body_start)
     if opening is None:
@@ -140,7 +136,7 @@ def split_viewer(html: str) -> tuple[str, str]:
     markup = html[body_start : opening.start()]
     if _ENTRY_IMPORT not in opening.group():
         raise SystemExit(f"the viewer module script must load {_ENTRY_IMPORT}")
-    return style.strip(), markup.strip()
+    return markup.strip()
 
 
 # The bundler below is deliberately small. It does not parse JavaScript: it only
@@ -231,7 +227,8 @@ def _read(path: Path) -> str:
 
 def viewer_files() -> dict[str, str]:
     """Return the three files of the viewer project, keyed by their name."""
-    style, markup = split_viewer(_read(_VIEWER))
+    markup = split_viewer(_read(_VIEWER))
+    style = _read(_VIEWER_STYLE)
     shaders = {
         "vert": _read(_SHADERS / "bloch.vert"),
         "frag": _read(_SHADERS / "bloch.frag"),

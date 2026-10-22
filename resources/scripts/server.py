@@ -12,6 +12,8 @@ simulator. It is a tool for development, not for Qollab.
 - ``POST /api/sample``: the body is that JSON; the query has ``step`` and
   ``shots``. The reply is the list of ``[bitstring, count]`` pairs of
   ``sample_step``, drawn from the statevector, so the entanglement is kept.
+- ``OPTIONS`` on either route answers ``204`` with ``Allow: POST, OPTIONS``, so
+  the viewer knows that this server can compile and measure.
 
 An error is ``{"error": "..."}`` with the status 400 (the request is not valid) or
 500 (something unexpected).
@@ -67,6 +69,17 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             return
         super().do_GET()
+
+    def do_OPTIONS(self) -> None:  # noqa: N802 - name fixed by http.server
+        """Tell the viewer that this server has the Python services."""
+        path = urlparse(self.path).path
+        if path not in (COMPILE_PATH, SAMPLE_PATH):
+            self._reply(HTTPStatus.NOT_FOUND, {"error": f"no such service: {path}"})
+            return
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self.send_header("Allow", "POST, OPTIONS")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_POST(self) -> None:  # noqa: N802 - name fixed by http.server
         """Run the service named by the path on the body of the request."""

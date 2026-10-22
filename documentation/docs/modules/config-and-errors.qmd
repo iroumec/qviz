@@ -54,7 +54,7 @@ The reason is that the circuits of those providers are transpiled for a chip tha
 is not a trapped-ion machine. The connectivity of that chip can force extra
 `SWAP` gates and permute the labels of the qubits, which is wrong for a
 visualizer of ions. The problem is described in
-`documentation/prompts/decision_transpilacion_no_ionq.md`.
+`documentation/internal/decision_transpilacion_no_ionq.md`.
 
 Two points are important.
 

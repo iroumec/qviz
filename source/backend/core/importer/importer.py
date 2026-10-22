@@ -97,7 +97,9 @@ def load_circuit(text: str) -> QuantumCircuit:
     that depend on the machine (qubits, mid-circuit measurements) are checked
     later by ``compile``.
     """
-    source = (text or "").strip()
+    # A file saved by a Windows editor may start with a UTF-8 BOM. It is not
+    # whitespace, so ``strip`` keeps it and the header would not be found.
+    source = (text or "").strip().lstrip("\ufeff").strip()
     if not source:
         raise CircuitParseError("the circuit is empty")
     if len(source) > config.MAX_QASM_CHARS:

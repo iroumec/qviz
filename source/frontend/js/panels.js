@@ -176,6 +176,10 @@ const TEXT = ENGLISH
 
 /** Translate the panel titles and wire the collapse of each panel. */
 export function initPanels() {
+  const select = document.getElementById("fileSelect");
+  if (select) select.setAttribute("aria-label", ENGLISH ? "Circuit" : "Circuito");
+  const shots = document.getElementById("shots");
+  if (shots) shots.setAttribute("aria-label", ENGLISH ? "Shots" : "Disparos");
   for (const node of document.querySelectorAll("[data-i18n]")) {
     const key = node.getAttribute("data-i18n");
     if (TEXT[key]) node.innerHTML = TEXT[key];

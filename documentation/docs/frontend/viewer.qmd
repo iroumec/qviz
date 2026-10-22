@@ -275,14 +275,22 @@ metrics) before it can be shown. There are three ways to see a circuit.
    files of `../out/manifest.json`; in Qollab, they are compiled by the backend.
    If nothing is found, a small example that is stored inside the page is used.
 2. **The load button** (*Cargar circuito*). A circuit written in OpenQASM 2 or 3
-   (`.qasm`) is chosen, compiled by the backend and added to the selector.
+   (`.qasm`) is chosen, compiled by the backend and added to the selector. The
+   button is disabled while Python compiles, and the previous circuit stays on
+   screen if the new one fails.
 3. **Drag and drop.** The same file is dropped anywhere on the page.
 
 Loading a circuit needs Python to compile it. In Qollab, the page calls the
 platform (`HOST.compileQasm`, see [the Qollab page](qollab.qmd)). Locally, run the
 server of the project, which compiles with the same code on the built-in
 simulator (see below). With a plain `python -m http.server` the viewer shows the
-examples, and loading a circuit says that the server cannot compile.
+examples, and the load button is disabled with a title that says so; a file that
+is dropped anyway gets the same explanation. The viewer asks the server with an
+`OPTIONS` request, which `make server` answers and a static server does not.
+
+The importer accepts a UTF-8 BOM before the header, which some Windows editors
+add, and the usual CRLF line endings. Only `.qasm`, `.qasm3` and `.txt` are
+accepted; anything else gets a message before it is sent to Python.
 
 A JSON file can be produced with the generator, which also writes the manifest.
 
@@ -298,7 +306,7 @@ The pages are served by a small local server, so that the shaders and the JSON
 files can be read.
 
 ```bash
-make outputs
+make outputs           # optional: `make server` generates out/ if it is missing
 make server            # or: make server PORT=9000
 make open              # like server, but also opens the browser
 # then open http://localhost:8000/source/frontend/index.html
@@ -540,8 +548,8 @@ The viewer reads only the fields of the contract. The fields that are used are
 ## The files of the viewer {.unnumbered}
 
 The viewer is a set of small ES modules, so that each file has one purpose.
-`source/frontend/index.html` holds only the markup and the style; the script starts at
-`source/frontend/js/main.js`.
+`source/frontend/index.html` holds only the markup, `source/frontend/styles.css`
+holds the style, and the script starts at `source/frontend/js/main.js`.
 
 | File | Purpose |
 | --- | --- |
@@ -555,7 +563,7 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/state.js` | The mutable state of the viewer, in one place. |
 | `js/utils.js` | Small helpers (`showStageMessage`, `escapeHtml`, `setError`). |
 | `js/demo.js` | The small example embedded in the page. |
-| `js/shaders.js` | Loads the eight shader sources (the spheres, the lens, the laser and the phonon bus). |
+| `js/shaders.js` | Loads the ten shader sources (the spheres, the lens, the laser, the phonon bus and the guide rail). |
 | `js/three-addons.js` | Loads the three.js addons, with a fallback. |
 | `js/laser.js` | Loads the laser model, and builds the volumetric beams and their colour. |
 | `js/phonon.js` | Builds the phonon bus, and runs the jiggle and the synchronized halo of a two-qubit gate. |
@@ -566,10 +574,13 @@ The viewer is a set of small ES modules, so that each file has one purpose.
 | `js/scene.js` | The scene, the camera, the render loop and the frame-rate counter. |
 | `js/panels.js` | The panels (probabilities, simulation details, step details), the fidelity and the measurement. |
 | `js/data.js` | Loads a visualization and moves through its steps. |
+| `js/files.js` | Pure helpers for the load flow: which file names are circuits and which manifest entry to show. |
+| `js/host.js` | The two services that need Python (compile and measure), through `window.QVIZ_HOST` or the local server, and the availability probe. |
 | `js/timeline.js` | The circuit timeline strip: builds the wires and gates, and marks the current step. It does not import `data.js` or `controls.js` (the controls wire the click). |
 | `js/selection.js` | The selection marker around the ions of the gate that the pointer is over in the timeline. |
 | `js/controls.js` | The playback bar (step buttons, play, reset, slider) and the drag and drop. |
 
 No module imports a module that imports it back, so the dependency graph is easy
-to follow. A headless test (a stub DOM and a stub `three`) runs the modules
-without a browser.
+to follow. The package tests check every module with `node --check`, run the pure
+helpers (`files.js`), the settings and the host bridge with Node, and bundle the
+modules the way Qollab does. The 3D scene itself is checked by hand in a browser.

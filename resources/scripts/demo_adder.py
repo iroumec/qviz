@@ -18,7 +18,8 @@ from qiskit.quantum_info import Operator
 from backend import compile, export
 from examples import qft, qft_adder
 
-OUT = Path("out")
+ROOT = Path(__file__).resolve().parent.parent.parent
+OUT = ROOT / "out"
 
 
 def _adder_input(count: int, a: int, b: int) -> QuantumCircuit:

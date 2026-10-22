@@ -1,0 +1,45 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste API keys, tokens or private data.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect and what did you get?
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it happen?
+      options:
+        - Qollab (built-in simulator)
+        - Qollab (IonQ backend)
+        - Local viewer (`make server`)
+        - Python API or tests
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. make server
+        2. Click "Cargar circuito"
+        3. Choose resources/examples/qasm/bell.qasm
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message or console output
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: output of `git rev-parse --short HEAD`

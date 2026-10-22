@@ -1,0 +1,13 @@
+# Keep the text files in LF, even when the repository is checked out on Windows.
+* text=auto eol=lf
+
+*.pdf binary
+*.png binary
+*.jpg binary
+*.gif binary
+
+*.obj text eol=lf
+*.mtl text eol=lf
+*.qasm text eol=lf
+*.frag text eol=lf
+*.vert text eol=lf

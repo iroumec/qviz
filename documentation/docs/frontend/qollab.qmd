@@ -42,8 +42,8 @@ is added as an optional hook (see below) or is generated at build time.
 
 ## What Qollab does and does not allow {.unnumbered}
 
-These facts come from the documentation of Qollab (`documentation/prompts/
-qollab_context.md`), and they decide the design.
+These facts come from the documentation of Qollab
+(`documentation/internal/qollab_context.md`), and they decide the design.
 
 | Fact | Consequence |
 | --- | --- |
@@ -70,7 +70,7 @@ The command runs `resources/scripts/package_qollab.py`, which writes the folder 
 | File | Where it comes from |
 | --- | --- |
 | `index.html` | The markup of the `<body>` of `source/frontend/index.html`, without the script. |
-| `main.css` | The `<style>` block of `source/frontend/index.html`, unchanged. |
+| `main.css` | `source/frontend/styles.css`, unchanged. |
 | `main.js` | A generated prelude (the Qollab services), then all the modules of `source/frontend/js` bundled in one script. |
 | `qollab_api.py`, `requirements.txt` | The files of the root. |
 | `source/backend/`, `resources/examples/` | The libraries. |
@@ -97,8 +97,9 @@ the host is ready when the modules read it.
    supported), the prelude keeps only its message and drops the traceback, so
    the `error` line shows a sentence a person can read. Any other error is shown
    as it is.
-2. **The files.** `source/shaders/` (`bloch`, `lens` and `laser`) and `resources/models/laser_lens.obj`
-   and `.mtl` are embedded as strings, because the viewer cannot `fetch` them.
+2. **The files.** `source/shaders/` (`bloch`, `lens`, `laser`, `bus` and `rail`) and
+   `resources/models/laser_lens.obj` and `.mtl` are embedded as strings, because
+   the viewer cannot `fetch` them.
 3. **The modules.** Each module of `source/frontend/js` becomes an `async` function with
    its own scope, in the order of their imports, and returns what it exports; the
    modules that import it destructure that object. Two modules may therefore
@@ -109,6 +110,14 @@ the host is ready when the modules read it.
    declaration, `import {…}` or `import * as x` from `./name.js`; `export
    default`, `export { … }` and default imports are rejected at build time.
 
+The generated `main.js` is about **0.5 MB**, and most of that is data, not code:
+the laser model is a text `.obj` of about **340 kB**, the shaders take about
+**20 kB**, and the bundled modules of the viewer take about **170 kB**. This is
+expected: Qollab does not serve the other files of the project, so they have to
+travel inside the one script that Qollab loads. The per-file limit of Qollab is
+2 MB, so there is room to grow. Do not edit or split `qollab/main.js`; change
+`source/frontend/` and run `make qollab`.
+
 ## The hooks of the viewer {.unnumbered}
 
 The viewer reads `window.QVIZ_HOST` once, as `HOST`. Every field is optional. When
@@ -116,7 +125,7 @@ a field is missing, the viewer does what it always did.
 
 | Field | Type | What the viewer does with it |
 | --- | --- | --- |
-| `shaders` | `{vert, frag, lensVert, lensFrag, laserVert, laserFrag}` | Uses these sources, instead of fetching `source/shaders/`. |
+| `shaders` | `{vert, frag, lensVert, lensFrag, laserVert, laserFrag, busVert, busFrag, railVert, railFrag}` | Uses these sources, instead of fetching `source/shaders/`. |
 | `laser` | `{obj, mtl}` | Parses this text for the laser model, instead of fetching `resources/models/`. |
 | `circuits` | `[{file, label}]` | Lists them in the selector, instead of reading `out/manifest.json`. |
 | `load` | `async (file) -> object` | Gets the JSON of an entry of the selector, instead of fetching `out/<file>`. |
@@ -190,9 +199,12 @@ Locally, the generated `main.js` was run with the real Python and a simulated
 page (jsdom, with no WebGL), and the measurement panel gave the expected results
 with the backend, without a sampler in the host, and when the backend fails.
 
-**Verified in Qollab (2026-10-11):** the team ran the current package and
+**Verified in Qollab (2026-10-11):** the team ran the package of that date and
 everything works: the `three/addons/` imports, the 3D scene, the timeline strip, the
-view and accessibility panel, measurement and loading circuits.
+view and accessibility panel, measurement and loading circuits. The packaging
+change of 2026-10-22 (the style moved to `source/frontend/styles.css`, which
+`make qollab` copies to `main.css`) passes the local tests, but it has not been
+re-uploaded to Qollab yet; re-test it before the next release.
 
 ## Rules for future changes {.unnumbered}
 

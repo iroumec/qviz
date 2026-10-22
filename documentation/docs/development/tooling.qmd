@@ -18,8 +18,10 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | `make install` | Installs the package in editable mode with the development extras (`pytest`, `jsonschema`, `flake8`, `pydocstyle`). |
 | `make install-requirements` | Installs `requirements.txt`, the list that Qollab reads. |
 | `make test` | Runs the whole suite with `pytest source/tests/ -v`. |
-| `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests. |
+| `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests, and `node --check` on the viewer modules. |
+| `make lint-js` | Runs `node --check` on every viewer module (skipped when Node is not installed). |
 | `make demo M=<module>` | Runs `resources/scripts/demo_<module>.py`. |
+| `make verify` | Runs the tests, the linters and the Qollab package build, the same checks as CI. |
 
 ### Producing and serving {.unnumbered}
 
@@ -27,7 +29,7 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | --- | --- |
 | `make outputs` | Writes the example JSON files and `manifest.json` to `out/`. |
 | `make qollab` | Builds `qollab/`, the JS project to upload to Qollab. |
-| `make server` | Serves the viewer at `http://localhost:8000` with compiling and measuring in Python (`PORT=9000` changes the port). |
+| `make server` | Serves the viewer at `http://localhost:8000` with compiling and measuring in Python (`PORT=9000` changes the port). It generates `out/` on the first run. |
 | `make open` | Like `server`, and also opens the browser. |
 | `make resume` | Shows the branch, the last commits, the unpushed changes and the pending list of `memory.md`. |
 
@@ -66,13 +68,14 @@ The scripts in `resources/scripts/` are tools, not part of the library. They may
 
 ## Continuous integration {.unnumbered}
 
-`.github/workflows/ci.yml` has two jobs, on every push to `main` and `development`
+`.github/workflows/ci.yml` has three jobs, on every push to `main` and `development`
 and on every pull request.
 
 | Job | Steps |
 | --- | --- |
-| Lint | `flake8` and `pydocstyle`, with the same arguments as `make lint`. |
-| Tests | `pip install -e ".[dev]"`, then `pytest`, on Python 3.12 and 3.13. |
+| Lint | `flake8` and `pydocstyle` (as `make lint`), `node --check` on the viewer modules, and `resources/scripts/package_qollab.py`. |
+| Tests | `pip install -e ".[dev]"`, then `pytest`, on Python 3.12, 3.13 and 3.14. |
+| Documentation | `quarto render documentation --to html`. |
 
 A new run of the same branch cancels the previous one. The token has read-only
 permissions. Because the workflow repeats the Makefile commands, a change that
@@ -135,8 +138,8 @@ because the team is.
 | `memory.md` | The hand-over: current state, decisions, pending items and the history. It is updated after each change and a test keeps it under 150 lines. |
 
 At the start of a session the agent pulls, reads `memory.md` and runs
-`make resume`. At the end it runs `make test` and `make lint`, brings `memory.md`
-up to date and, only if the team asks, commits and pushes.
+`make resume`. At the end it runs `make verify`, brings `memory.md` up to date
+and, only if the team asks, commits and pushes.
 
 ## The tests of the project itself {.unnumbered}
 
@@ -153,8 +156,7 @@ Some tests do not check behaviour. They check that the project stays coherent.
 
 A short list that applies to any change.
 
-- [ ] `make test` is green.
-- [ ] `make lint` is green.
+- [ ] `make verify` is green (tests, linters and the Qollab package).
 - [ ] If the viewer, `qollab_api.py` or the packager changed: `make qollab`.
 - [ ] The affected chapter of this book is updated.
 - [ ] `memory.md` has the new state and a line of history.

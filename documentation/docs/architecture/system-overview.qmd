@@ -91,7 +91,7 @@ first one.
 | No job is sent to paid hardware by accident. | `tomography.measure` raises unless `allow_paid=True` for a hardware backend. |
 | Anything that Python returns to JavaScript is text. | `qollab_api` returns JSON strings, and a test checks the prelude against the functions that exist. |
 | The viewer runs without Qollab. | Every Qollab service is read as `HOST.<name>` with a fallback. |
-| The project fits in Qollab. | `package_qollab.py` builds a project of 52 files (the limit is 100), and a test checks the limits. |
+| The project fits in Qollab. | `package_qollab.py` builds a project of 53 files (the limit is 100), and a test checks the limits. |
 
 ## What is not connected {.unnumbered}
 

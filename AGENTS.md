@@ -5,9 +5,11 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 **Antes de tocar código leé:**
 
 - `memory.md`: el estado actual del proyecto, lo decidido y los pendientes. Es el traspaso entre sesiones (`CLAUDE.md` lo importa). Si algo contradice a `spec.md`, manda `spec.md` y se corrige `memory.md`.
-- `documentation/prompts/spec.md` (en adelante `spec.md`): arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
-- `documentation/prompts/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
+- `documentation/internal/spec.md` (en adelante `spec.md`): arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
+- `documentation/internal/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
+
+Las notas internas, el `spec.md` y los prompts de IA viven en `documentation/internal/` y **son públicos a propósito** (decisión del usuario, 2026-10-22): no se borran ni se sacan del repo. `AGENTS.md`, `CLAUDE.md` y `memory.md` quedan en la raíz porque los agentes los leen de ahí.
 
 **Alcance: backend (Python) y frontend (JS, HTML, CSS).** El visor se puede cambiar sin pedir aprobación, siguiendo las reglas de "El visor y Qollab".
 
@@ -76,11 +78,11 @@ provider → transpiler → translator → simulator → vectorizer → metrics 
 
 ### El visor y Qollab
 
-El visor (`source/frontend/index.html`). Guía completa: `documentation/docs/frontend/qollab.qmd`.
+El visor (`source/frontend/index.html` y `source/frontend/styles.css`). Guía completa: `documentation/docs/frontend/qollab.qmd`.
 
 - Tiene que seguir funcionando solo, servido con `python -m http.server`.
 - Lo que Qollab necesita entra como **hooks opcionales** (`window.QVIZ_HOST`: `shaders`, `laser`, `circuits`, `load`, `sample`, `compileQasm`), que el visor lee con un respaldo si faltan, o se genera al construir el paquete (`resources/scripts/package_qollab.py`). Nunca se reescribe el visor para Qollab.
-- `make qollab` arma `qollab/` (proyecto JS de 51 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. No edites `qollab/`.
+- `make qollab` arma `qollab/` (proyecto JS de 53 archivos; el repo entero supera el límite de 100). Se sube el **contenido**. No edites `qollab/`.
 - Qollab no ejecuta los `<script>` del HTML, solo carga `main.css` y el JS no lee archivos del proyecto: por eso el paquete embebe los shaders y el modelo del láser, y toma los circuitos de Python.
 - Versiones de Qollab (medidas el 2026-10-10): Pyodide v314.0.7, qiskit 2.5.2, qiskit-ionq 1.0.2, numpy 2.4.6. El código tiene que funcionar con qiskit-ionq ≥ 1.0.0.
 - Después de cambiar el visor, `qollab_api.py` o el paquete: `make test`, `make qollab`, subir y, si algo falla, la página de diagnóstico.
@@ -104,9 +106,11 @@ El visor (`source/frontend/index.html`). Guía completa: `documentation/docs/fro
 make venv          # crea .venv
 make install       # instala el paquete + extras de dev
 make test          # corre pytest
+make verify        # tests + linters + paquete de Qollab (lo mismo que el CI)
 make demo M=translator   # corre resources/scripts/demo_translator.py
 make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
 make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
+make outputs       # genera out/ con los circuitos de ejemplo (make server lo hace si falta)
 make server        # el visor en http://localhost:8000 con compilar y medir en Python, sin Qollab (PORT=9000)
 make open          # como server, pero además abre el navegador
 ```
@@ -138,7 +142,7 @@ El chat se vacía entre sesiones; el repositorio no. Por eso:
 - **Mantenelo corto** (máx. ~150 líneas, un test lo comprueba): resumí y borrá lo viejo. El diseño va en `spec.md` y las guías en `documentation/`; en `memory.md` solo lo que alguien necesita para retomar.
 - Sin secretos ni datos personales. Si el usuario dice algo que importa para el futuro (una preferencia, una aprobación, una decisión), anotalo ahí.
 - Si usás una memoria propia fuera del repo, no reemplaza a este archivo: es la que ven todos los agentes y el equipo.
-- **Cierre de sesión:** `make test` y `make lint` en verde, `memory.md` al día y, si el usuario lo pidió, commit y push (pull antes).
+- **Cierre de sesión:** `make verify` en verde, `memory.md` al día y, si el usuario lo pidió, commit y push (pull antes).
 
 ## 7. Fuera de alcance (no lo hagas)
 

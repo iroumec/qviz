@@ -84,7 +84,7 @@ backend you select in Qollab. Use **Cargar circuito** (*Load circuit*), or drag 
 
 ```bash
 make venv && make install
-make test       # 427 tests
+make test       # 437 tests
 make server     # the viewer at http://localhost:8000
 make open       # like server, but it opens the browser for you
 ```
@@ -99,7 +99,7 @@ measure the current step.
   Audio API and Quarto.
 - **Limits:** up to 16 qubits; IonQ and the built-in simulator only; one IonQ job
   per run on Qollab (loaded circuits never spend it).
-- **Documentation:** the Quarto book in `documentation/`, and `documentation/prompts/spec.md` for the
+- **Documentation:** the Quarto book in `documentation/`, and `documentation/internal/spec.md` for the
   architecture and the JSON contract.
 - **License:** MIT. Dependencies: Qiskit, qiskit-ionq and qiskit-qasm3-import
   (Apache-2.0), NumPy (BSD-3-Clause).

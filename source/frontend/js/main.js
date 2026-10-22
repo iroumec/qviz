@@ -2,8 +2,9 @@
 // builds the scene and loads the first visualization.
 
 import { initCameraPad } from "./camerapad.js";
+import { canCompile } from "./host.js";
 import { initControls } from "./controls.js";
-import { loadManifest } from "./data.js";
+import { loadManifest, setCompileAvailable } from "./data.js";
 import { initPanels } from "./panels.js";
 import { animate, applyViewToScene, initThree } from "./scene.js";
 import { initSettings, subscribe } from "./settings.js";
@@ -21,5 +22,8 @@ initCameraPad();
 (async function start() {
   const ready = await initThree();
   if (ready) requestAnimationFrame(animate);
+  // The probe is not awaited: it only disables the load button when the page
+  // has no Python, and it must not delay the first circuit.
+  canCompile().then(setCompileAvailable);
   await loadManifest();
 })();
