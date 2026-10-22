@@ -15,8 +15,11 @@ All notable changes to QViz are recorded here. The format follows
 - `sample_step` caches the distribution of a step, so measuring the same step
   again does not rebuild and simulate the circuit.
 - A light theme for the interface, next to dark, in the accessibility panel.
-- The circuit timeline is built only when it is shown, and the visualization
-  contract is checked by a pure, tested helper.
+- The circuit timeline is built only when it is shown; long circuits are windowed
+  (only the columns near the viewport are in the document).
+- The visualization contract is checked by a pure, tested helper.
+- The README tool icons are vendored under `documentation/images/tools/` and a
+  test checks that every local image exists.
 
 - `CONTRIBUTING.md`, `.editorconfig`, issue and pull-request templates, and
   `make verify` (tests, linters and the Qollab package in one command).

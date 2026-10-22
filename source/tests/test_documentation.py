@@ -8,6 +8,7 @@ from pathlib import Path
 _ROOT = Path(__file__).parent.parent.parent
 _DOCS = _ROOT / "documentation"
 _LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+_IMAGE = re.compile(r'<img\s[^>]*src="([^"]+)"')
 _IGNORED = (".venv", "_book", ".quarto", ".git")
 
 
@@ -68,3 +69,14 @@ def test_every_chapter_listed_in_the_quarto_config_exists():
     assert chapters
     missing = [name for name in chapters if not (_DOCS / name).is_file()]
     assert not missing, missing
+
+
+def test_every_local_image_of_the_documentation_exists():
+    missing = []
+    for path in _text_files():
+        for source in _IMAGE.findall(path.read_text(encoding="utf-8")):
+            if "://" in source or source.startswith("data:"):
+                continue
+            if not (path.parent / source).resolve().exists():
+                missing.append(f"{path.relative_to(_ROOT)} -> {source}")
+    assert not missing, "\n".join(sorted(missing))

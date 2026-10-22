@@ -441,8 +441,10 @@ kept in the browser).
 ## The circuit timeline {.unnumbered}
 
 A strip between the scene and the playback bar shows the **transpiled circuit**.
-It is built only when it is first shown, so a hidden strip costs nothing even for
-a long circuit.
+It is built only when it is first shown, and a circuit of more than 250 steps is
+**windowed**: only the columns near the viewport are in the document, and they are
+replaced while the strip scrolls. A hidden strip costs nothing, and a 676-step
+circuit does not put thousands of nodes in the page.
 
 one wire per qubit and one column per step, with the native gates in order
 (GPI, GPI2, MS, ZZ and VirtualZ as a dashed `Z`), in the palette of the interface:

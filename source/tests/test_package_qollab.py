@@ -416,6 +416,32 @@ console.log(JSON.stringify({{
     assert got["visuals"] == [True, False, False, False, False]
 
 
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_timeline_only_builds_a_window_of_columns(tmp_path):
+    timeline = _ROOT / "source" / "frontend" / "js" / "timeline.js"
+    script = tmp_path / "timeline.mjs"
+    script.write_text(
+        f"""
+globalThis.window = {{ QVIZ_HOST: {{}} }};
+globalThis.document = {{ documentElement: {{ lang: "en" }} }};
+const t = await import({_js_url(timeline)});
+console.log(JSON.stringify([
+  t.windowRange(0, 1000, 38, 1000),
+  t.windowRange(38000, 1000, 38, 1000),
+  t.windowRange(0, 1000, 38, 50),
+]));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got[0] == [0, 147]
+    assert got[1] == [880, 999]
+    assert got[2] == [0, 49]
+
+
 def test_the_view_panel_reaches_the_package_without_import_cycles(packaged):
     out, _ = packaged
     html = (out / "index.html").read_text(encoding="utf-8")

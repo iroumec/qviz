@@ -100,7 +100,7 @@ Generated and ignored: `out/`, `qollab/`, `_book/`, `node_modules/`.
 make verify   # tests with coverage, linters and the Qollab package
 ```
 
-448 tests pass, 1 is skipped, and `source/backend` has 96 % coverage
+450 tests pass, 1 is skipped, and `source/backend` has 96 % coverage
 (`make coverage`). The last full run used Python 3.13.5, Qiskit 2.5.2 and
 NumPy 2.5.3. See [versions](documentation/docs/getting-started/installation.qmd).
 
@@ -123,109 +123,109 @@ Built with:
 <table>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/python/python-original.svg" alt="Python" width="40" height="40" />
+            <img src="documentation/images/tools/python.svg" alt="Python" width="40" height="40" />
             <br/>Python
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40" />
+            <img src="documentation/images/tools/javascript.svg" alt="JavaScript" width="40" height="40" />
             <br/>JavaScript
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/html5/html5-original.svg" alt="HTML" width="40" height="40" />
+            <img src="documentation/images/tools/html5.svg" alt="HTML" width="40" height="40" />
             <br/>HTML
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/css3/css3-original.svg" alt="CSS" width="40" height="40" />
+            <img src="documentation/images/tools/css3.svg" alt="CSS" width="40" height="40" />
             <br/>CSS
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/numpy/numpy-original.svg" alt="NumPy" width="40" height="40" />
+            <img src="documentation/images/tools/numpy.svg" alt="NumPy" width="40" height="40" />
             <br/>NumPy
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/qiskit/a56eff" alt="Qiskit" width="40" height="40" />
+            <img src="documentation/images/tools/qiskit.svg" alt="Qiskit" width="40" height="40" />
             <br/>Qiskit
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/threejs/threejs-original.svg" alt="three.js" width="40" height="40" />
+            <img src="documentation/images/tools/threejs.svg" alt="three.js" width="40" height="40" />
             <br/>three.js
         </td>
     </tr>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/nodejs/nodejs-original.svg" alt="Node.js" width="40" height="40" />
+            <img src="documentation/images/tools/nodejs.svg" alt="Node.js" width="40" height="40" />
             <br/>Node.js
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/pnpm/pnpm-original.svg" alt="pnpm" width="40" height="40" />
+            <img src="documentation/images/tools/pnpm.svg" alt="pnpm" width="40" height="40" />
             <br/>pnpm
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/eslint/eslint-original.svg" alt="ESLint" width="40" height="40" />
+            <img src="documentation/images/tools/eslint.svg" alt="ESLint" width="40" height="40" />
             <br/>ESLint
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/pytest/pytest-original.svg" alt="pytest" width="40" height="40" />
+            <img src="documentation/images/tools/pytest.svg" alt="pytest" width="40" height="40" />
             <br/>pytest
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/make/9aa4b2" alt="Makefile" width="40" height="40" />
+            <img src="documentation/images/tools/make.svg" alt="Makefile" width="40" height="40" />
             <br/>Makefile
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/bash/bash-original.svg" alt="Bash" width="40" height="40" />
+            <img src="documentation/images/tools/bash.svg" alt="Bash" width="40" height="40" />
             <br/>Bash
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/uv/de5fe9" alt="uv" width="40" height="40" />
+            <img src="documentation/images/tools/uv.svg" alt="uv" width="40" height="40" />
             <br/>uv
         </td>
     </tr>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/git/git-original.svg" alt="Git" width="40" height="40" />
+            <img src="documentation/images/tools/git.svg" alt="Git" width="40" height="40" />
             <br/>Git
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/github/github-original.svg" alt="GitHub" width="40" height="40" />
+            <img src="documentation/images/tools/github.svg" alt="GitHub" width="40" height="40" />
             <br/>GitHub
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/githubactions/githubactions-original.svg" alt="GitHub Actions" width="40" height="40" />
+            <img src="documentation/images/tools/githubactions.svg" alt="GitHub Actions" width="40" height="40" />
             <br/>GitHub Actions
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/vscode/vscode-original.svg" alt="Visual Studio Code" width="40" height="40" />
+            <img src="documentation/images/tools/vscode.svg" alt="Visual Studio Code" width="40" height="40" />
             <br/>VS Code
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://plantuml.com/favicon.ico" alt="PlantUML" width="40" height="40" />
+            <img src="documentation/images/tools/plantuml.ico" alt="PlantUML" width="40" height="40" />
             <br/>PlantUML
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://quarto.org/favicon.png" alt="Quarto" width="40" height="40" />
+            <img src="documentation/images/tools/quarto.png" alt="Quarto" width="40" height="40" />
             <br/>Quarto
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/typst/3fb6c4" alt="Typst" width="40" height="40" />
+            <img src="documentation/images/tools/typst.svg" alt="Typst" width="40" height="40" />
             <br/>Typst
         </td>
     </tr>
     <tr>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini" width="40" height="40" />
+            <img src="documentation/images/tools/gemini.svg" alt="Gemini" width="40" height="40" />
             <br/>Gemini
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/claude/D97757" alt="Claude Code" width="40" height="40" />
+            <img src="documentation/images/tools/claude.svg" alt="Claude Code" width="40" height="40" />
             <br/>Claude Code
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://opencode.ai/favicon.ico" alt="OpenCode" width="40" height="40" />
+            <img src="documentation/images/tools/opencode.ico" alt="OpenCode" width="40" height="40" />
             <br/>OpenCode
         </td>
         <td align="center" width="96" style="background: transparent; border: none;">
-            <img src="https://cdn.simpleicons.org/deepseek/4D6BFE" alt="DeepSeek" width="40" height="40" />
+            <img src="documentation/images/tools/deepseek.svg" alt="DeepSeek" width="40" height="40" />
             <br/>DeepSeek
         </td>
     </tr>

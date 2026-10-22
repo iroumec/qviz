@@ -84,7 +84,7 @@ backend you select in Qollab. Use **Load circuit** (*Load circuit*), or drag a
 
 ```bash
 make venv && make install
-make test       # 448 tests
+make test       # 450 tests
 make server     # the viewer at http://localhost:8000
 make open       # like server, but it opens the browser for you
 ```
