@@ -26,7 +26,10 @@ const TEXT = isEnglish()
     };
 
 // The elements of the current circuit, rebuilt by `buildTimeline`.
-const view = { gates: [], names: [], wires: [], playhead: null, scroll: null, holdUntil: 0, picked: false };
+const view = {
+  gates: [], names: [], wires: [], playhead: null, scroll: null,
+  holdUntil: 0, picked: false, pending: null,
+};
 
 // While the user drives the strip (its scrollbar, a drag or the wheel), playing
 // must not pull it back to the current step; the strip is left alone until a
@@ -98,6 +101,12 @@ export function initTimeline(select) {
     const open = document.getElementById("timeline").classList.contains("collapsed");
     setOpen(open);
     store(STORAGE_KEY, open ? "1" : "0");
+    // The strip is built only when it is first shown, so a long circuit does not
+    // pay for a hidden one.
+    if (open && view.pending) {
+      buildTimeline(view.pending);
+      highlightStep(state.stepIndex);
+    }
   });
   const zoomIn = document.getElementById("timelineZoomIn");
   const zoomOut = document.getElementById("timelineZoomOut");
@@ -130,11 +139,17 @@ export function buildTimeline(data) {
   const body = document.getElementById("timelineBody");
   const count = data.total_qubits;
   const steps = data.steps;
-  body.innerHTML = "";
   view.gates = [];
   view.names = [];
   view.wires = [];
   view.playhead = null;
+  if (document.getElementById("timeline").classList.contains("collapsed")) {
+    view.pending = data;
+    body.innerHTML = `<p class="tl-empty">${TEXT.empty}</p>`;
+    return;
+  }
+  view.pending = null;
+  body.innerHTML = "";
   if (steps.length === 0) {
     body.innerHTML = `<p class="tl-empty">${TEXT.empty}</p>`;
     return;

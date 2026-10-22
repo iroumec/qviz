@@ -98,6 +98,9 @@ const DETAIL_LEVELS = { outline: 0, simple: 1, full: 2 };
  */
 export function applyViewToScene() {
   const view = state.view;
+  // The theme is a class on the document, so it applies before the renderer
+  // exists and does not need the 3D scene.
+  document.documentElement.classList.toggle("theme-light", view.theme === "light");
   const { renderer, scene, groups, instMesh } = state.three;
   if (!renderer || !view.palette) return;
 

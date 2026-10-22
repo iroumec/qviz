@@ -348,6 +348,7 @@ page; the file selector, the load button and the measurement are at the top.
 | Slider | Jumps directly to a step. Step 0 is the initial state. |
 | Step counter | Shows the current step and the total (`step 3 / 24`). |
 | Measure | Pauses the simulation, measures the step on screen and shows the distribution of the results, with the sound of the readout. |
+| Language | Switches between Spanish and English. The choice is kept in the browser and the page reloads. |
 | shots | The number of shots used by Measure (1024 by default). The `−` and `+` buttons beside it change it by one. |
 | Drag (left button) | Rotates the camera around the chain. |
 | Drag (right button) | Moves the camera in the plane of the screen; the menu of the browser does not open. |
@@ -395,8 +396,10 @@ The options are in five sections:
   of the lights, the brightness of the vertical lasers and of the global beam (to
   see them dimmer without hiding them, which *What is shown* does) and the
   reduced motion.
-- **Interfaz.** The size of the text (90 to 130 %, which also widens the side
-  panels) and a stronger text and border contrast.
+- **Interface.** The size of the text (90 to 130 %, which also widens the side
+  panels), a stronger text and border contrast, and the theme (dark or light).
+  The light theme changes the interface only; the 3D scene keeps its dark
+  background.
 
 The choice is kept in the browser (`localStorage`, key `qviz.view`); without
 storage the viewer starts with the defaults and works the same. `settings.js`
@@ -437,7 +440,10 @@ kept in the browser).
 
 ## The circuit timeline {.unnumbered}
 
-A strip between the scene and the playback bar shows the **transpiled circuit**:
+A strip between the scene and the playback bar shows the **transpiled circuit**.
+It is built only when it is first shown, so a hidden strip costs nothing even for
+a long circuit.
+
 one wire per qubit and one column per step, with the native gates in order
 (GPI, GPI2, MS, ZZ and VirtualZ as a dashed `Z`), in the palette of the interface:
 plum boxes for the single-qubit gates, neon rose for the entanglers (like the badge

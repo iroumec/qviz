@@ -10,6 +10,13 @@ All notable changes to QViz are recorded here. The format follows
 
 - A language button in the viewer: it switches between Spanish and English,
   stores the choice and applies it by reloading the page.
+- The tools table is back in the README, updated with Node.js, pnpm and ESLint.
+- Node tests for the language button and for the Qollab language bootstrap.
+- `sample_step` caches the distribution of a step, so measuring the same step
+  again does not rebuild and simulate the circuit.
+- A light theme for the interface, next to dark, in the accessibility panel.
+- The circuit timeline is built only when it is shown, and the visualization
+  contract is checked by a pure, tested helper.
 
 - `CONTRIBUTING.md`, `.editorconfig`, issue and pull-request templates, and
   `make verify` (tests, linters and the Qollab package in one command).

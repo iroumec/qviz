@@ -8,6 +8,7 @@
 import { state } from "./state.js";
 
 const STORAGE_KEY = "qviz.view";
+const THEMES = ["dark", "light"];
 const STORAGE_VERSION = 1;
 
 /** The palettes of the sphere. The colours are `#rrggbb`, shown as they are. */
@@ -73,6 +74,7 @@ export const DEFAULT_VIEW = {
   soundVolume: 0.5, // between 0 and 1
   textScale: 1, // the size of the text of the panels
   uiContrast: false,
+  theme: "dark", // the theme of the interface: "dark" or "light"
 };
 
 /** What each profile changes with respect to the defaults. */
@@ -152,6 +154,7 @@ function sanitize(saved) {
     if (key in DEFAULT_VIEW && typeof value === typeof DEFAULT_VIEW[key]) view[key] = value;
   }
   if (view.palette && !PALETTES[view.palette]) delete view.palette;
+  if (view.theme && !THEMES.includes(view.theme)) delete view.theme;
   return view;
 }
 

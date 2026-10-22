@@ -71,6 +71,23 @@ def test_run_returns_json_text(basic_backend):
     assert json.loads(text)["total_qubits"] == 2
 
 
+def test_sample_step_caches_the_distribution_of_a_step(basic_backend, monkeypatch):
+    text = run(basic_backend, "bell", 256)
+    qollab_api._IDEAL_CACHE.clear()
+    calls = []
+    original = qollab_api.probabilities
+
+    def counting(data, step):
+        calls.append(step)
+        return original(data, step)
+
+    monkeypatch.setattr(qollab_api, "probabilities", counting)
+    first = qollab_api.sample_step(text, 1, 128)
+    second = qollab_api.sample_step(text, 1, 128)
+    assert len(calls) == 1
+    assert json.loads(first) and json.loads(second)
+
+
 def test_sample_step_returns_json_counts(basic_backend):
     text = run(basic_backend, "bell", 256)
     reply = sample_step(text, 0, 300)

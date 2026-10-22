@@ -112,6 +112,10 @@ const SECTIONS = [
         options: [[0.9, "90 %"], [1, "100 %"], [1.15, "115 %"], [1.3, "130 %"]],
       },
       { key: "uiContrast", type: "check", label: t("Texto y bordes más marcados", "Stronger text and borders") },
+      {
+        key: "theme", type: "select", label: t("Tema", "Theme"),
+        options: [["dark", t("Oscuro", "Dark")], ["light", t("Claro", "Light")]],
+      },
     ],
   },
 ];

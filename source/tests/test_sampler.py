@@ -168,3 +168,11 @@ def test_too_wide_data_is_rejected(bell_data):
     data["total_qubits"] = config.MAX_QUBITS + 1
     with pytest.raises(QVizError, match="qubits"):
         sample(data, 0, 10)
+
+
+def test_sample_accepts_a_precomputed_distribution(bell_data):
+    step = len(bell_data["steps"])
+    ideal = sampler.probabilities(bell_data, step)
+    assert sample(bell_data, step, 500, seed=_SEED) == sample(
+        bell_data, step, 500, seed=_SEED, ideal=ideal
+    )

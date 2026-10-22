@@ -146,7 +146,12 @@ def probabilities(data: Mapping, step: int) -> np.ndarray:
 
 
 def sample(
-    data: Mapping, step: int, shots: int = 1024, *, seed: int | None = None
+    data: Mapping,
+    step: int,
+    shots: int = 1024,
+    *,
+    seed: int | None = None,
+    ideal: np.ndarray | None = None,
 ) -> dict[str, int]:
     """Measure all qubits ``shots`` times after ``step`` operations.
 
@@ -155,7 +160,9 @@ def sample(
     correlations of entanglement are kept, and each qubit is then flipped with the
     read-out error of that step (see ``_noise_flip_probabilities``). Returns the
     counts per bitstring, qubit 0 on the right, most frequent first. The same
-    ``seed`` gives the same counts.
+    ``seed`` gives the same counts. ``ideal`` may be a distribution already
+    computed with :func:`probabilities`, which avoids a full simulation when a
+    step is measured again.
     """
     if isinstance(shots, bool) or not isinstance(shots, int):
         raise QVizError(f"shots must be an integer, got {shots!r}")
@@ -164,7 +171,11 @@ def sample(
             f"shots must be between 1 and {config.MAX_SAMPLE_SHOTS}, got {shots}"
         )
 
-    ideal = probabilities(data, step)
+    # ``ideal`` can be passed by a caller that caches the distribution of a step
+    # (the Qollab bridge does, because measuring the same step twice would
+    # otherwise rebuild and simulate the whole circuit again).
+    if ideal is None:
+        ideal = probabilities(data, step)
     num_qubits = round(math.log2(len(ideal)))
     flips = _noise_flip_probabilities(data, step, num_qubits)
 

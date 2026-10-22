@@ -285,3 +285,18 @@
     18%  { opacity: 1; transform: translate(-50%, -2px) scale(1.1); }
     100% { opacity: 0; transform: translate(-50%, -36px) scale(1); }
   }
+
+/* A light interface around the same dark 3D scene. The variables that the
+   panels, the bars and the buttons already use are enough for the whole UI; the
+   canvas keeps its own dark background. */
+:root.theme-light {
+  --bg: #f2f3f5; --panel: #ffffff; --panel-2: #e9ebef;
+  --text: #17161a; --muted: #5b5560; --accent: #c2185b; --target: #c2185b;
+  --border: #c9ccd4;
+}
+:root.theme-light .camera-pad { background: rgba(255, 255, 255, 0.88); }
+:root.theme-light .view-panel,
+:root.theme-light .measure-panel,
+:root.theme-light .error-card { box-shadow: 0 10px 34px rgba(0, 0, 0, 0.18); }
+:root.theme-light .tl-gate.op-1q { background: #d8c7dd; color: #17161a; }
+:root.theme-light .op-badge.op-vz { background: #d8c7dd; color: #17161a; }

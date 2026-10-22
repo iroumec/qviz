@@ -93,6 +93,11 @@ The reply is a list of pairs and not an object on purpose. JavaScript sorts the
 integer-like keys of an object (`"10"` and `"11"` come before `"00"`), so the
 order of the counts would be lost.
 
+`sample_step` caches the ideal distribution of the last few steps, keyed by the
+visualization text and the step. Measuring the same step again (the common case
+when a person presses *Measure* several times) reuses it instead of rebuilding
+and simulating the whole circuit, which matters at 16 qubits.
+
 No job is sent when a step is measured, so the rule of one job per run is not
 affected on the IonQ backends.
 

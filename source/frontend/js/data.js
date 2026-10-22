@@ -8,7 +8,7 @@ import { gateRotation, makeMotion, wrapAngle } from "./motion.js";
 import { playGateSound, stopGateSounds } from "./sound.js";
 import { compileQasm } from "./host.js";
 import { DEMO } from "./demo.js";
-import { defaultFile, isCircuitFile, manifestEntries } from "./files.js";
+import { defaultFile, isCircuitFile, isVisualization, manifestEntries } from "./files.js";
 import { state } from "./state.js";
 import { clearErrorCard, reportError, setError, setStatus, t } from "./utils.js";
 import { buildScene, updatePerf } from "./scene.js";
@@ -31,8 +31,7 @@ function initialState(n) {
 
 /** Load a visualization object, rebuild the scene and show step 0. */
 export function loadData(obj) {
-  if (!obj || !Array.isArray(obj.steps) || !Number.isInteger(obj.total_qubits)
-      || obj.total_qubits < 1) {
+  if (!isVisualization(obj)) {
     throw new Error(t(
       "El JSON no tiene el contrato esperado (backend/steps).",
       "The JSON does not have the expected contract (backend/steps)."

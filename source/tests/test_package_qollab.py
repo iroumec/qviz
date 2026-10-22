@@ -126,6 +126,11 @@ def test_every_service_of_the_prelude_is_used_by_the_viewer(module):
     assert "shaders:" in prelude and "HOST.shaders" in viewer
 
 
+def test_the_qollab_prelude_applies_the_saved_language(module):
+    assert "qviz.lang" in module._PRELUDE
+    assert "document.documentElement.lang" in module._PRELUDE
+
+
 def test_every_python_function_of_the_prelude_exists_in_the_api(module):
     import qollab_api
 
@@ -309,6 +314,67 @@ console.log(JSON.stringify({{
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_language_button_stores_the_choice_and_reloads(tmp_path):
+    language = _ROOT / "source" / "frontend" / "js" / "language.js"
+    script = tmp_path / "language.mjs"
+    script.write_text(
+        f"""
+function stub(lang) {{
+  const store = {{}};
+  const state = {{ reloaded: false }};
+  const button = {{
+    textContent: "", title: "", lang: "", attrs: {{}},
+    setAttribute: (key, value) => {{ button.attrs[key] = value; }},
+    getAttribute: (key) => button.attrs[key],
+    addEventListener: (type, handler) => {{ button.click = handler; }},
+  }};
+  globalThis.document = {{
+    documentElement: {{ lang }},
+    getElementById: (id) => (id === "langToggle" ? button : null),
+  }};
+  globalThis.window = {{
+    localStorage: {{
+      getItem: (key) => (key in store ? store[key] : null),
+      setItem: (key, value) => {{ store[key] = value; }},
+    }},
+    location: {{ reload: () => {{ state.reloaded = true; }} }},
+  }};
+  return {{ button, store, state }};
+}}
+
+const spanish = stub("es");
+const {{ initLanguage }} = await import({_js_url(language)} + "?es");
+initLanguage();
+const beforeEs = [
+  spanish.button.textContent, spanish.button.lang, spanish.button.attrs["aria-label"],
+];
+spanish.button.click();
+const afterEs = [
+  spanish.store["qviz.lang"], document.documentElement.lang, spanish.state.reloaded,
+];
+
+const english = stub("en");
+initLanguage();
+const beforeEn = [english.button.textContent, english.button.lang];
+english.button.click();
+const afterEn = [
+  english.store["qviz.lang"], document.documentElement.lang, english.state.reloaded,
+];
+console.log(JSON.stringify({{ beforeEs, afterEs, beforeEn, afterEn }}));
+""",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    got = json.loads(result.stdout.strip().splitlines()[-1])
+    assert got["beforeEs"] == ["English", "en", "Switch to English"]
+    assert got["afterEs"] == ["en", "en", True]
+    assert got["beforeEn"] == ["Español", "es"]
+    assert got["afterEn"] == ["es", "es", True]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_the_file_helpers_accept_only_circuits_and_pick_a_valid_default(tmp_path):
     files = _ROOT / "source" / "frontend" / "js" / "files.js"
     script = tmp_path / "files.mjs"
@@ -328,6 +394,13 @@ console.log(JSON.stringify({{
   entries: f.manifestEntries({{
     files: [{{ file: "a" }}, null, {{}}, {{ file: "" }}] }}),
   noManifest: f.manifestEntries(null),
+  visuals: [
+    f.isVisualization({{ total_qubits: 2, steps: [] }}),
+    f.isVisualization({{ total_qubits: 0, steps: [] }}),
+    f.isVisualization({{ total_qubits: 2.5, steps: [] }}),
+    f.isVisualization({{ total_qubits: 2 }}),
+    f.isVisualization(null),
+  ],
 }}));
 """,
         encoding="utf-8",
@@ -340,6 +413,7 @@ console.log(JSON.stringify({{
     assert got["defaults"] == ["b", "a", ""]
     assert got["entries"] == [{"file": "a"}]
     assert got["noManifest"] == []
+    assert got["visuals"] == [True, False, False, False, False]
 
 
 def test_the_view_panel_reaches_the_package_without_import_cycles(packaged):
@@ -407,11 +481,12 @@ const saved = JSON.parse(store["qviz.view"]);
 
 // A saved value of the wrong type or an unknown palette is ignored.
 store["qviz.view"] = JSON.stringify({{
-  version: 1, view: {{ palette: "nope", brightness: "x", lights: 0.5, extra: true }},
+  version: 1,
+  view: {{ palette: "nope", brightness: "x", lights: 0.5, theme: "nope", extra: true }},
 }});
 s.initSettings();
 const sanitised = [state.view.palette, state.view.brightness, state.view.lights,
-  "extra" in state.view];
+  state.view.theme, "extra" in state.view];
 
 // A storage that throws leaves the defaults and does not fail.
 globalThis.window.localStorage.getItem = () => {{ throw new Error("blocked"); }};
@@ -441,7 +516,7 @@ console.log(JSON.stringify({{
     assert got["focus"] == [False, "simple", "focus"]
     assert got["custom"] == ["custom", "okabe", False]
     assert got["saved"] == [1, "custom"]
-    assert got["sanitised"] == ["default", 1, 0.5, False]
+    assert got["sanitised"] == ["default", 1, 0.5, "dark", False]
     assert got["blocked"] == [False, "default"]
     assert got["reset"] == "default"
     assert got["sameKeys"] and got["profilesKnown"]

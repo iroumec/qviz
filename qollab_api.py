@@ -11,15 +11,35 @@ in as an argument.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from typing import Any
 
+import numpy as np
 from qiskit import QuantumCircuit
 
 from backend import compile, export, load_circuit, sample
 from backend.core.errors import QVizError
 from backend.core.model import Entangler
+from backend.core.sampler.sampler import probabilities
 from examples.catalog import CIRCUITS, LABELS
+
+# Measuring the same step twice must not rebuild and simulate the circuit again.
+# The cache is small and bounded, because a 16-qubit distribution is 0.5 MB.
+_IDEAL_CACHE_SIZE = 4
+_IDEAL_CACHE: dict[str, np.ndarray] = {}
+
+
+def _cached_ideal(visualization: str, data: dict, step: int) -> np.ndarray:
+    """Return the distribution of ``step``, cached by the visualization text."""
+    key = hashlib.sha256(f"{step}\0{visualization}".encode()).hexdigest()
+    ideal = _IDEAL_CACHE.get(key)
+    if ideal is None:
+        ideal = probabilities(data, step)
+        if len(_IDEAL_CACHE) >= _IDEAL_CACHE_SIZE:
+            _IDEAL_CACHE.pop(next(iter(_IDEAL_CACHE)))
+        _IDEAL_CACHE[key] = ideal
+    return ideal
 
 
 def build_circuit(name: str) -> QuantumCircuit:
@@ -94,5 +114,7 @@ def sample_step(visualization: str, step: int, shots: int = 1024) -> str:
     because JavaScript sorts the integer-like keys of an object (``"10"``,
     ``"11"``) and would lose the order.
     """
-    counts = sample(json.loads(visualization), int(step), int(shots))
+    data = json.loads(visualization)
+    at = int(step)
+    counts = sample(data, at, int(shots), ideal=_cached_ideal(visualization, data, at))
     return json.dumps(list(counts.items()))

@@ -13,6 +13,12 @@ export function manifestEntries(manifest) {
   return manifest.files.filter((entry) => entry && typeof entry.file === "string" && entry.file);
 }
 
+/** True when the object follows the minimum contract of the viewer. */
+export function isVisualization(obj) {
+  return Boolean(obj) && Array.isArray(obj.steps)
+    && Number.isInteger(obj.total_qubits) && obj.total_qubits >= 1;
+}
+
 /** The entry to load: the preferred one when it exists, or the first one. */
 export function defaultFile(entries, preferred) {
   const names = (entries || []).map((entry) => entry.file);

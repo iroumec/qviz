@@ -22,6 +22,7 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | `make coverage` | Runs the suite with `pytest-cov` and fails under 90 % of the backend. |
 | `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests, and `make lint-js` for the viewer. |
 | `make lint-js` | Runs `node --check` on every viewer module and then ESLint (skipped when Node is not installed; ESLint needs `make install-js`). |
+| `make audit-js` | Runs `pnpm audit --audit-level=high` (needs network). |
 | `make demo M=<module>` | Runs `resources/scripts/demo_<module>.py`. |
 | `make verify` | Runs the tests with coverage, the linters and the Qollab package build, the same checks as CI. |
 
