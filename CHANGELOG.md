@@ -20,6 +20,13 @@ All notable changes to QViz are recorded here. The format follows
 - The visualization contract is checked by a pure, tested helper.
 - The README tool icons are vendored under `documentation/images/tools/` and a
   test checks that every local image exists.
+- The statevector simulation computes the reduced Bloch state with `vdot`
+  instead of building a density matrix, which is the inner loop of a compile.
+- Loading a circuit with the same number of ions reuses the 3D scene instead of
+  rebuilding the labels, laser heads, trap and environment.
+- The raymarched sphere and laser now start at a bounding volume and discard
+  rays that miss it; the sweeps and the line/dot pass are skipped when their
+  detail or purity makes them invisible.
 
 - `CONTRIBUTING.md`, `.editorconfig`, issue and pull-request templates, and
   `make verify` (tests, linters and the Qollab package in one command).

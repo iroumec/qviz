@@ -33,6 +33,10 @@ varying float vDecoherence;
 #define MAX_DIST 4.5
 #define SURF_DIST 0.001
 #define PI 3.14159265359
+// Every surface of the sphere fits inside this radius. A ray that misses it
+// cannot hit anything, so the four raymarching loops skip it; a ray that hits it
+// starts at the near intersection instead of at the camera.
+#define BOUND_RADIUS 1.5
 
 // The specular edge is the colour of the sphere, lightened.
 const float SPECULAR_LIGHTEN = 0.4;
@@ -118,6 +122,19 @@ void main() {
     vec3 ro = vWorldPos;
     vec3 rd = normalize(vWorldPos - cameraPosition);
 
+    // Bounding-sphere test: discard rays that miss the sphere, and start the
+    // march at the near intersection. Most pixels of the instance box miss it.
+    vec3 oc = ro - vInstancePos;
+    float halfB = dot(oc, rd);
+    float c = dot(oc, oc) - BOUND_RADIUS * BOUND_RADIUS;
+    float discriminant = halfB * halfB - c;
+    if (discriminant < 0.0) discard;
+    float sqrtDiscriminant = sqrt(discriminant);
+    float rayNear = max(0.0, -halfB - sqrtDiscriminant);
+    float rayFar = -halfB + sqrtDiscriminant;
+    if (rayFar < 0.0) discard;
+    float rayLimit = min(MAX_DIST, rayFar + 0.05);
+
     vec3 glow = vec3(0.0);
     // ``vPsi`` is zero for a fully entangled qubit, and the normalisation of a
     // zero vector is NaN. The normalised direction is used for the sweeps, and
@@ -141,7 +158,7 @@ void main() {
     vec2 cPolar = vec2(sin(halfPolar), cos(halfPolar));
     vec3 nPolar = length(psi.xz) > 0.0001 ? normalize(vec3(-psi.z, 0.0, psi.x)) : vec3(0.0, 0.0, -1.0);
 
-    float d0 = 0.0;
+    float d0 = rayNear;
     bool hitAxes = false;
     
     float radiusVec = RADIUS_STATE_VEC * uVectorWidth;
@@ -174,40 +191,43 @@ void main() {
         glow += uTipColor * (gainTip / (stateTip * stateTip + 0.0001));
 
         d0 += d * RAY_ADVANCE;
-        if(d0 > MAX_DIST) break;
+        if(d0 > rayLimit) break;
     }
 
-    d0 = 0.0;
+    d0 = rayNear;
     bool hitSweeps = false;
 
-    // The sweeps are drawn only at the full level of detail.
-    for(int i = 0; i < MAX_STEPS; i++) {
-        if (uDetail < 1.5) break;
-        vec3 p = (ro + rd * d0) - vInstancePos;
-        
-        // The wedge spans from the +x axis to the azimuth of the state, in the
-        // same plane and with the same sign, so it always points at the vector.
-        float sweepAzimuth = sdAzimuthSector(p, anglePsi, RADIUS_SPHERE * RADIUS_SWEEP_AZIMUTH, THICKNESS_SWEEPS);
+    // The sweeps are drawn only at the full level of detail, and they fade out
+    // with the purity: a fully entangled qubit has no definite state to point at.
+    if (uDetail >= 1.5 && purity > 0.01) {
+        for(int i = 0; i < MAX_STEPS; i++) {
+            vec3 p = (ro + rd * d0) - vInstancePos;
 
-        vec2 p2dPolar = vec2(dot(p, -vPolar), p.y);
-        vec2 pRotPolar = rotPolar * p2dPolar;
-        float sweepPolar2D = sdPie(pRotPolar, cPolar, RADIUS_SPHERE * RADIUS_SWEEP_POLAR);
-        vec2 wPolar = vec2(sweepPolar2D, abs(dot(p, nPolar)) - THICKNESS_SWEEPS);
-        float sweepPolar = min(max(wPolar.x, wPolar.y), 0.0) + length(max(wPolar, 0.0));
+            // The wedge spans from the +x axis to the azimuth of the state, in
+            // the same plane and with the same sign, so it always points at the
+            // vector.
+            float sweepAzimuth = sdAzimuthSector(p, anglePsi, RADIUS_SPHERE * RADIUS_SWEEP_AZIMUTH, THICKNESS_SWEEPS);
 
-        float d = min(sweepAzimuth, sweepPolar);
-        d = max(d, 0.0002); 
+            vec2 p2dPolar = vec2(dot(p, -vPolar), p.y);
+            vec2 pRotPolar = rotPolar * p2dPolar;
+            float sweepPolar2D = sdPie(pRotPolar, cPolar, RADIUS_SPHERE * RADIUS_SWEEP_POLAR);
+            vec2 wPolar = vec2(sweepPolar2D, abs(dot(p, nPolar)) - THICKNESS_SWEEPS);
+            float sweepPolar = min(max(wPolar.x, wPolar.y), 0.0) + length(max(wPolar, 0.0));
 
-        if(d < SURF_DIST) hitSweeps = true;
+            float d = min(sweepAzimuth, sweepPolar);
+            d = max(d, 0.0002);
 
-        glow += purity * uSweepAzimuth * (INTENSITY_SWEEP_AZIMUTH * uSphereGain / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
-        glow += purity * uSweepPolar * (INTENSITY_SWEEP_POLAR * uSphereGain / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
+            if(d < SURF_DIST) hitSweeps = true;
 
-        d0 += d * RAY_ADVANCE;
-        if(d0 > MAX_DIST) break;
+            glow += purity * uSweepAzimuth * (INTENSITY_SWEEP_AZIMUTH * uSphereGain / (max(sweepAzimuth, 0.0) * max(sweepAzimuth, 0.0) + 0.0001));
+            glow += purity * uSweepPolar * (INTENSITY_SWEEP_POLAR * uSphereGain / (max(sweepPolar, 0.0) * max(sweepPolar, 0.0) + 0.0001));
+
+            d0 += d * RAY_ADVANCE;
+            if(d0 > rayLimit) break;
+        }
     }
 
-    d0 = 0.0;
+    d0 = rayNear;
     bool hitSphere = false;
 
     for(int i = 0; i < MAX_STEPS; i++) {
@@ -246,48 +266,53 @@ void main() {
         }
         
         d0 += sphere * RAY_ADVANCE;
-        if(d0 > MAX_DIST) break;
+        if(d0 > rayLimit) break;
     }
 
-    d0 = 0.0;
+    d0 = rayNear;
     bool hitLines = false;
 
-    // The great circles and the dots are not drawn in the outline.
-    for(int i = 0; i < MAX_STEPS; i++) {
-        if (uDetail < 0.5) break;
-        vec3 p = (ro + rd * d0) - vInstancePos;
-        
-        float baseSphere = abs(length(p) - RADIUS_SPHERE) - THICKNESS_SPHERE;
-        float equator = max(baseSphere, abs(p.y) - THICKNESS_LINES);
-        float meridianX = max(baseSphere, abs(p.x) - THICKNESS_LINES);
-        float meridianZ = max(baseSphere, abs(p.z) - THICKNESS_LINES);
-        
-        vec3 pDots = fract(p * DOTS_SPACING) - 0.5;
-        float dotsGrid = (length(pDots) - DOTS_THICKNESS) / DOTS_SPACING;
-        float dots = max(baseSphere, dotsGrid);
+    // The great circles are not drawn in the outline; the dots only at full
+    // detail. Skip the whole loop when neither is visible.
+    if (uDetail >= 0.5) {
+        bool withDots = uDetail > 1.5;
+        for(int i = 0; i < MAX_STEPS; i++) {
+            vec3 p = (ro + rd * d0) - vInstancePos;
 
-        float d = uDetail > 1.5
-            ? min(min(equator, min(meridianX, meridianZ)), dots)
-            : min(equator, min(meridianX, meridianZ));
-        
-        if(d < SURF_DIST) hitLines = true;
+            float baseSphere = abs(length(p) - RADIUS_SPHERE) - THICKNESS_SPHERE;
+            float equator = max(baseSphere, abs(p.y) - THICKNESS_LINES);
+            float meridianX = max(baseSphere, abs(p.x) - THICKNESS_LINES);
+            float meridianZ = max(baseSphere, abs(p.z) - THICKNESS_LINES);
 
-        vec3 normal = normalize(p);
-        vec3 viewDir = -rd; 
-        float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
-        float edgeOpacity = pow(fresnel, FRESNEL_EDGE_POWER);
+            float dots = 1e9;
+            if (withDots) {
+                vec3 pDots = fract(p * DOTS_SPACING) - 0.5;
+                float dotsGrid = (length(pDots) - DOTS_THICKNESS) / DOTS_SPACING;
+                dots = max(baseSphere, dotsGrid);
+            }
 
-        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (equator * equator + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
-        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianX * meridianX + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
-        glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianZ * meridianZ + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
-        
-        float gradientFactor = clamp(p.y * 0.5 + 0.5, 0.0, 1.0);
-        vec3 colorDotsGradient = mix(uDotsStart, uDotsEnd, gradientFactor);
-        float dotsGain = uDetail > 1.5 ? INTENSITY_DOTS * uSphereGain : 0.0;
-        glow += colorDotsGradient * (dotsGain / (dots * dots + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+            float d = min(min(equator, min(meridianX, meridianZ)), dots);
 
-        d0 += d * RAY_ADVANCE;
-        if(d0 > MAX_DIST) break;
+            if(d < SURF_DIST) hitLines = true;
+
+            vec3 normal = normalize(p);
+            vec3 viewDir = -rd;
+            float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
+            float edgeOpacity = pow(fresnel, FRESNEL_EDGE_POWER);
+
+            glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (equator * equator + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+            glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianX * meridianX + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+            glow += uLinesColor * (INTENSITY_LINES * uSphereGain / (meridianZ * meridianZ + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+
+            if (withDots) {
+                float gradientFactor = clamp(p.y * 0.5 + 0.5, 0.0, 1.0);
+                vec3 colorDotsGradient = mix(uDotsStart, uDotsEnd, gradientFactor);
+                glow += colorDotsGradient * (INTENSITY_DOTS * uSphereGain / (dots * dots + 0.0001)) * (FRESNEL_LINES_BASE + edgeOpacity);
+            }
+
+            d0 += d * RAY_ADVANCE;
+            if(d0 > rayLimit) break;
+        }
     }
 
     if(!hitAxes && !hitSweeps && !hitSphere && !hitLines) discard;

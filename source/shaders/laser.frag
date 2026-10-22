@@ -21,6 +21,9 @@ varying vec3 vInstancePos;
 varying float vInstanceActive;
 
 const float LASER_RADIUS = 0.02;
+// The beam and its glow fit inside this cylinder. A ray that misses it cannot
+// contribute, so the march starts at the near intersection (or discards it).
+const float BOUND_RADIUS = 0.25;
 const float ENERGY_FREQ = 0.0;
 const float ENERGY_SPEED = 100.0;
 const float ENERGY_AMPLITUDE = 0.05;
@@ -43,7 +46,38 @@ void main() {
     vec3 ro = vWorldPosition;
     vec3 rd = normalize(vWorldPosition - cameraPosition);
 
-    float t = 0.0;
+    // Bounding cylinder around the beam, in the local frame of the ion.
+    vec3 oc = ro - vInstancePos;
+    vec2 oxz = oc.xz;
+    vec2 dxz = rd.xz;
+    float a = dot(dxz, dxz);
+    float b = 2.0 * dot(oxz, dxz);
+    float c = dot(oxz, oxz) - BOUND_RADIUS * BOUND_RADIUS;
+    float tNear = 0.0;
+    float tFar = 15.0;
+    if (a > 1e-6) {
+        float disc = b * b - 4.0 * a * c;
+        if (disc < 0.0) discard;
+        float sqrtDisc = sqrt(disc);
+        tNear = max(0.0, (-b - sqrtDisc) / (2.0 * a));
+        tFar = (-b + sqrtDisc) / (2.0 * a);
+        if (tFar < 0.0) discard;
+    } else if (c > 0.0) {
+        discard;
+    }
+
+    // Clip the cylinder by the height of the beam, with a margin for the glow.
+    if (abs(rd.y) > 1e-6) {
+        float y0 = oc.y;
+        float t0 = (uLaserMinY - 0.1 - y0) / rd.y;
+        float t1 = (uLaserMaxY + 0.1 - y0) / rd.y;
+        tNear = max(tNear, min(t0, t1));
+        tFar = min(tFar, max(t0, t1));
+    }
+    if (tNear > tFar) discard;
+
+    float t = tNear;
+    float rayLimit = min(15.0, tFar + 0.05);
     float glow = 0.0;
 
     for (int i = 0; i < MAX_STEPS; i++) {
@@ -64,7 +98,7 @@ void main() {
 
         t += max(abs(d) * 0.5, 0.01);
 
-        if (t > 15.0) break;
+        if (t > rayLimit) break;
     }
 
     vec3 baseColor = uLaserColor * glow;

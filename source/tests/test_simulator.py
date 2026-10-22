@@ -159,3 +159,26 @@ def test_virtualz_matrix_matches_rz():
     assert virtualz.matrix(rotation) == pytest.approx(
         Operator(RZGate(rotation)).data, abs=1e-12
     )
+
+
+def test_reduced_angles_match_the_density_matrix():
+    rng = np.random.default_rng(20261022)
+    state = rng.normal(size=(2,) * 5) + 1j * rng.normal(size=(2,) * 5)
+    state /= np.linalg.norm(state)
+
+    for qubit in range(5):
+        angles = simulator._angles(state, qubit, 5)
+        axis = 5 - 1 - qubit
+        reduced = np.moveaxis(state, axis, 0).reshape(2, -1)
+        rho = reduced @ reduced.conj().T
+        expected = (
+            2.0 * rho[0, 1].real,
+            -2.0 * rho[0, 1].imag,
+            float(rho[0, 0].real - rho[1, 1].real),
+        )
+        got = (
+            angles.r * np.sin(angles.theta) * np.cos(angles.phi),
+            angles.r * np.sin(angles.theta) * np.sin(angles.phi),
+            angles.r * np.cos(angles.theta),
+        )
+        assert got == pytest.approx(expected, abs=1e-12)

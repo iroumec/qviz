@@ -64,14 +64,21 @@ def _apply(
 
 
 def _angles(state: np.ndarray, qubit: int, n: int) -> QubitAngles:
-    """Reduced Bloch state of one qubit as ``(r, theta, phi)``."""
+    """Reduced Bloch state of one qubit as ``(r, theta, phi)``.
+
+    The state is pure, so the reduced density matrix has trace one and only two
+    entries are needed: ``rho00 = <a|a>`` and ``rho01 = <b|a>``. Computing those
+    with ``vdot`` avoids building the 2x2 matrix and its conjugate copy, which
+    is the inner loop of the whole simulation.
+    """
     axis = n - 1 - qubit
     reduced = np.moveaxis(state, axis, 0).reshape(2, -1)
-    rho = reduced @ reduced.conj().T
+    rho00 = float(np.vdot(reduced[0], reduced[0]).real)
+    rho01 = np.vdot(reduced[1], reduced[0])
 
-    x = 2.0 * float(rho[0, 1].real)
-    y = -2.0 * float(rho[0, 1].imag)
-    z = float(rho[0, 0].real - rho[1, 1].real)
+    x = 2.0 * float(rho01.real)
+    y = -2.0 * float(rho01.imag)
+    z = 2.0 * rho00 - 1.0
 
     r = math.sqrt(x * x + y * y + z * z)
     if r <= _R_SMALL:

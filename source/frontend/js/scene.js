@@ -162,6 +162,15 @@ export function buildScene(n) {
     return;
   }
 
+  // Loading another circuit with the same number of ions reuses the whole
+  // scene: the labels, the laser heads, the trap and the environment do not
+  // change, and rebuilding them is the most expensive part of a load.
+  if (state.three.instMesh && state.qubits.length === n) {
+    state.orbit.target = { x: 0, y: 0, z: 0 };
+    state.hovered = [];
+    return;
+  }
+
   while (state.three.world.children.length) {
     state.three.world.remove(state.three.world.children[0]);
   }

@@ -100,7 +100,7 @@ Generated and ignored: `out/`, `qollab/`, `_book/`, `node_modules/`.
 make verify   # tests with coverage, linters and the Qollab package
 ```
 
-450 tests pass, 1 is skipped, and `source/backend` has 96 % coverage
+451 tests pass, 1 is skipped, and `source/backend` has 96 % coverage
 (`make coverage`). The last full run used Python 3.13.5, Qiskit 2.5.2 and
 NumPy 2.5.3. See [versions](documentation/docs/getting-started/installation.qmd).
 
