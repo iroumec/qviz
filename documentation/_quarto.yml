@@ -17,6 +17,7 @@ book:
         - docs/getting-started/installation.qmd
         - docs/getting-started/quickstart.qmd
         - docs/getting-started/tests-and-demos.qmd
+        - docs/getting-started/limitations.qmd
     - part: "Core concepts"
       chapters:
         - docs/concepts/pipeline-overview.qmd

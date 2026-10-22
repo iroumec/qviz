@@ -15,13 +15,15 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | Command | What it does |
 | --- | --- |
 | `make venv` | Creates `.venv`. |
-| `make install` | Installs the package in editable mode with the development extras (`pytest`, `jsonschema`, `flake8`, `pydocstyle`). |
+| `make install` | Installs the package in editable mode with the development extras (`pytest`, `pytest-cov`, `jsonschema`, `flake8`, `pydocstyle`). |
+| `make install-js` | Installs the JavaScript linters from `pnpm-lock.yaml` with pnpm, through corepack (Node.js is needed). |
 | `make install-requirements` | Installs `requirements.txt`, the list that Qollab reads. |
 | `make test` | Runs the whole suite with `pytest source/tests/ -v`. |
-| `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests, and `node --check` on the viewer modules. |
-| `make lint-js` | Runs `node --check` on every viewer module (skipped when Node is not installed). |
+| `make coverage` | Runs the suite with `pytest-cov` and fails under 90 % of the backend. |
+| `make lint` | Runs `flake8` and `pydocstyle` on the library, the examples, the adapters, the scripts and the tests, and `make lint-js` for the viewer. |
+| `make lint-js` | Runs `node --check` on every viewer module and then ESLint (skipped when Node is not installed; ESLint needs `make install-js`). |
 | `make demo M=<module>` | Runs `resources/scripts/demo_<module>.py`. |
-| `make verify` | Runs the tests, the linters and the Qollab package build, the same checks as CI. |
+| `make verify` | Runs the tests with coverage, the linters and the Qollab package build, the same checks as CI. |
 
 ### Producing and serving {.unnumbered}
 
@@ -31,7 +33,7 @@ smaller files: `resources/make/Makefile.git` for the branch workflow and
 | `make qollab` | Builds `qollab/`, the JS project to upload to Qollab. |
 | `make server` | Serves the viewer at `http://localhost:8000` with compiling and measuring in Python (`PORT=9000` changes the port). It generates `out/` on the first run. |
 | `make open` | Like `server`, and also opens the browser. |
-| `make resume` | Shows the branch, the last commits, the unpushed changes and the pending list of `memory.md`. |
+| `make resume` | Shows the branch, the last commits, the unpushed changes and the pending list of `documentation/internal/memory.md`. |
 
 ### Diagrams {.unnumbered}
 
@@ -73,13 +75,14 @@ and on every pull request.
 
 | Job | Steps |
 | --- | --- |
-| Lint | `flake8` and `pydocstyle` (as `make lint`), `node --check` on the viewer modules, and `resources/scripts/package_qollab.py`. |
+| Lint | `flake8` and `pydocstyle` (as `make lint`), `pnpm run lint` (ESLint), and `resources/scripts/package_qollab.py`. |
 | Tests | `pip install -e ".[dev]"`, then `pytest`, on Python 3.12, 3.13 and 3.14. |
 | Documentation | `quarto render documentation --to html`. |
 
 A new run of the same branch cancels the previous one. The token has read-only
-permissions. Because the workflow repeats the Makefile commands, a change that
-passes `make test` and `make lint` locally passes in CI.
+permissions. The workflow repeats the Makefile commands, but it installs the
+JavaScript tools with pnpm first; run `make install-js` locally so `make lint`
+runs ESLint too and the local result matches CI.
 
 ## Branches and commits {.unnumbered}
 
@@ -134,11 +137,11 @@ because the team is.
 | File | Content |
 | --- | --- |
 | `AGENTS.md` | The rules: architecture, Qollab restrictions, tests, commands, Git and the scope. |
-| `CLAUDE.md` | Imports `AGENTS.md` and `memory.md`, so that both are loaded at the start of a session. |
-| `memory.md` | The hand-over: current state, decisions, pending items and the history. It is updated after each change and a test keeps it under 150 lines. |
+| `CLAUDE.md` | Imports `AGENTS.md` and `documentation/internal/memory.md`, so that both are loaded at the start of a session. |
+| `documentation/internal/memory.md` | The hand-over: current state, decisions, pending items and the history. It is updated after each change and a test keeps it under 150 lines. |
 
-At the start of a session the agent pulls, reads `memory.md` and runs
-`make resume`. At the end it runs `make verify`, brings `memory.md` up to date
+At the start of a session the agent pulls, reads `documentation/internal/memory.md` and runs
+`make resume`. At the end it runs `make verify`, brings `documentation/internal/memory.md` up to date
 and, only if the team asks, commits and pushes.
 
 ## The tests of the project itself {.unnumbered}
@@ -148,7 +151,7 @@ Some tests do not check behaviour. They check that the project stays coherent.
 | Test | Keeps in line |
 | --- | --- |
 | `test_requirements.py` | `requirements.txt` and the dependencies of `pyproject.toml`. |
-| `test_memory.py` | `memory.md`, which must have its sections and stay short. |
+| `test_memory.py` | `documentation/internal/memory.md`, which must have its sections and stay short. |
 | `test_package_qollab.py` | The Qollab package, its limits and its services. |
 | `test_smoke.py` | The public API of `backend`. |
 
@@ -156,9 +159,9 @@ Some tests do not check behaviour. They check that the project stays coherent.
 
 A short list that applies to any change.
 
-- [ ] `make verify` is green (tests, linters and the Qollab package).
+- [ ] `make verify` is green (tests with coverage, linters and the Qollab package).
 - [ ] If the viewer, `qollab_api.py` or the packager changed: `make qollab`.
 - [ ] The affected chapter of this book is updated.
-- [ ] `memory.md` has the new state and a line of history.
+- [ ] `documentation/internal/memory.md` has the new state and a line of history.
 - [ ] If the JSON contract changed, the schema, the golden file and
       [JSON contract](../concepts/json-contract.qmd) agree, and the team knew.

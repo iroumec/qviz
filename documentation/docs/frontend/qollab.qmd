@@ -73,7 +73,7 @@ The command runs `resources/scripts/package_qollab.py`, which writes the folder 
 | `main.css` | `source/frontend/styles.css`, unchanged. |
 | `main.js` | A generated prelude (the Qollab services), then all the modules of `source/frontend/js` bundled in one script. |
 | `qollab_api.py`, `requirements.txt` | The files of the root. |
-| `source/backend/`, `resources/examples/` | The libraries. |
+| `backend/`, `examples/` | The libraries, copied from `source/backend/` and `resources/examples/`. |
 
 `main.py` is left out on purpose. In a JS project it could also run, compile a
 second time and spend a second IonQ job. The viewer does what `main.py` does.

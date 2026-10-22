@@ -8,6 +8,9 @@ make test
 
 One file exists for each module. The name of a file is `test_<module>.py`.
 
+`make coverage` runs the suite with `pytest-cov` and fails if the backend drops
+under 90 %. The last full run was at 96 % of `source/backend`.
+
 ## The shared circuits {.unnumbered}
 
 The file `source/tests/circuits.py` holds the circuits that are used by several test
@@ -61,7 +64,7 @@ image has it).
 | `test_examples.py` | The QFT matrix, its inverse, the sum computed by the adder, and the schema of a compiled adder. |
 | `test_performance.py` | The GHZ and layered circuits: the state, the reproducibility with a seed, the argument errors, and the 16-qubit files compiled against the schema. |
 | `test_package_qollab.py` | The Qollab folder fits in the file limit and has the files of a JS project, without `main.py`; the viewer package is the real viewer (markup, style, script and embedded shaders); every service of the prelude is read by the viewer; and the generated `main.js` is valid JavaScript. It also runs the pure viewer helpers, the host bridge and the availability probe with Node. |
-| `test_memory.py` | `memory.md` keeps the sections that a new session needs and stays short, and `CLAUDE.md` and `AGENTS.md` point to it. |
+| `test_memory.py` | `documentation/internal/memory.md` keeps the sections that a new session needs and stays short, and `CLAUDE.md` and `AGENTS.md` point to it. |
 | `test_requirements.py` | `requirements.txt` equals the dependencies of `pyproject.toml`, and it uses only what Qollab accepts. |
 | `test_qollab_api.py` | The entry point and the functions that Qollab pages call: the `entangler` field, the example circuits, the JSON text that is returned, the order of the counts, and the output of `main`. |
 | `test_sampler.py` | The joint distribution against the marginals of every step and against `Statevector`, the Bell outcomes, the bit order, the noise, the seed, and the rejection of bad steps, shots and data. |
@@ -104,7 +107,7 @@ Three jobs are defined.
 
 | Job | What it does |
 | --- | --- |
-| Lint | Runs `flake8` and `pydocstyle` (as `make lint`), checks every viewer module with `node --check`, and builds the Qollab package. |
+| Lint | Runs `flake8` and `pydocstyle` (as `make lint`), ESLint on the viewer, and builds the Qollab package. |
 | Tests | Runs `pytest`, exactly as `make test` does, on Python 3.12, 3.13 and 3.14. |
 | Documentation | Renders the Quarto book to HTML, so a broken chapter or a missing file fails the build. |
 

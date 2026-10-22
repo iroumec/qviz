@@ -1,0 +1,22 @@
+# Limitations {#sec-limitations}
+
+QViz is a teaching tool. These are the limits that come from that goal and from
+the platforms it runs on.
+
+- **At most 16 qubits.** The exact statevector grows as `2ⁿ`.
+- **IonQ and the built-in simulator only.** IBM, AWS and any other backend are
+  rejected with an explicit error.
+- **The noise is didactic.** It is a simple error model, not a calibrated one.
+  No circuit is sent to real hardware: the viewer uses the native-gate sequence
+  and the profiles of the machine.
+- **The viewer needs WebGL.** Under Qollab, the `three/addons/` imports and the
+  speed with 16 qubits depend on the platform.
+- **Qollab has limits.** It does not serve the other files of a project, it
+  accepts at most 100 files and 2 MB per file, and an IonQ backend allows one
+  job per run. The details and the workarounds are in
+  [the Qollab page](../frontend/qollab.qmd).
+- **The Bloch vectors can shrink or vanish.** This is expected while a qubit is
+  entangled (`r < 1`), and it can happen in the middle of a two-qubit gate even
+  when the circuit has no entanglement at the end.
+- **Tomography on a non-IonQ backend** needs `qiskit-ionq` 1.0.3 or later. It is
+  outside the delivery and is not connected to the viewer.

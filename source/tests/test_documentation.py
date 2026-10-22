@@ -12,7 +12,11 @@ _IGNORED = (".venv", "_book", ".quarto", ".git")
 
 
 def _text_files() -> list[Path]:
-    files = [_ROOT / "README.md", _ROOT / "AGENTS.md", _ROOT / "memory.md"]
+    files = [
+        _ROOT / "README.md",
+        _ROOT / "AGENTS.md",
+        _ROOT / "documentation" / "internal" / "memory.md",
+    ]
     files += list(_DOCS.rglob("*.qmd"))
     files += list(_DOCS.rglob("*.md"))
     return [

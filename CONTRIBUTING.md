@@ -8,6 +8,7 @@ and the tests are the source of truth.
 ```bash
 make venv
 make install
+make install-js   # ESLint (needs Node.js; pnpm runs through corepack)
 make test
 make lint
 ```
@@ -49,11 +50,14 @@ run, so a fresh clone works.
 make test
 make lint
 make qollab      # the package for Qollab must still build
-# or all three at once:
+# or all of it at once, with coverage:
 make verify
 ```
 
-Update `memory.md` with what changed and what is left, and update the Quarto
+`make coverage` is optional while developing; the CI enforces at least 90 % of
+`source/backend` on Python 3.13.
+
+Update `documentation/internal/memory.md` with what changed and what is left, and update the Quarto
 book when behavior or a module changes. Do not commit secrets, API keys or
 generated files (`out/`, `qollab/`, `__pycache__`).
 

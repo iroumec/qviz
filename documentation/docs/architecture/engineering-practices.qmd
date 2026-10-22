@@ -160,7 +160,7 @@ Three kinds of knowledge would otherwise be forgotten, and each has a home.
 | --- | --- |
 | Why a decision was made | The specification, and the decision notes in `documentation/internal/`. |
 | What is true about Qollab | `qollab.qmd` and the test table in `documentation/internal/qollab_pruebas.md`, with the date of each measurement. |
-| Where the project stands | `memory.md`, kept under 150 lines by a test. |
+| Where the project stands | `documentation/internal/memory.md`, kept under 150 lines by a test. |
 
 ### Units are stated, always {.unnumbered}
 
@@ -170,9 +170,9 @@ border, once. See [Units and conventions](../concepts/units-and-conventions.qmd)
 
 ## Delivery {.unnumbered}
 
-- **Continuous integration** runs the linters, the JavaScript syntax check, the
-  Qollab package build, the tests (Python 3.12, 3.13 and 3.14) and the Quarto book
-  render on every push and pull request.
+- **Continuous integration** runs the Python linters and ESLint, the Qollab
+  package build, the tests (Python 3.12, 3.13 and 3.14, with coverage on 3.13)
+  and the Quarto book render on every push and pull request.
 - **Branches** follow a simple flow: `main` is stable, `development` integrates, and
   one `feature/<module>` branch per module. The commands are in `Makefile.git`.
 - **Commits** are made when the team asks, in English, with a short first line.

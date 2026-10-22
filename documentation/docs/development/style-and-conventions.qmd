@@ -1,7 +1,8 @@
 # Style and conventions {#sec-style}
 
 This page describes the rules that are followed by the code. The rules are
-checked by two tools, `flake8` and `pydocstyle`, which are run with `make lint`.
+checked by `flake8` and `pydocstyle` for Python and by ESLint for the viewer;
+all of them are run with `make lint`.
 
 ## The layout of the project {.unnumbered}
 
@@ -88,6 +89,16 @@ on older interpreters.
   only, because Qollab needs the whole signature of `main` on one line to build
   its form.
 
+## JavaScript {.unnumbered}
+
+The viewer follows the same 2-space indentation and double quotes that the rest
+of the files use. ESLint is configured in `eslint.config.js` with the browser
+globals, `eqeqeq`, `no-var` and the recommended rules. It is run with
+`pnpm run lint` or `make lint-js`, after `make install-js` has installed the
+dependencies from `pnpm-lock.yaml` with pnpm (through corepack). `node --check` runs first as a fast
+syntax gate. Prettier is deliberately not enforced: a full reformat would
+rewrite every viewer file, and the current style is already consistent.
+
 ## The theme of the book {.unnumbered}
 
 The book has a monochromatic theme: a single grey family, with no second hue.
@@ -117,7 +128,7 @@ chapters.
 ## The memory of the project {.unnumbered}
 
 The chat of an agent is emptied between sessions, but the repository is not. The
-file `memory.md` in the root is the hand-over: the current state, what was
+file `documentation/internal/memory.md` is the hand-over: the current state, what was
 decided, what is pending, and how to continue. `CLAUDE.md` imports it, and
 `AGENTS.md` asks every agent to read it at the start and to update it at the end
 of each change. `make resume` shows the branch, the last commits, the changes that

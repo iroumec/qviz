@@ -13,3 +13,15 @@ _book/
 
 # Local notes
 .commit.md
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# JavaScript tools
+node_modules/
+
+pnpm-debug.log*
+.pnpm-store/

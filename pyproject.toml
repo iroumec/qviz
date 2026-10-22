@@ -37,6 +37,7 @@ Issues = "https://github.com/iroumec/QViz/issues"
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-cov",
     "jsonschema",
     "flake8",
     "pydocstyle",

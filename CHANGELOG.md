@@ -12,6 +12,9 @@ All notable changes to QViz are recorded here. The format follows
   `make verify` (tests, linters and the Qollab package in one command).
 - JavaScript syntax checking in `make lint` and in CI, plus a Python 3.14 job.
 - Node tests for the file helpers, the host bridge and the availability probe.
+- `make coverage` with `pytest-cov`, and a 90 % floor for the backend in CI.
+- ESLint for the viewer, installed with pnpm (`make install-js`, `pnpm-lock.yaml`)
+  and checked in CI, with `pnpm audit`. `node --check` stays as a fast syntax gate.
 
 ### Changed
 

@@ -2,9 +2,10 @@ SHELL := /bin/bash
 
 VENV := .venv
 PY := $(VENV)/bin/python
+PNPM ?= corepack pnpm
 PUML_DIR := documentation/diagrams
 
-.PHONY: venv install test lint lint-js demo outputs qollab verify server open resume render-puml install-plantuml
+.PHONY: venv install install-js test coverage lint lint-js audit-js demo outputs qollab verify server open resume render-puml install-plantuml
 
 ## venv: create the virtual environment (Python 3.12+).
 venv:
@@ -19,18 +20,35 @@ install:
 test:
 	$(PY) -m pytest source/tests/ -v
 
-## lint: run flake8, pydocstyle and the JavaScript syntax check.
+## coverage: run the tests with coverage of the backend (fails under 90 %).
+coverage:
+	$(PY) -m pytest source/tests/ --cov=source/backend --cov-report=term-missing --cov-fail-under=90
+
+## lint: run flake8, pydocstyle and the JavaScript linter.
 lint: lint-js
 	$(PY) -m flake8 source/backend resources/examples main.py qollab_api.py resources/scripts source/tests
 	$(PY) -m pydocstyle source/backend resources/examples
 
-## lint-js: check the syntax of every viewer module with node (skipped if node is missing).
+## install-js: install the JavaScript linters with pnpm.
+install-js:
+	$(PNPM) install --frozen-lockfile --ignore-scripts
+
+## lint-js: check the syntax and the style of the viewer modules.
 lint-js:
 	@if command -v node >/dev/null 2>&1; then \
 		for file in source/frontend/js/*.js; do node --check "$$file" || exit 1; done; \
+		if [ -x node_modules/.bin/eslint ]; then \
+			node_modules/.bin/eslint --config eslint.config.js source/frontend/js; \
+		else \
+			echo "ESLint is not installed: run make install-js"; \
+		fi; \
 	else \
 		echo "node not found: skipping the JavaScript syntax check"; \
 	fi
+
+## audit-js: check the JavaScript dependencies for known vulnerabilities.
+audit-js:
+	$(PNPM) audit --audit-level=high
 
 ## demo: run one module demo (M=translator).
 demo:
@@ -47,14 +65,14 @@ outputs:
 qollab:
 	$(PY) resources/scripts/package_qollab.py viewer
 
-## verify: run the tests, the linters and the Qollab package build.
-verify: test lint qollab
+## verify: run the tests with coverage, the linters and the Qollab package build.
+verify: coverage lint qollab
 
 ## resume: show the branch, the last commits and the pending items.
 resume:
 	@git fetch -q 2>/dev/null; git status -sb; echo; git log --oneline -5
-	@echo; echo "--- Pendientes (memory.md) ---"
-	@sed -n '/^## Pendientes/,/^## Equipo/p' memory.md | sed '$$d'
+	@echo; echo "--- Pendientes (documentation/internal/memory.md) ---"
+	@sed -n '/^## Pendientes/,/^## Equipo/p' documentation/internal/memory.md | sed '$$d'
 
 ## install-plantuml: install PlantUML and Graphviz with apt.
 install-plantuml:

@@ -1,2 +1,2 @@
 @AGENTS.md
-@memory.md
+@documentation/internal/memory.md

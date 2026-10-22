@@ -1,6 +1,6 @@
 # Pruebas en Qollab: el visor real
 
-> Actualizado el 2026-10-10. El código no se puede ejecutar en Qollab desde el repositorio: esta guía le dice al equipo qué subir, qué mirar y qué resultado esperar. Lo que salga distinto de lo esperado se anota en `spec.md` §10. (Antes había una página de diagnóstico, `make qollab-probe`; se retiró porque el visor real prueba lo mismo y la consola de Qollab muestra los errores. Sigue en el historial de git.)
+> Actualizado el 2026-10-22. El código no se puede ejecutar en Qollab desde el repositorio: esta guía le dice al equipo qué subir, qué mirar y qué resultado esperar. Lo que salga distinto de lo esperado se anota en `spec.md` §10. (Antes había una página de diagnóstico, `make qollab-probe`; se retiró porque el visor real prueba lo mismo y la consola de Qollab muestra los errores. Sigue en el historial de git.)
 
 ## 1. Qué subir a Qollab: un único proyecto JS
 
@@ -12,22 +12,28 @@ Corré:
 make qollab
 ```
 
-Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo** de 51 archivos:
+Arma la carpeta `qollab/` (no se versiona) con **un proyecto JS completo** de 53 archivos:
 
 ```text
 index.html        el visor real
-main.css          el estilo del visor, sin cambios
+main.css          el estilo del visor (desde source/frontend/styles.css), sin cambios
 main.js           un preludio generado (los servicios de Qollab) + todos los módulos del visor en un solo script
 qollab_api.py     las funciones que llama la página (devuelven texto)
 requirements.txt
 LICENSE           el texto MIT
-source/backend/          la biblioteca
-resources/examples/         los circuitos de ejemplo
+backend/          la biblioteca
+examples/         los circuitos de ejemplo y el catálogo del selector
 ```
 
 Subí el **contenido** de `qollab/` (no la carpeta misma), de modo que `index.html` y `main.js` queden en la raíz del proyecto. Se puede subir una y otra vez sobre el mismo proyecto de Qollab: después de cambiar algo en el repositorio, `make qollab` y volver a subir.
 
 `main.py` queda fuera a propósito. En un proyecto JS podría correr también y compilar una segunda vez, y en IonQ eso gastaría un segundo job ("only one job is allowed"). `main.py` sigue siendo la entrada si se sube el proyecto como proyecto Python.
+
+**Re-probar después del 2026-10-22.** El paquete cambió el CSS a `styles.css`
+(se copia a `main.css`), unificó el catálogo de circuitos, endureció la carga
+(la última elección gana), deshabilita Cargar/Medir sin Python y agregó ESLint
+(solo desarrollo, no afecta el paquete). Lo que hay que mirar sigue siendo la
+tabla de abajo; si algo falla, anotalo en `spec.md` §10.
 
 ## 2. Probar el visor (`make qollab`)
 

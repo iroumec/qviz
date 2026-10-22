@@ -16,6 +16,16 @@ each ion as a Bloch sphere, step by step.
 
 ![From logical gates to the ion chain](../../diagrams/svg/Teaching.svg)
 
+## The native gates {.unnumbered}
+
+| Native gate | What it does | How it looks in QViz |
+| --- | --- | --- |
+| **GPI(φ)** | A π rotation about an axis of the equator, set by the laser phase φ. | A long laser pulse on one ion. |
+| **GPI2(φ)** | A π/2 rotation about the same kind of axis. | A short laser pulse on one ion. |
+| **VirtualZ(θ)** | A Z rotation, done for free by shifting the phase of the later gates. | No pulse: only the phase changes. |
+| **MS(φ₀, φ₁, θ)** | The Mølmer–Sørensen entangler of Aria, through the shared vibration of the chain. | Two orange beams and a phonon bus. |
+| **ZZ(θ)** | The entangler of Forte. | The same, with `zz` steps. |
+
 ## What the visualiser allows {.unnumbered}
 
 - To see how a logical gate is built from native gates.

@@ -10,12 +10,13 @@ main.py                     Entry point of the Qollab Python project.
 qollab_api.py               The functions that Qollab pages call (they return text).
 requirements.txt            Dependencies for Qollab (kept equal to pyproject.toml).
 pyproject.toml              Packaging, dependencies and tool settings.
+package.json, pnpm-lock.yaml   ESLint and the JS development tools (Node.js).
+eslint.config.js            The ESLint configuration of the viewer.
 Makefile                    The commands of the project (see Tooling and workflow).
 .flake8                     The style rules of flake8.
 .github/workflows/ci.yml    Continuous integration: lint and tests.
 README.md, LICENSE          The overview of the project and its MIT license.
 AGENTS.md, CLAUDE.md        The rules for code agents.
-memory.md                   The hand-over between work sessions.
 
 source/                     What is shipped: the library, the viewer and the tests.
   backend/                  The Python library.
@@ -39,8 +40,11 @@ documentation/              The specification, the schema and this book.
   docs/                     The chapters.
   diagrams/                 PlantUML sources and their SVG renders.
   schema/                   The JSON schema of the contract.
-  internal/                 spec.md, the working notes of the team and the agent prompts.
+  internal/                 spec.md, memory.md, the working notes and the agent prompts.
   references/               Notes on the native gates of IonQ.
+
+package.json, pnpm-lock.yaml   ESLint and the JavaScript development tools.
+eslint.config.js            The ESLint configuration for the viewer.
 
 out/                        Generated: the example JSON files and their manifest.
 qollab/                     Generated: the project that is uploaded to Qollab.
@@ -151,5 +155,5 @@ The suite lives in `source/tests/`, with one `test_<module>.py` per module. It
 also covers the adapters and the tools (`test_qollab_api.py`, `test_server.py`,
 `test_package_qollab.py`), the examples, the performance budget and the files that
 keep the project consistent (`test_requirements.py` compares `requirements.txt`
-with `pyproject.toml`, and `test_memory.py` keeps `memory.md` short). See
+with `pyproject.toml`, and `test_memory.py` keeps `documentation/internal/memory.md` short). See
 [Tests](../development/tests.qmd).

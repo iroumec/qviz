@@ -80,7 +80,7 @@ make install       # installs the package with its development extras
 ```
 
 The `make install` command runs `pip install -e ".[dev]"`. The development
-extras are `pytest`, `jsonschema`, `flake8` and `pydocstyle`.
+extras are `pytest`, `pytest-cov`, `jsonschema`, `flake8` and `pydocstyle`.
 
 The same steps can be done by hand:
 
@@ -89,6 +89,18 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e ".[dev]"
 ```
+
+## JavaScript tools {.unnumbered}
+
+The viewer runs in the browser and does not need Node.js. The JavaScript tests
+and ESLint do. With Node.js 20.19 or newer (or 22):
+
+```bash
+make install-js    # pnpm install, from pnpm-lock.yaml (via corepack)
+```
+
+`make lint-js` runs `node --check` and ESLint; `make test` runs the Node tests
+when Node is installed and skips them when it is not. The CI image has Node 22.
 
 ## Checking the installation {.unnumbered}
 

@@ -16,7 +16,7 @@ async function post(url, body, what) {
     throw new Error(t(
       "no hay conexión con el servidor. Usá `make server`.",
       "there is no connection to the server. Run `make server`."
-    ));
+    ), { cause: error });
   }
   if ([404, 405, 501].includes(response.status)) {
     throw new Error(t(
@@ -27,9 +27,9 @@ async function post(url, body, what) {
   const text = await response.text();
   let reply = null;
   try {
-    reply = text ? JSON.parse(text) : null;
+    if (text) reply = JSON.parse(text);
   } catch {
-    reply = null;
+    // Not JSON: the error below says so.
   }
   if (!response.ok) {
     throw new Error((reply && reply.error) || "error " + response.status);

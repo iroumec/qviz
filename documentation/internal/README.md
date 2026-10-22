@@ -19,4 +19,4 @@ separa de `documentation/docs/`, que es el libro que leen los lectores.
   revisión que se usaron para quitar complejidad accidental.
 
 `AGENTS.md` y `CLAUDE.md` quedan en la raíz porque los agentes los leen de ahí.
-`memory.md` también queda en la raíz: es el traspaso entre sesiones.
+`memory.md` también vive acá: es el traspaso entre sesiones.

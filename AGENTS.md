@@ -4,12 +4,12 @@ QViz es un visualizador educativo de iones atrapados para un hackathon que corre
 
 **Antes de tocar código leé:**
 
-- `memory.md`: el estado actual del proyecto, lo decidido y los pendientes. Es el traspaso entre sesiones (`CLAUDE.md` lo importa). Si algo contradice a `spec.md`, manda `spec.md` y se corrige `memory.md`.
+- `documentation/internal/memory.md`: el estado actual del proyecto, lo decidido y los pendientes. Es el traspaso entre sesiones (`CLAUDE.md` lo importa). Si algo contradice a `spec.md`, manda `spec.md` y se corrige `documentation/internal/memory.md`.
 - `documentation/internal/spec.md` (en adelante `spec.md`): arquitectura, contrato JSON, plan por módulos y estado. Es la fuente de verdad.
 - `documentation/internal/qollab_context.md`: qué se puede y qué no se puede hacer en Qollab.
 - `documentation/references/ionq_native_gates.md`: matrices de GPI/GPI2/MS/ZZ/VirtualZ, identidades verificadas y errores de la doc oficial de IonQ. Es obligatorio para M1, M2, M3 y M8. Cuando la doc de IonQ y sus propias matrices se contradicen, mandan las matrices y los tests.
 
-Las notas internas, el `spec.md` y los prompts de IA viven en `documentation/internal/` y **son públicos a propósito** (decisión del usuario, 2026-10-22): no se borran ni se sacan del repo. `AGENTS.md`, `CLAUDE.md` y `memory.md` quedan en la raíz porque los agentes los leen de ahí.
+Las notas internas, el `spec.md` y los prompts de IA viven en `documentation/internal/` y **son públicos a propósito** (decisión del usuario, 2026-10-22): no se borran ni se sacan del repo. `AGENTS.md` y `CLAUDE.md` quedan en la raíz porque los agentes los leen de ahí; `documentation/internal/memory.md` es el traspaso entre sesiones.
 
 **Alcance: backend (Python) y frontend (JS, HTML, CSS).** El visor se puede cambiar sin pedir aprobación, siguiendo las reglas de "El visor y Qollab".
 
@@ -105,11 +105,13 @@ El visor (`source/frontend/index.html` y `source/frontend/styles.css`). Guía co
 ```bash
 make venv          # crea .venv
 make install       # instala el paquete + extras de dev
+make install-js    # instala ESLint (Node.js y npm)
 make test          # corre pytest
-make verify        # tests + linters + paquete de Qollab (lo mismo que el CI)
+make verify        # tests con cobertura + linters + paquete de Qollab (lo mismo que el CI)
+make coverage      # tests con cobertura del backend (piso 90 %)
 make demo M=translator   # corre resources/scripts/demo_translator.py
 make qollab        # arma qollab/, el proyecto JS que se sube a Qollab (el visor real)
-make resume        # rama, commits, cambios sin subir y los pendientes de memory.md
+make resume        # rama, commits, cambios sin subir y los pendientes de documentation/internal/memory.md
 make outputs       # genera out/ con los circuitos de ejemplo (make server lo hace si falta)
 make server        # el visor en http://localhost:8000 con compilar y medir en Python, sin Qollab (PORT=9000)
 make open          # como server, pero además abre el navegador
@@ -129,20 +131,20 @@ Entorno local: Python 3.14 (igual que Qollab) y Qiskit `>=2.5.2,<3`.
 
 ---
 
-## 6b. Memoria del proyecto (`memory.md`)
+## 6b. Memoria del proyecto (`documentation/internal/memory.md`)
 
 El chat se vacía entre sesiones; el repositorio no. Por eso:
 
-- **Al empezar:** hacé `git pull`, leé `memory.md` y corré `make resume`.
-- **Al terminar cada cambio** (código, documentación o decisión), **actualizá `memory.md` antes de cerrar**, aunque el usuario no lo pida:
+- **Al empezar:** hacé `git pull`, leé `documentation/internal/memory.md` y corré `make resume`.
+- **Al terminar cada cambio** (código, documentación o decisión), **actualizá `documentation/internal/memory.md` antes de cerrar**, aunque el usuario no lo pida:
   - la línea "Última actualización" y el último commit subido;
   - "Qué hay hecho" y "Decisiones tomadas", si cambiaron;
   - "Pendientes": tachá lo resuelto, agregá lo nuevo, mantené el orden por prioridad;
   - una línea en "Historial" con la fecha, qué se hizo y si quedó **sin commitear**.
-- **Mantenelo corto** (máx. ~150 líneas, un test lo comprueba): resumí y borrá lo viejo. El diseño va en `spec.md` y las guías en `documentation/`; en `memory.md` solo lo que alguien necesita para retomar.
+- **Mantenelo corto** (máx. ~150 líneas, un test lo comprueba): resumí y borrá lo viejo. El diseño va en `spec.md` y las guías en `documentation/`; en `documentation/internal/memory.md` solo lo que alguien necesita para retomar.
 - Sin secretos ni datos personales. Si el usuario dice algo que importa para el futuro (una preferencia, una aprobación, una decisión), anotalo ahí.
 - Si usás una memoria propia fuera del repo, no reemplaza a este archivo: es la que ven todos los agentes y el equipo.
-- **Cierre de sesión:** `make verify` en verde, `memory.md` al día y, si el usuario lo pidió, commit y push (pull antes).
+- **Cierre de sesión:** `make verify` en verde, `documentation/internal/memory.md` al día y, si el usuario lo pidió, commit y push (pull antes).
 
 ## 7. Fuera de alcance (no lo hagas)
 
