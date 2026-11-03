@@ -17,6 +17,8 @@ locally with one command. The interface is in Spanish and English (switch it wit
 the language button in the header) and includes colour-blind palettes, high
 contrast and reduced motion.
 
+> **This effort is supported by Qollab & IonQ.**
+
 ## Quick start
 
 ### On Qollab
